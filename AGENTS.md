@@ -15,19 +15,20 @@ Operating standard for repositories that support scientific analyses and papers.
 
 ## Using this standard
 
-This file is always in context and is self-sufficient for everything below. Deeper
-reference material lives in the `research-repo-standard` skill, which is loaded on
-demand and is not vendored here:
+This file is always in context and is self-sufficient for every rule below. Deeper
+reference material is deliberately **not** vendored here — it lives in the
+`research-repo-standard` skill. Invoke that skill by name when you need:
 
-| Reference | Read when |
+| Invoke it for | When |
 |---|---|
-| `references/bootstrap.md` | writing tool config, CI, or a Makefile that does not exist yet |
-| `references/data.md` | registering a dataset, defining a schema, writing validation |
-| `references/analysis.md` | planning or reporting a confirmatory analysis |
-| `references/figures.md` | before writing any plotting code, and again during figure QA |
+| bootstrap detail | writing tool config, CI, or a Makefile that does not exist yet |
+| the data contract | registering a dataset, defining a schema, writing validation |
+| the analysis contract | planning or reporting a confirmatory analysis |
+| the figure contract | the contract template and the full QA checklist |
 
-If that skill is unavailable — another agent, a collaborator's checkout — this file
-still governs. Say what you could not consult rather than inventing the detail.
+Do not look for a `references/` directory in this repository; there isn't one. If the
+skill is unavailable — another agent, a collaborator's checkout — this file still
+governs. Say what you could not consult rather than inventing the detail.
 
 In an established repository the working files are the source of truth:
 `pyproject.toml` for lint and type configuration, `make help` for the workflow

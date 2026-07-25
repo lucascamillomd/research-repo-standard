@@ -1,6 +1,6 @@
 ---
 name: research-repo-standard
-description: The operating standard for reproducible research repositories — those supporting a scientific analysis or paper. Use when bootstrapping such a repository (interview, scaffolding, uv/Ruff/ty/pre-commit/CI setup), and when working inside one and needing detail beyond its vendored AGENTS.md — registering a dataset or writing schema validation, planning or reporting a confirmatory analysis, or defining a figure contract and running figure QA. Not needed for the rules themselves: a repo governed by this standard vendors AGENTS.md, which is always in context there.
+description: The operating standard for reproducible research repositories — those supporting a scientific analysis, study, or paper. Use it whenever setting up such a repository (bootstrap interview, scaffolding, uv/Ruff/ty/pre-commit/CI configuration), and whenever working inside one: registering a dataset or writing schema validation, planning or reporting a confirmatory analysis, defining a figure contract or running figure QA, or vendoring and re-vendoring the standard into a project. Consult it even when the user never names the standard — any request to set up a research repo, add a dataset to config/datasets.yaml, write an analysis plan, check reproducibility, or produce publication figures and tables should go through it.
 standard_version: 2026.07.25
 ---
 
