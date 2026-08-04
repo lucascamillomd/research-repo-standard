@@ -9,13 +9,17 @@ packages and not project data.
 ## Hard gate
 
 The following skills must be installed and discoverable before the bootstrap interview
-or any file-changing work in a governed repository:
+or any user-requested modification that creates, edits, moves, or deletes files in a
+governed repository:
 
 | Skill | Authoritative source | Required role |
 |---|---|---|
 | `superpowers:brainstorming` | <https://github.com/obra/superpowers> | Design and approval before every modification |
 | `scientific-critical-thinking` | <https://github.com/k-dense-ai/scientific-agent-skills> | Independent critique during bootstrap and later scientific judgments |
 | `nature-figure` | <https://github.com/Yuan1z0825/nature-skills> | Figure strategy during bootstrap and the full workflow for every plot |
+
+Executing an already approved workflow solely to regenerate declared outputs is not a
+new modification. Changes to code, configuration, or contracts are modifications.
 
 Use the agent host's native skill listing or resolver as the lightweight discovery
 check. It must return each exact skill name. A directory or `SKILL.md` file alone does

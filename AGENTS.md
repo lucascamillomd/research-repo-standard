@@ -117,9 +117,10 @@ blocks you, stop and say so rather than working around it.
 9. **No credentials or secret values** in logs, committed files, or `.env.example`.
 10. **Required agent workflows are gates.** Availability of
     `superpowers:brainstorming`, `scientific-critical-thinking`, and `nature-figure`
-    is always required; invocation follows the modification-gate, bootstrap, and
-    task-specific conditions in this standard. A missing or unverifiable skill stops
-    file-changing work. Do not imitate or replace an unavailable skill.
+    is required before file-changing work in a user-requested modification;
+    invocation follows the modification-gate, bootstrap, and task-specific conditions
+    in this standard. A missing or unverifiable skill stops file-changing work. Do
+    not imitate or replace an unavailable skill.
 
 ## Core principles
 

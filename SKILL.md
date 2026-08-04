@@ -1,6 +1,6 @@
 ---
 name: research-repo-standard
-description: The operating standard for reproducible research repositories supporting a scientific analysis, study, or paper. Use whenever setting up such a repository and before any file-changing request in a governed repository; enforce the required brainstorming, scientific critique, and figure workflows, and consult the bootstrap, data, analysis, figure, and prerequisite contracts. Use even when the user does not name the standard, especially for vendoring or re-vendoring it, registering datasets in config/datasets.yaml, writing validation, planning or reporting analyses in docs/ANALYSIS_PLAN.md, checking reproducibility, and producing publication figures or tables.
+description: The operating standard for reproducible research repositories supporting a scientific analysis, study, or paper. Use whenever setting up such a repository and before any user-requested modification in a governed repository that creates, edits, moves, or deletes files; enforce the required brainstorming, scientific critique, and figure workflows, and consult the bootstrap, data, analysis, figure, and prerequisite contracts. Use even when the user does not name the standard, especially for vendoring or re-vendoring it, registering datasets in config/datasets.yaml, writing validation, planning or reporting analyses in docs/ANALYSIS_PLAN.md, checking reproducibility, and producing publication figures or tables.
 ---
 <!-- standard_version: 2026.08.04 -->
 
@@ -16,7 +16,7 @@ deliberately omits:
 
 | Reference | Read when |
 |---|---|
-| `references/prerequisites.md` | before bootstrap, before governed modifications, and when a required skill is missing |
+| `references/prerequisites.md` | before bootstrap, before a user-requested governed modification, and when a required skill is missing |
 | `references/bootstrap.md` | writing tool config, CI, or a Makefile that does not exist yet |
 | `references/data.md` | registering a dataset, defining a schema, writing validation |
 | `references/analysis.md` | planning or reporting a confirmatory analysis |
@@ -25,8 +25,9 @@ deliberately omits:
 ## Required agent skills
 
 Read `references/prerequisites.md`. Before the bootstrap interview or any
-file-changing request in a governed repository, use the host-native skill listing or
-resolver to confirm these exact names:
+user-requested modification in a governed repository that creates, edits, moves, or
+deletes files, use the host-native skill listing or resolver to confirm these exact
+names:
 
 - `superpowers:brainstorming`
 - `scientific-critical-thinking`
@@ -41,13 +42,17 @@ for a missing skill.
 This is a normative agent gate whose enforcement depends on the host loading and
 following the skill instructions; do not describe it as an operating-system control.
 
-In governance mode, each user-requested modification that will create, edit, move, or
-delete files invokes `superpowers:brainstorming` and completes its approval,
-specification, and planning gates before implementation. The specification, plan,
-approval records, and all implementation work for that modification—performed
-directly or delegated—inherit the one completed gate and do not start nested cycles
-unless the requested scope expands. Read-only explanation, inspection, diagnosis,
-and status reporting are not modifications.
+In governance mode, each user-requested modification that creates, edits, moves, or
+deletes files opens one active `superpowers:brainstorming` gate. After design
+approval, its specification, plan, and approval-record artifacts may be created under
+the active gate, but the requested implementation files remain blocked. The gate
+completes only when the specification is committed and user-reviewed and the
+implementation plan is ready. Direct or delegated implementation inherits that
+completed gate and does not open a nested cycle. If the requested scope expands,
+reopen the same gate at design before implementing the new scope. Executing an
+already approved workflow solely to regenerate its declared outputs does not open a
+new gate; changing code, configuration, or contracts does. Read-only explanation,
+inspection, diagnosis, and status reporting are not modifications.
 
 During governed work, invoke `scientific-critical-thinking` through an independent
 critique whenever the task turns on a scientific judgment, under the analysis
@@ -74,8 +79,12 @@ Do not restate `AGENTS.md` back to the user — they already have it.
    standard controls. Define expected outputs, source data, exports, and QA; when no
    plots are planned, record that explicitly.
 5. **Approve and document.** Return to the brainstorming workflow, present the
-   integrated design, obtain approval, write and self-review its specification,
-   commit it, and obtain user review.
+   integrated design, and obtain approval. If the target repository is not yet
+   initialized, initialize only its Git repository and create only the process-artifact
+   path needed for the specification. This minimal initialization is part of the
+   active gate, not project scaffolding; defer all other scaffold and configuration
+   work to step 7. Then write and self-review the specification, commit it, and obtain
+   user review.
 6. **Plan.** Invoke `superpowers:writing-plans` after the user approves the written
    specification. This companion workflow is delivered by the required Superpowers
    installation; it is not a fourth hard prerequisite.
