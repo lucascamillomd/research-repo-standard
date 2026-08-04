@@ -1,13 +1,35 @@
 ---
 name: standard-bootstrap
 description: Concrete tool configuration to write when a repository does not yet have it — uv, Ruff, ty, pre-commit, CI guards, Makefile skeleton. Read when creating these files; once they exist they are the source of truth and this document is history.
-standard_version: 2026.07.25
+standard_version: 2026.08.04
 ---
 
 # Bootstrap: tool configuration
 
 Everything here describes files that do not exist yet. **Once written, those files are
 the source of truth** — read `pyproject.toml`, not this document.
+
+## Agent-skill preflight
+
+Before the interview, scaffolding, Python selection, or tool configuration, run the
+discovery procedure defined in `references/prerequisites.md` once in the current agent
+session. All three exact skill names must resolve. If any name does not resolve, stop
+before the interview and report the exact blocker. Do not scaffold, select Python,
+write tool configuration, or run `make setup`.
+
+For this preflight, a session is one continuous top-level agent context. An agent-host
+restart or reload, or a fresh top-level context, starts a new session and repeats
+discovery. Context compaction or an in-plan subagent dispatch does not create a new
+session, so do not repeat bootstrap discovery for either. Each subagent must still
+resolve and invoke the skill it is assigned to apply.
+
+After preflight, bootstrap invokes all three skills in their declared design stages,
+including `scientific-critical-thinking` through an independent-subagent scientific
+critique.
+
+Agent skills are not uv dependencies. The generated `make setup` target creates the
+locked project environment and installs pre-commit hooks; it does not install or
+validate global agent skills.
 
 ## Environment
 
@@ -159,5 +181,9 @@ its numbered `scripts/` stage.
 ## README
 
 Keep it concise: research question and one-paragraph scope, compact repository map,
-prerequisites, shortest setup and reproduction commands, expected results, external
-data and tool limitations, the reproducibility classification, and links to `docs/`.
+project prerequisites including the selected Python minor, uv, and Make; the three
+required agent skills with a link to the canonical prerequisite contract at
+<https://github.com/lucascamillomd/research-repo-standard/blob/main/references/prerequisites.md>;
+shortest project setup and reproduction commands, expected results, external data and
+tool limitations, the reproducibility classification, and links to `docs/`. Distinguish
+agent-host prerequisites from project tools and packages installed by `make setup`.

@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.07.25 -->
+<!-- standard_version: 2026.08.04 -->
 
 # Reference: plot and figure contract
 
@@ -21,9 +21,14 @@ Exploratory and diagnostic plots are not exempt. Their scientific role may be
 "diagnostic" or "exploratory," but they still require the contract, exports, source
 data, and QA.
 
+Passing bootstrap discovery does not replace task-time invocation of `nature-figure`
+for each plotting task. Before writing plotting code, that invocation must succeed. If
+`nature-figure` is missing or its task-time invocation fails, apply the repository-wide
+hard prerequisite gate: stop all file-changing work and report the exact blocker.
+
 Never use R or another language to render a preview, fallback, assembly, or substitute
-plot. If Python or a required plotting dependency is unavailable, stop before
-rendering and report the exact blocker.
+plot. If Python or a required Python plotting dependency is unavailable, stop the
+plotting task before writing plotting code or rendering and report the exact blocker.
 
 Matplotlib and Seaborn are the default stack. A specialized Python library may be used
 only when scientifically necessary and when it meets the same editable-export and QA

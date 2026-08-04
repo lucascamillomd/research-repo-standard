@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.07.25 -->
+<!-- standard_version: 2026.08.04 -->
 
 # Reference: scientific analysis contract
 
@@ -68,17 +68,27 @@ APIs, or upstream software remain nondeterministic. Name the boundary instead.
 ## Independent critique
 
 When work turns on a scientific judgment — study design, estimand, statistical method,
-alternative explanations, the scope of a claim — request an independent critique.
+alternative explanations, the scope of a claim — obtain an independent critique
+before deciding or implementing work that depends on the judgment.
 
-A separate subagent applies `scientific-critical-thinking` (KDense
+A separate review subagent, independent of the implementing agent, applies
+`scientific-critical-thinking` (KDense
 `k-dense-ai/scientific-agent-skills`) to the proposed approach and the relevant
 repository context, and returns findings **without implementing the task**. The
-critique is advisory: weigh it against the evidence, the task scope, and the user's
-instructions.
+skill's availability and obtaining the independent critique when triggered are
+mandatory; the conclusions are advisory. Findings may be rejected based on evidence,
+the task scope, or the user's instructions, but the critique may not be skipped. A
+working agent's self-critique is not a substitute.
 
 Routine documentation, formatting, plumbing, and faithful implementation work do not
-need one. If the skill or a review subagent is unavailable, continue and note the
-limitation only when it materially affects confidence in the work.
+require a critique unless they introduce scientific judgment.
+`scientific-critical-thinking` remains an always-on hard repository prerequisite. If
+the skill is missing, cannot be resolved, or cannot be invoked, apply the
+repository-wide hard prerequisite gate: stop all file-changing work and report the
+exact blocker. If the skill resolves but an independent review subagent is unavailable
+when scientific judgment is required, stop before deciding or implementing the
+dependent judgment and report the exact blocker. Only work that depends on that
+judgment is blocked; unrelated work may continue.
 
 A skill is guidance, not evidence. Validate code and results against primary
 documentation, known examples, scientific invariants, and the study design.
