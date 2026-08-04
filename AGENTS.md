@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.07.25 -->
+<!-- standard_version: 2026.08.04 -->
 <!-- Source: https://github.com/lucascamillomd/research-repo-standard -->
 
 # Reproducible Research Repository Standard
@@ -44,6 +44,48 @@ Explicit user instructions, and legal, institutional, journal, and data-use
 requirements, take precedence over everything here. Project-specific scientific
 requirements may refine this standard.
 
+## Required agent skills
+
+`superpowers:brainstorming`, `scientific-critical-thinking`, and `nature-figure` are
+all hard prerequisites. Before a user-requested modification that will create, edit,
+move, or delete files, use the agent host's native skill listing or resolver to
+confirm all three exact names. A directory or `SKILL.md` file alone is not a pass. If
+a host has no native listing or resolver, all three skills count as unverifiable and
+unavailable. If any name is missing or unverifiable, stop before repository
+mutations and consult the canonical prerequisite contract at
+<https://github.com/lucascamillomd/research-repo-standard/blob/main/references/prerequisites.md>.
+If that reference cannot be reached, report it and remain blocked. Resume only when
+the host resolves all three exact canonical names. Do not install skills silently,
+modify global agent configuration without the user's authorization, or substitute a
+generic workflow for a missing skill.
+
+Each user-requested modification invokes `superpowers:brainstorming` and opens one
+active gate. After design approval, its specification, plan, and approval records may
+be created under that gate. The gate completes only when the specification is
+committed and reviewed by the user and the implementation plan is ready; requested
+implementation files remain blocked until then. All direct or delegated
+implementation inherits the completed gate. If the requested scope expands, reopen
+that same gate at design before implementing the new scope. Executing an already
+approved workflow solely to regenerate its declared outputs does not open a new gate;
+changing code, configuration, or contracts does. Read-only explanation, inspection,
+diagnosis, and status reporting are not modifications.
+
+During repository bootstrap, the `superpowers:brainstorming` invocation for the
+repository design is this same modification gate, not an additional gate. Before
+scaffolding, request an independent `scientific-critical-thinking` critique; it
+covers the question, claim, study design, estimand, and major validity risks. Invoke
+`nature-figure` for the figure strategy with Python fixed as the plotting language.
+If no plots are planned, record that outcome in the approved design. While the gate
+is active, only the minimum target-repository initialization needed to store and
+commit the process artifacts is allowed; all remaining scaffolding stays blocked
+until the gate completes.
+
+`scientific-critical-thinking` and `nature-figure` still apply under their
+task-specific Analysis and Figures conditions below.
+
+This is a normative agent instruction, not an operating-system access control. It
+depends on the agent host loading and following this file.
+
 ## The floor
 
 These do not bend for convenience, a deadline, or a failing check. If one of them
@@ -73,6 +115,11 @@ blocks you, stop and say so rather than working around it.
    behaviour, not scientific truth. Never claim a result is valid because the
    workflow executed, and never claim reproducibility you have not run.
 9. **No credentials or secret values** in logs, committed files, or `.env.example`.
+10. **Required agent workflows are gates.** Availability of
+    `superpowers:brainstorming`, `scientific-critical-thinking`, and `nature-figure`
+    is always required; invocation follows the modification-gate, bootstrap, and
+    task-specific conditions in this standard. A missing or unverifiable skill stops
+    file-changing work. Do not imitate or replace an unavailable skill.
 
 ## Core principles
 
@@ -216,6 +263,8 @@ critique. A separate subagent applies `scientific-critical-thinking` (KDense
 anything. The critique is advisory; weigh it against the evidence and the task.
 Routine plumbing does not need one. A skill is guidance, not evidence — validate
 against primary documentation, known examples, and the study design.
+If the critique skill or a separate review subagent is unavailable, stop before
+making or implementing the scientific judgment and report the blocker.
 
 ## Figures
 
@@ -226,9 +275,9 @@ all four formats: editable SVG, editable PDF, 600 dpi TIFF, PNG preview. Each fo
 lives in its own extension-named directory under `results/figures/<figure_id>/`.
 
 Record the contract in `docs/FIGURE_CONTRACT.md` **before** writing plotting code.
-Never use R or another language to render a preview, fallback, or substitute plot; if
-a required Python dependency is missing, stop and report the blocker rather than
-rendering something else.
+Never use R or another language to render a preview, fallback, or substitute plot. If
+`nature-figure`, Python, or a required Python dependency is unavailable, stop before
+plotting and report the exact blocker rather than rendering something else.
 
 Atomic figure assets carry a semantic name, never a panel letter —
 `mf1_hazard_ratio_distribution`, not `mf1a`. Panel letters are layout metadata
@@ -323,6 +372,11 @@ repository or generated during the run; anything needing real data belongs in th
 full verification path.
 
 ## Working procedure
+
+Before the context and status checks below, apply the single normative modification
+gate under **Required agent skills**. Requested implementation files remain blocked
+until that gate completes; its inheritance, regeneration exemption, and scope-expansion
+rules govern the implementation that follows.
 
 Before changing anything: read this file, the README, the relevant `docs/`, nearby
 tests, and `git status`. Identify the scientific claim, the pipeline stage, the inputs
