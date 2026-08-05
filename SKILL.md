@@ -1,8 +1,8 @@
 ---
 name: research-repo-standard
-description: The operating standard for reproducible research repositories supporting a scientific analysis, study, or paper. Use whenever setting up such a repository and before any user-requested modification in a governed repository that creates, edits, moves, or deletes files; enforce the required brainstorming, scientific critique, and figure workflows, and consult the bootstrap, data, analysis, figure, and prerequisite contracts. Use even when the user does not name the standard, especially for vendoring or re-vendoring it, registering datasets in config/datasets.yaml, writing validation, planning or reporting analyses in docs/ANALYSIS_PLAN.md, checking reproducibility, and producing publication figures or tables.
+description: The operating standard for reproducible research repositories supporting a scientific analysis, study, or paper. Use whenever setting up such a repository and before any user-requested modification in a governed repository that creates, edits, moves, or deletes files; enforce the required brainstorming, scientific critique, figure, and configuration workflows, and consult the bootstrap, prerequisite, configuration, data, analysis, and figure contracts. Use even when the user does not name the standard, especially for vendoring or re-vendoring it, classifying or moving project settings, editing config/analysis.yaml or config/runtime.yaml, changing config.py or paths.py, registering datasets in config/datasets.yaml, writing validation, planning or reporting analyses in docs/ANALYSIS_PLAN.md, checking reproducibility, or producing publication figures and tables.
 ---
-<!-- standard_version: 2026.08.04 -->
+<!-- standard_version: 2026.08.05 -->
 
 # Research repository standard
 
@@ -17,6 +17,7 @@ deliberately omits:
 | Reference | Read when |
 |---|---|
 | `references/prerequisites.md` | before bootstrap, before a user-requested governed modification, and when a required skill is missing |
+| `references/configuration.md` | classifying settings, changing YAML, loaders, paths, overrides, or configuration provenance |
 | `references/bootstrap.md` | writing tool config, CI, or a Makefile that does not exist yet |
 | `references/data.md` | registering a dataset, defining a schema, writing validation |
 | `references/analysis.md` | planning or reporting a confirmatory analysis |
@@ -58,6 +59,11 @@ During governed work, invoke `scientific-critical-thinking` through an independe
 critique whenever the task turns on a scientific judgment, under the analysis
 contract, and invoke `nature-figure` for every plot under the figure contract.
 
+For configuration work, read `references/configuration.md`. Stable scientific and
+result-affecting settings belong in `config/analysis.yaml`; only documented
+result-equivalent operations belong in optional `config/runtime.yaml`. `config.py`
+validates and passes typed values, while `paths.py` derives repository paths.
+
 Do not restate `AGENTS.md` back to the user — they already have it.
 
 ## Bootstrapping sequence
@@ -89,8 +95,10 @@ Do not restate `AGENTS.md` back to the user — they already have it.
    specification. This companion workflow is delivered by the required Superpowers
    installation; it is not a fourth hard prerequisite.
 7. **Scaffold and configure.** Read `AGENTS.md` in this skill, create the approved
-   structure, and use `references/bootstrap.md` for tooling. Agent prerequisites
-   precede and remain separate from the generated repository's `make setup` target.
+   structure, use `references/bootstrap.md` for tooling, and use
+   `references/configuration.md` when creating configuration files and loaders. Agent
+   prerequisites precede and remain separate from the generated repository's
+   `make setup` target.
 8. **Vendor and identify.** Run `./vendor.sh <target-repo>`; it copies `AGENTS.md` and
    symlinks `CLAUDE.md` to it, and nothing else is vendored. Fill in the vendored
    `AGENTS.md` `## This repository` section, then report what was created, assumptions,
