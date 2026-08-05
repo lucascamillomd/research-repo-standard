@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.04 -->
+<!-- standard_version: 2026.08.05 -->
 
 # research-repo-standard
 
@@ -15,6 +15,7 @@ SKILL.md               skill entry point (bootstrap + on-demand reference)
 references/
   bootstrap.md         tool config to write when it does not exist yet
   prerequisites.md     required agent skills, installation, verification
+  configuration.md     YAML ownership, loading, paths, overrides, provenance
   data.md              registry, schemas, validation, fixtures
   analysis.md          analysis plan, statistical reporting, critique
   figures.md           figure contract, exports, QA checklist
@@ -47,6 +48,15 @@ Bootstrap actively uses all three. Missing prerequisites stop work before reposi
 changes; they are not installed by uv or `make setup`. See
 [`references/prerequisites.md`](references/prerequisites.md) for authoritative sources,
 host-specific installation, verification, and resumption.
+
+## Configuration source of truth
+
+Stable scientific and result-affecting settings live in `config/analysis.yaml`.
+Optional `config/runtime.yaml` contains only operational settings demonstrated to be
+result-equivalent. `config.py` validates and consumes configuration; `paths.py` derives
+repository paths. See
+[`references/configuration.md`](references/configuration.md) for ownership, override,
+provenance, and migration rules.
 
 ## Install as a Claude skill
 

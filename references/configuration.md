@@ -1,0 +1,129 @@
+<!-- standard_version: 2026.08.05 -->
+
+# Reference: configuration ownership contract
+
+## Ownership decision
+
+Classify each stable researcher-editable value in this order:
+
+1. If changing a value can alter the dataset, estimate, model, figure, or scientific
+   claim, put it in `config/analysis.yaml`.
+2. If it is demonstrated to preserve intended results while changing only performance
+   or resilience, put it in optional `config/runtime.yaml` and record the equivalence
+   rationale in `docs/DECISIONS.md`.
+3. If it is secret or machine-specific, supply it through an environment variable.
+4. If it is derived from repository structure or another setting, compute it in
+   `paths.py` or `config.py`; do not duplicate it in YAML.
+5. If changing it inherently changes the implementation, keep it as a named Python
+   constant.
+
+When classification is uncertain, treat the value as scientific. Without a durable
+equivalence rationale, it does not belong in `runtime.yaml`.
+
+The rationale for a runtime setting identifies the evidence or invariant supporting
+result equivalence. A name such as “batch size,” “worker count,” or “retry limit” is
+not itself evidence. Training batch size remains in `analysis.yaml` whenever it may
+affect optimization; a demonstrated result-equivalent I/O batch may be runtime
+configuration.
+
+## Configuration files
+
+```text
+config/
+├── datasets.yaml              # mandatory provenance and legal-use registry
+├── analysis.yaml              # mandatory scientific and result-affecting settings
+└── runtime.yaml               # optional proven result-equivalent operational settings
+```
+
+`datasets.yaml` remains governed by the separate data contract; its presence here
+shows the complete configuration directory rather than extending this settings
+contract to dataset provenance.
+
+`analysis.yaml` is present in every new repository and owns seeds, thresholds,
+inclusion rules, transformations, model parameters, and every other stable value that
+can affect results. When randomness is used, declare `random_seed: 42` explicitly.
+Do not invent a seed field for a fully deterministic workflow.
+
+Create `runtime.yaml` only when the repository has stable performance or resilience
+settings with a recorded result-equivalence rationale. Do not scaffold an empty file.
+
+Python version, packaging metadata, tool configuration, and locked dependencies keep
+their existing sources of truth in `.python-version`, `pyproject.toml`, and `uv.lock`.
+Do not duplicate them in analysis or runtime YAML. Do not create a catch-all
+`project.yaml` or `settings.yaml`.
+
+## Loading and overrides
+
+Load configuration once per stage through `src/<package_name>/config.py`, before
+expensive computation. The loader owns schemas, parsing, type conversion, ranges,
+units, cross-field validation, and composition of permitted overrides. It rejects
+unknown fields, missing required fields, invalid values, and duplicate ownership.
+
+The loader returns immutable typed objects that entry points pass explicitly into
+package functions. Package functions do not reread YAML and do not import mutable
+module-level settings. `config.py` contains no project-specific scientific or
+operational values. Optional schema fields may represent a genuine absent state, but
+scientific values have no silent Python defaults or result-affecting fallbacks.
+
+Command-line arguments are for genuine invocation-time variation. Overrides use the
+same validation as YAML. Every result-affecting override and its source is recorded in
+provenance; reject an override that cannot be recorded. Confirmatory overrides also
+remain subject to the approved analysis plan and decision log.
+
+## Paths and environment
+
+`src/<package_name>/paths.py` owns repository-root discovery, canonical derived
+internal paths, containment checks, and raw-data safety. Internal layout paths such as
+`data/raw/` and `results/figures/` never live in YAML, and YAML cannot redirect them
+outside the repository contract.
+
+Credentials, secrets, machine-specific absolute roots, and GPU selection use
+environment variables. Environment variables may not override scientific settings.
+Validate permitted external roots and record the effective machine boundary without
+recording secret values.
+
+## Provenance
+
+Each major build records:
+
+- the hash of every loaded YAML file;
+- validated effective scientific and runtime values;
+- every CLI override and its source;
+- commit, input, environment, container, output, and checksum identities required by
+  the repository standard;
+- secret inputs only by variable name and redacted presence, never by value;
+- the seed when randomness is used;
+- worker, parallelism, and accelerator boundaries when relevant; and
+- declared nondeterministic and manual boundaries.
+
+A successful run with an unrecorded result-affecting override is a provenance failure.
+
+## Established repositories
+
+Do not bulk-migrate an established repository solely because this contract changes.
+Apply the migration when editing the function or entry point that reads a module-level
+project setting:
+
+1. Inventory and classify the values using the ownership decision above.
+2. Obtain authorization before changing scientific meaning, an estimand, an inclusion
+   rule, or a data contract.
+3. Move stable scientific values to `analysis.yaml`; move stable operational values
+   to `runtime.yaml` only with a recorded result-equivalence rationale.
+4. Keep derived paths in `paths.py` and machine-specific values in environment
+   variables.
+5. Preserve existing behavior with focused tests before intentionally changing values.
+6. Record the migration and any authorized value change in `docs/DECISIONS.md`.
+
+## Tests
+
+Configuration tests cover both valid loading and deliberate failure. Test rejection of
+unknown and missing fields, invalid types and cross-field combinations, duplicate
+ownership, versioned secrets, YAML redirection of canonical paths, and hidden
+result-affecting Python fallbacks. A scientific field omitted from YAML must fail
+rather than acquire a non-null Python default.
+
+Test that stage entry points load once, pass immutable typed configuration explicitly,
+and propagate `random_seed: 42` to every stochastic component when randomness is used.
+Test that result-affecting CLI overrides pass the shared validator and that the
+verification gate fails when an override is absent from provenance. Test containment
+and raw-data protections independently of successful configuration parsing.
