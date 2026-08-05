@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.04 -->
+<!-- standard_version: 2026.08.05 -->
 
 # Reference: scientific analysis contract
 
@@ -25,6 +25,11 @@ Multiplicity strategy:
 Sensitivity and subgroup analyses:
 Expected tables and figures:
 ```
+
+Every stable value that operationalizes this plan has an explicit field in
+`config/analysis.yaml`; prose does not substitute for executable configuration. The
+loader rejects missing or unknown scientific fields, and runs do not silently replace
+them through environment variables or Python defaults.
 
 Label every analysis exploratory or confirmatory. An exploratory result must not
 silently become confirmatory. Record post hoc changes and their rationale in
@@ -60,7 +65,9 @@ test rather than a comment.
 ## Determinism
 
 Prefer deterministic algorithms when scientifically equivalent. When randomness is
-necessary, use seed `42`, propagate it explicitly, and record it in configuration.
+necessary, declare `random_seed: 42` explicitly in `config/analysis.yaml`, pass it
+through the validated typed configuration, and propagate it to every stochastic
+component. Do not repeat `42` as a module-level Python setting.
 
 Do not claim complete determinism when GPU kernels, parallel algorithms, external
 APIs, or upstream software remain nondeterministic. Name the boundary instead.

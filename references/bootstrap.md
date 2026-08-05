@@ -1,7 +1,7 @@
 ---
 name: standard-bootstrap
 description: Concrete tool configuration to write when a repository does not yet have it — uv, Ruff, ty, pre-commit, CI guards, Makefile skeleton. Read when creating these files; once they exist they are the source of truth and this document is history.
-standard_version: 2026.08.04
+standard_version: 2026.08.05
 ---
 
 # Bootstrap: tool configuration
@@ -159,9 +159,19 @@ incrementality. Add real file dependencies only when they are reliable.
 
 ## Configuration and secrets
 
-TOML for packaging and tool configuration; YAML for dataset and analysis registries.
-Configuration loaders reject or explicitly handle unknown fields and fail clearly on
-missing required ones.
+Read `references/configuration.md` before creating YAML, `config.py`, `paths.py`, CLI
+overrides, or configuration provenance. TOML remains the source of truth for packaging
+and tool configuration. Create mandatory `config/datasets.yaml` and
+`config/analysis.yaml`; create `config/runtime.yaml` only when stable operational
+settings exist and their result-equivalence rationale is recorded in
+`docs/DECISIONS.md`.
+
+Put every stable scientific or result-affecting value explicitly in
+`config/analysis.yaml`. Put only proven result-equivalent performance and resilience
+settings in optional `config/runtime.yaml`. Do not create an empty runtime file.
+`config.py` validates strict typed schemas and contains no project values or hidden
+result-affecting defaults. `paths.py` derives internal paths and reads permitted
+machine-specific roots from environment variables.
 
 Create `.env.example` only when the project consumes environment variables. It lists
 variable names with safe descriptions or placeholders and never contains real values.
