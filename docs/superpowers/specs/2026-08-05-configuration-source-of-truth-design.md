@@ -54,6 +54,10 @@ Classify each setting in this order:
 When classification is uncertain, treat the value as scientific until evidence shows
 that changing it cannot affect results.
 
+Classifying a setting as result-equivalent runtime configuration requires a durable
+one-line rationale in `docs/DECISIONS.md` that identifies the evidence or invariant
+supporting equivalence. Without that record, keep the setting in `analysis.yaml`.
+
 Examples:
 
 | Setting | Owner |
@@ -128,12 +132,13 @@ Reject:
 
 ## Provenance
 
-Each major build records, where permitted:
+Each major build records:
 
 - hashes of every loaded YAML configuration file;
 - the validated effective scientific and runtime configuration;
 - every CLI override and its source;
-- relevant environment-provided machine boundaries without secret values;
+- relevant environment-provided machine boundaries without secret values; record
+  secret inputs only by variable name and redacted presence, never by value;
 - the seed when randomness is used;
 - worker, parallelism, or accelerator settings when they can affect determinism; and
 - declared nondeterministic boundaries.
@@ -143,7 +148,8 @@ A successful run with an unrecorded result-affecting override is a provenance fa
 ## Established-repository migration
 
 Do not migrate an established repository wholesale merely because this standard
-changes. When relevant code is next modified:
+changes. Apply the migration when the function or entry point that reads a
+module-level project setting is edited:
 
 1. Inventory module-level values and classify them with the ownership rules.
 2. Obtain authorization before moving or changing a scientific decision, estimand,
@@ -185,9 +191,14 @@ Validation will include:
    have one non-contradictory responsibility each.
 5. Negative checks against instructions that put stable project settings or canonical
    internal paths in Python or YAML respectively.
-6. A fresh-agent forward test asking for a hard-coded seed or batch size. The agent
-   must classify it, update the correct YAML contract, and keep derived paths out of
-   YAML.
+6. A loader test in generated repositories showing that an optional schema field with
+   a non-null, result-affecting Python fallback is rejected rather than silently used.
+7. A provenance verification test showing that a result-affecting CLI override without
+   a manifest record fails the verification gate.
+8. A fresh-agent forward test asking for a hard-coded batch size that may affect model
+   optimization. The agent must classify it as scientific unless equivalence is
+   demonstrated and recorded, update the correct YAML contract, and keep derived paths
+   out of YAML.
 
 These checks verify instruction behavior and contract consistency. They do not prove
 that a future repository's scientific settings are valid.
@@ -200,6 +211,7 @@ that a future repository's scientific settings are valid.
 - Secrets and machine-specific roots remain outside versioned YAML.
 - Effective configuration and result-affecting overrides are recorded in provenance.
 - New repositories follow the contract immediately; established repositories migrate
-  only when relevant code changes and with required scientific authorization.
+  when the function or entry point reading a module-level project setting is edited,
+  with required scientific authorization.
 - The skill validates, vendoring preserves the complete concise contract, and the
   forward test routes settings correctly without introducing Python globals.
