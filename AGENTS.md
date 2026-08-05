@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.04 -->
+<!-- standard_version: 2026.08.05 -->
 <!-- Source: https://github.com/lucascamillomd/research-repo-standard -->
 
 # Reproducible Research Repository Standard
@@ -23,6 +23,7 @@ reference material is deliberately **not** vendored here — it lives in the
 |---|---|
 | bootstrap detail | writing tool config, CI, or a Makefile that does not exist yet |
 | the data contract | registering a dataset, defining a schema, writing validation |
+| the configuration contract | classifying settings; changing YAML, loaders, paths, overrides, or configuration provenance |
 | the analysis contract | planning or reporting a confirmatory analysis |
 | the figure contract | the contract template and the full QA checklist |
 
@@ -32,10 +33,11 @@ governs. Say what you could not consult rather than inventing the detail.
 
 In an established repository the working files are the source of truth:
 `pyproject.toml` for lint and type configuration, `make help` for the workflow
-interface, `config/datasets.yaml` for provenance, `docs/PIPELINE.md` for the stage
-graph. This standard states what must be true; it does not restate their contents.
-Where this file and a working file disagree, assume the working file is current and
-this file is stale — say so rather than quietly editing either to match.
+interface, `config/datasets.yaml` for provenance, existing `config/analysis.yaml` and
+`config/runtime.yaml` (when present) for project settings, and `docs/PIPELINE.md` for
+the stage graph. This standard states what must be true; it does not restate their
+contents. Where this file and a working file disagree, assume the working file is
+current and this file is stale — say so rather than quietly editing either to match.
 
 Placeholders (`<repo-name>`, `<package_name>`, `<dataset_id>`, `<figure_id>`) are for
 substitution. Never create a path containing angle brackets.
@@ -121,6 +123,11 @@ blocks you, stop and say so rather than working around it.
     invocation follows the modification-gate, bootstrap, and task-specific conditions
     in this standard. A missing or unverifiable skill stops file-changing work. Do
     not imitate or replace an unavailable skill.
+11. **Configuration has one owner.** Stable scientific and operational settings live
+    in versioned YAML, never as hidden Python globals or defaults. Derived internal
+    paths stay in `paths.py`; secrets and machine-specific roots stay in environment
+    variables. Unknown, missing, duplicate, or unrecorded result-affecting values fail
+    before computation.
 
 ## Core principles
 
@@ -149,7 +156,8 @@ blocks you, stop and say so rather than working around it.
 ├── .pre-commit-config.yaml
 ├── config/
 │   ├── datasets.yaml
-│   └── analysis.yaml
+│   ├── analysis.yaml
+│   └── runtime.yaml                  # optional, proven result-equivalent operations
 ├── data/
 │   ├── raw/<dataset_id>/           # immutable source material, as received
 │   ├── interim/<dataset_id>/       # intermediate, not yet analysis-ready
@@ -318,11 +326,30 @@ unversioned. Containers exist for runtimes uv cannot manage (R, system libraries
 wrapping ordinary Python in Docker adds opacity over an environment that is already
 reproducible. R must never generate a plot.
 
-Centralize paths in `paths.py` and configuration loading in `config.py`. Loaders
-reject unknown fields and fail clearly on missing required ones. Scientific decisions
-and stable parameters live in versioned configuration; credentials and
-machine-specific roots live in environment variables. Command-line arguments are for
-what genuinely varies between invocations.
+Stable researcher-editable values have one versioned YAML owner. Scientific and
+result-affecting settings — seed, thresholds, inclusion rules, transformations, model
+parameters, and any batch size that may affect optimization — live in
+`config/analysis.yaml`. Optional `config/runtime.yaml` contains only stable operational
+settings demonstrated to preserve results; record the equivalence rationale in
+`docs/DECISIONS.md`. When uncertain, classify the value as scientific.
+
+`config.py` strictly validates YAML, rejects unknown and missing fields, composes only
+permitted overrides, and returns immutable typed objects passed explicitly into
+package functions. It contains no project-specific scientific or operational values,
+and optional schema fields never conceal result-affecting Python defaults. Load once
+per stage; package functions do not reread YAML or import mutable settings globals.
+
+`paths.py` discovers the repository root and derives canonical internal paths,
+containment, and raw-data protections. Internal layout paths never live in YAML.
+Credentials, secrets, machine-specific absolute roots, and GPU selection use
+environment variables; environment variables never override scientific settings.
+Command-line arguments are only for genuine invocation-time variation and use the
+same validation as YAML.
+
+For established repositories, apply this migration when editing the function or entry
+point that reads a module-level project setting. Preserve behavior with tests, obtain
+authorization before changing scientific meaning, and record the migration in
+`docs/DECISIONS.md`.
 
 Public functions and classes in `src/` have typed interfaces and Google-style
 docstrings that explain scientific meaning, units, ranges, array shapes, dataframe row
@@ -340,10 +367,13 @@ Generated artifacts stay under `results/{figures,tables,source_data,reports}/` a
 overwrite its own outputs so they can be byte-compared, and timestamped filenames
 quietly turn verification into accumulation. Run-specific timing belongs in `logs/`.
 
-Each major build writes a deterministic provenance manifest recording, where
-permitted: commit identifier, configuration hash, input identifiers and checksums,
-environment and container identity, seed, output inventory and checksums, and any
-declared non-reproducible or manual boundary.
+Each major build writes a deterministic provenance manifest recording: commit
+identifier; hashes and validated effective values for every loaded YAML file; every
+CLI override and its source; input identifiers and checksums; environment and
+container identity without secret values; secret inputs only by variable name and
+redacted presence; seed, worker, parallelism, and accelerator boundaries when
+relevant; output inventory and checksums; and declared nondeterministic or manual
+boundaries. An unrecorded result-affecting override is a provenance failure.
 
 Commit lightweight final tables, source data, editable figures, and deterministic
 manifests when licensing permits. Ignore caches, environments, logs, bulky
@@ -371,6 +401,12 @@ Use exact comparison for stable tabular and vector output, and explicit justifie
 tolerances for floating point. CI-runnable verification uses fixtures already in the
 repository or generated during the run; anything needing real data belongs in the
 full verification path.
+
+Configuration tests reject unknown and missing fields, hidden result-affecting Python
+fallbacks, duplicate ownership, invalid cross-field combinations, and unrecorded
+result-affecting overrides. Test that stage entry points load once and pass immutable
+typed configuration explicitly, and that `paths.py` cannot redirect canonical raw-data
+locations outside their contract.
 
 ## Working procedure
 
