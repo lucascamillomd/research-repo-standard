@@ -28,8 +28,8 @@ Expected tables and figures:
 
 Every stable value that operationalizes this plan has an explicit field in
 `config/analysis.yaml`; prose does not substitute for executable configuration. The
-loader rejects missing or unknown scientific fields, and runs do not silently replace
-them through environment variables or Python defaults.
+loader rejects missing or unknown scientific fields, and runs do not replace them
+through environment variables or Python defaults.
 
 Label every analysis exploratory or confirmatory. An exploratory result must not
 silently become confirmatory. Record post hoc changes and their rationale in

@@ -97,6 +97,8 @@ Each major build records:
 - declared nondeterministic and manual boundaries.
 
 A successful run with an unrecorded result-affecting override is a provenance failure.
+When legal or data-use restrictions prohibit recording an input identifier, record a
+permitted stable registry alias and the restriction, never the barred value.
 
 ## Established repositories
 

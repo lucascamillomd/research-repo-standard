@@ -126,8 +126,8 @@ blocks you, stop and say so rather than working around it.
 11. **Configuration has one owner.** Stable scientific and operational settings live
     in versioned YAML, never as hidden Python globals or defaults. Derived internal
     paths stay in `paths.py`; secrets and machine-specific roots stay in environment
-    variables. Unknown, missing, duplicate, or unrecorded result-affecting values fail
-    before computation.
+    variables. Unknown, missing, or duplicate-owned values fail before computation;
+    an unrecorded result-affecting override fails provenance verification.
 
 ## Core principles
 
@@ -374,6 +374,8 @@ container identity without secret values; secret inputs only by variable name an
 redacted presence; seed, worker, parallelism, and accelerator boundaries when
 relevant; output inventory and checksums; and declared nondeterministic or manual
 boundaries. An unrecorded result-affecting override is a provenance failure.
+When legal or data-use restrictions prohibit recording an input identifier, record a
+permitted stable registry alias and the restriction, never the barred value.
 
 Commit lightweight final tables, source data, editable figures, and deterministic
 manifests when licensing permits. Ignore caches, environments, logs, bulky
