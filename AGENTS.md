@@ -195,7 +195,7 @@ blocks you, stop and say so rather than working around it.
 │   ├── ANALYSIS_PLAN.md            # prospective and updated analysis plan
 │   ├── DATA.md                     # datasets, variables, units, schemas, access
 │   ├── DECISIONS.md                # durable decisions with rationale
-│   ├── FIGURE_CONTRACT.md          # contract and QA record for every plot
+│   ├── FIGURE_CONTRACT.md          # contract and QA record for every publication figure
 │   ├── METHODS.md                  # implementation-level scientific methods
 │   ├── PIPELINE.md                 # stage graph, I/O, runtimes, manual barriers
 │   └── lab_notebook.md             # append-only chronological record
