@@ -1,6 +1,6 @@
 ---
 name: research-repo-standard
-description: The operating standard for reproducible research repositories supporting a scientific analysis, study, or paper. Use when bootstrapping such a repository, and before any file-changing work in a repository that vendors this standard's AGENTS.md — it governs modification gates, configuration and data ownership, analysis planning and independent critique, publication figures, vendoring, and drift checks.
+description: The operating standard for reproducible research repositories supporting a scientific analysis, study, or paper. Use when bootstrapping such a repository, and before any file-changing work in a repository that vendors this standard's AGENTS.md — it governs modification gates, configuration and data ownership, analysis planning and independent critique, figures, vendoring, and drift checks.
 ---
 <!-- standard_version: 2026.08.10 -->
 
