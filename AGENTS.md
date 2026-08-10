@@ -62,7 +62,7 @@ modify global agent configuration without the user's authorization, or substitut
 generic workflow for a missing skill.
 
 Each user-requested modification that creates, edits, moves, or deletes files takes
-one of two paths. The agent classifies the request; when uncertain, use the full
+one of three paths. The agent classifies the request; when uncertain, use the full
 gate.
 
 **Full gate** — required for any result-affecting or contract-affecting change:

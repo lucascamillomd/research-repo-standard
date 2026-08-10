@@ -99,7 +99,7 @@ if (( CHECK )); then
     echo "source standard_version: ${src_version:-unknown}; vendored standard_version: ${tgt_version:-unknown}"
     drift=0
     if diff -u "$TARGET/AGENTS.md" "$work/AGENTS.md"; then
-        echo "standard-check: clean"
+        echo "standard-check: AGENTS.md matches a fresh vendor"
     else
         echo "standard-check: drift (diff above: '-' vendored copy, '+' fresh vendor)"
         drift=1
@@ -108,6 +108,14 @@ if (( CHECK )); then
     if [[ "$link" != "AGENTS.md" ]]; then
         echo "standard-check: CLAUDE.md is not a symlink to AGENTS.md"
         drift=1
+    fi
+    # Every check above has run; only now is a single verdict meaningful. A
+    # per-check "clean" line would otherwise claim success before the symlink
+    # check has had its say.
+    if (( drift )); then
+        echo "standard-check: drift"
+    else
+        echo "standard-check: clean"
     fi
     exit "$drift"
 fi

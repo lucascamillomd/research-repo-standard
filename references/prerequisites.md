@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.04 -->
+<!-- standard_version: 2026.08.10 -->
 
 # Reference: required agent skills
 
@@ -14,9 +14,9 @@ governed repository:
 
 | Skill | Authoritative source | Required role |
 |---|---|---|
-| `superpowers:brainstorming` | <https://github.com/obra/superpowers> | Design and approval before every modification |
+| `superpowers:brainstorming` | <https://github.com/obra/superpowers> | Design and approval before every full-gate modification |
 | `scientific-critical-thinking` | <https://github.com/k-dense-ai/scientific-agent-skills> | Independent critique during bootstrap and later scientific judgments |
-| `nature-figure` | <https://github.com/Yuan1z0825/nature-skills> | Figure strategy during bootstrap and the full workflow for every plot |
+| `nature-figure` | <https://github.com/Yuan1z0825/nature-skills> | Figure strategy during bootstrap and the full workflow for every publication figure |
 
 Executing an already approved workflow solely to regenerate declared outputs is not a
 new modification. Changes to code, configuration, or contracts are modifications.
