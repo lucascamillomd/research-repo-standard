@@ -163,7 +163,7 @@ blocks you, stop and say so rather than working around it.
 5. Scripts are thin orchestration entry points, not libraries.
 6. Inputs, parameters, outputs, assumptions, and manual boundaries are explicit.
 7. Tests cover scientific invariants and contracts, not only successful execution.
-8. Every plot uses Python and the full `nature-figure` workflow.
+8. Every plot uses Python; publication figures use the full `nature-figure` workflow.
 9. Distinguish computational success from scientific validity.
 
 ## Repository layout
@@ -201,6 +201,7 @@ blocks you, stop and say so rather than working around it.
 │   └── lab_notebook.md             # append-only chronological record
 ├── logs/                           # gitignored
 ├── results/
+│   ├── diagnostics/                # working plots (PNG), never publication artifacts
 │   ├── figures/<figure_id>/{svg,pdf,tiff,png}/
 │   ├── source_data/<figure_id>/
 │   ├── tables/
@@ -302,13 +303,22 @@ making or implementing the scientific judgment and report the blocker.
 
 ## Figures
 
-Every plot — exploratory, diagnostic, analytical, supplementary, or manuscript-bound
-— uses the `nature-figure` skill, is written in Python, is implemented as importable
-functions under `src/<package_name>/figures/`, has traceable source data, and exports
-all four formats: editable SVG, editable PDF, 600 dpi TIFF, PNG preview. Each format
-lives in its own extension-named directory under `results/figures/<figure_id>/`.
+Figures come in two tiers. A **publication figure** — manuscript-bound, or an
+analytical figure supporting a claim — uses the `nature-figure` skill, is written in
+Python, is implemented as importable functions under `src/<package_name>/figures/`,
+has traceable source data, and exports all four formats: editable SVG, editable PDF,
+600 dpi TIFF, PNG preview. Each format lives in its own extension-named directory
+under `results/figures/<figure_id>/`.
 
-Record the contract in `docs/FIGURE_CONTRACT.md` **before** writing plotting code.
+A **working plot** — exploratory or diagnostic — uses Python, obeys the determinism
+and seed rules, records which declared dataset or artifact it read, and writes a
+single PNG under `results/diagnostics/`. It requires no `nature-figure` invocation,
+no `docs/FIGURE_CONTRACT.md` entry, no multi-format export, and no QA checklist. A
+working plot never silently becomes a publication figure: promotion goes through the
+full publication contract, starting from the pre-plot contract.
+
+For publication figures, record the contract in `docs/FIGURE_CONTRACT.md` **before**
+writing plotting code.
 Never use R or another language to render a preview, fallback, or substitute plot. If
 `nature-figure`, Python, or a required Python dependency is unavailable, stop before
 plotting and report the exact blocker rather than rendering something else.
