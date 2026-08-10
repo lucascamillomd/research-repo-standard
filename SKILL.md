@@ -48,8 +48,8 @@ the light path, and the no-gate exemptions. It is already in context in a govern
 repository; apply it rather than a restatement.
 
 During governed work, obtain the independent `scientific-critical-thinking`
-critique when a trigger in the analysis contract applies, and follow the figure
-contract's two tiers for plots.
+critique when a trigger in the analysis contract applies, and invoke
+`nature-figure` for every plot under the figure contract.
 
 For configuration work, `AGENTS.md` owns the ownership rules; read
 `references/configuration.md` for the full contract.

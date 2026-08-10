@@ -67,8 +67,8 @@ gate.
 
 **Full gate** — required for any result-affecting or contract-affecting change:
 estimands, inclusion or exclusion rules, statistical methods or models,
-`config/analysis.yaml`, data contracts and schemas, pipeline structure, publication
-figures, new analyses, new features, and changes to this standard's rules. Invoke
+`config/analysis.yaml`, data contracts and schemas, pipeline structure, figures,
+new analyses, new features, and changes to this standard's rules. Invoke
 `superpowers:brainstorming` and open one active gate. After design approval, the
 specification, plan, and approval records may be created under that gate; the
 requested implementation files remain blocked until the specification is committed
@@ -163,7 +163,7 @@ blocks you, stop and say so rather than working around it.
 5. Scripts are thin orchestration entry points, not libraries.
 6. Inputs, parameters, outputs, assumptions, and manual boundaries are explicit.
 7. Tests cover scientific invariants and contracts, not only successful execution.
-8. Every plot uses Python; publication figures use the full `nature-figure` workflow.
+8. Every plot uses Python and the full `nature-figure` workflow.
 9. Distinguish computational success from scientific validity.
 
 ## Repository layout
@@ -195,13 +195,12 @@ blocks you, stop and say so rather than working around it.
 │   ├── ANALYSIS_PLAN.md            # prospective and updated analysis plan
 │   ├── DATA.md                     # datasets, variables, units, schemas, access
 │   ├── DECISIONS.md                # durable decisions with rationale
-│   ├── FIGURE_CONTRACT.md          # contract and QA record for every publication figure
+│   ├── FIGURE_CONTRACT.md          # contract and QA record for every plot
 │   ├── METHODS.md                  # implementation-level scientific methods
 │   ├── PIPELINE.md                 # stage graph, I/O, runtimes, manual barriers
 │   └── lab_notebook.md             # append-only chronological record
 ├── logs/                           # gitignored
 ├── results/
-│   ├── diagnostics/                # working plots (PNG), never publication artifacts
 │   ├── figures/<figure_id>/{svg,pdf,tiff,png}/
 │   ├── source_data/<figure_id>/
 │   ├── tables/
@@ -306,22 +305,13 @@ stop before making or implementing the scientific judgment and report the blocke
 
 ## Figures
 
-Figures come in two tiers. A **publication figure** — manuscript-bound, or an
-analytical figure supporting a claim — uses the `nature-figure` skill, is written in
-Python, is implemented as importable functions under `src/<package_name>/figures/`,
-has traceable source data, and exports all four formats: editable SVG, editable PDF,
-600 dpi TIFF, PNG preview. Each format lives in its own extension-named directory
-under `results/figures/<figure_id>/`.
+Every plot — exploratory, diagnostic, analytical, supplementary, or manuscript-bound
+— uses the `nature-figure` skill, is written in Python, is implemented as importable
+functions under `src/<package_name>/figures/`, has traceable source data, and exports
+all four formats: editable SVG, editable PDF, 600 dpi TIFF, PNG preview. Each format
+lives in its own extension-named directory under `results/figures/<figure_id>/`.
 
-A **working plot** — exploratory or diagnostic — uses Python, obeys the determinism
-and seed rules, records which declared dataset or artifact it read, and writes a
-single PNG under `results/diagnostics/`. It requires no `nature-figure` invocation,
-no `docs/FIGURE_CONTRACT.md` entry, no multi-format export, and no QA checklist. A
-working plot never silently becomes a publication figure: promotion goes through the
-full publication contract, starting from the pre-plot contract.
-
-For publication figures, record the contract in `docs/FIGURE_CONTRACT.md` **before**
-writing plotting code.
+Record the contract in `docs/FIGURE_CONTRACT.md` **before** writing plotting code.
 Never use R or another language to render a preview, fallback, or substitute plot. If
 `nature-figure`, Python, or a required Python dependency is unavailable, stop before
 plotting and report the exact blocker rather than rendering something else.
