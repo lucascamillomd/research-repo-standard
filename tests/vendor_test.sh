@@ -78,6 +78,21 @@ else
     fail "aborted malformed-target vendor leaves target untouched"
 fi
 
+# --- 4. --check: clean vendor exits 0, edited target exits 1 ---
+if "$ROOT/vendor.sh" --check "$t1" >/dev/null 2>&1; then
+    pass "--check clean"
+else
+    fail "--check clean"
+fi
+echo "local drift line" >> "$t1/AGENTS.md"
+"$ROOT/vendor.sh" --check "$t1" >/dev/null 2>&1
+rc=$?
+if [[ "$rc" -eq 1 ]]; then
+    pass "--check reports drift with exit 1"
+else
+    fail "--check reports drift with exit 1 (got $rc)"
+fi
+
 # --- final ---
 if (( FAILS > 0 )); then
     echo "$FAILS test(s) failed"

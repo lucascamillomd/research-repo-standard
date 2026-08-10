@@ -13,7 +13,7 @@ set -euo pipefail
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
-    echo "usage: vendor.sh <target-repo>" >&2
+    echo "usage: vendor.sh <target-repo> | vendor.sh --check <target-repo>" >&2
     exit 2
 }
 
@@ -68,6 +68,11 @@ build_vendored() {
     fi
 }
 
+CHECK=0
+if [[ "${1:-}" == "--check" ]]; then
+    CHECK=1
+    shift
+fi
 [[ $# -eq 1 ]] || usage
 TARGET="$1"
 
@@ -83,6 +88,23 @@ work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
 build_vendored "$work/AGENTS.md" "$TARGET"
+
+if (( CHECK )); then
+    if [[ ! -f "$TARGET/AGENTS.md" ]]; then
+        echo "vendor.sh: no AGENTS.md in $TARGET to check" >&2
+        exit 2
+    fi
+    src_version="$(sed -n '1s/.*standard_version: \([0-9.]*\).*/\1/p' "$SRC/AGENTS.md")"
+    tgt_version="$(sed -n '1s/.*standard_version: \([0-9.]*\).*/\1/p' "$TARGET/AGENTS.md")"
+    echo "source standard_version: ${src_version:-unknown}; vendored standard_version: ${tgt_version:-unknown}"
+    if diff -u "$TARGET/AGENTS.md" "$work/AGENTS.md"; then
+        echo "standard-check: clean"
+        exit 0
+    else
+        echo "standard-check: drift (diff above: '-' vendored copy, '+' fresh vendor)"
+        exit 1
+    fi
+fi
 
 # Move into place only after the whole file is built, so a failure partway
 # through cannot leave a half-written standard behind. The target is a git
