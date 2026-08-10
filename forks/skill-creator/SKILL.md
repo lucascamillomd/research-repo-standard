@@ -27,13 +27,9 @@ Of course, you should always be flexible and if the user is like "I don't need t
 
 Then after the skill is done (but again, the order is flexible), you can also run the skill description improver, which we have a whole separate script for, to optimize the triggering of the skill.
 
-Cool? Cool.
-
 ## Communicating with the user
 
-The skill creator is liable to be used by people across a wide range of familiarity with coding jargon. If you haven't heard (and how could you, it's only very recently that it started), there's a trend now where the power of Claude is inspiring plumbers to open up their terminals, parents and grandparents to google "how to install npm". On the other hand, the bulk of users are probably fairly computer-literate.
-
-So please pay attention to context cues to understand how to phrase your communication! In the default case, just to give you some idea:
+The skill creator is used by people across a wide range of technical backgrounds — from experienced developers to people who have never opened a terminal. Pay attention to context cues to calibrate your language. In the default case, just to give you some idea:
 
 - "evaluation" and "benchmark" are borderline, but OK
 - for "JSON" and "expectations" you want to see serious cues from the user that they know what those things are before using them without explaining them
@@ -303,7 +299,7 @@ This is the heart of the loop. You've run the test cases, the user has reviewed 
 
 4. **Look for repeated work across test cases.** Read the transcripts from the test runs and notice if the subagents all independently wrote similar helper scripts or took the same multi-step approach to something. If all 3 test cases resulted in the subagent writing a `create_docx.py` or a `build_chart.py`, that's a strong signal the skill should bundle that script. Write it once, put it in `scripts/`, and tell the skill to use it. This saves every future invocation from reinventing the wheel.
 
-This task is pretty important (we are trying to create billions a year in economic value here!) and your thinking time is not the blocker; take your time and really mull things over. I'd suggest writing a draft revision and then looking at it anew and making improvements. Really do your best to get into the head of the user and understand what they want and need.
+This task is pretty important and your thinking time is not the blocker; take your time and really mull things over. I'd suggest writing a draft revision and then looking at it anew and making improvements. Really do your best to get into the head of the user and understand what they want and need.
 
 ### The iteration loop
 
@@ -428,42 +424,44 @@ install it.
 
 ---
 
-## Claude.ai-specific instructions
+## Adapting to your environment
 
-In Claude.ai, the core workflow is the same (draft → test → review → improve → repeat), but because Claude.ai doesn't have subagents, some mechanics change. Here's what to adapt:
+The core loop (draft → test → review → improve → repeat) is the same everywhere.
+What changes is which mechanics are available — check capabilities, not product
+names:
 
-**Running test cases**: No subagents means no parallel execution. For each test case, read the skill's SKILL.md, then follow its instructions to accomplish the test prompt yourself. Do them one at a time. This is less rigorous than independent subagents (you wrote the skill and you're also running it, so you have full context), but it's a useful sanity check — and the human review step compensates. Skip the baseline runs — just use the skill to complete the task as requested.
+**No subagents** (e.g., Claude.ai): run each test case yourself, serially — read
+the skill's SKILL.md and follow its instructions to complete the test prompt. This
+is less rigorous than independent subagents (you wrote the skill and you have full
+context), but the human review step compensates. Skip baseline runs, quantitative
+benchmarking (baseline comparisons aren't meaningful without independent runs), and
+blind comparison. If subagents exist but parallel runs hit timeouts, fall back to
+running them in series.
 
-**Reviewing results**: If you can't open a browser (e.g., Claude.ai's VM has no display, or you're on a remote server), skip the browser reviewer entirely. Instead, present results directly in the conversation. For each test case, show the prompt and the output. If the output is a file the user needs to see (like a .docx or .xlsx), save it to the filesystem and tell them where it is so they can download and inspect it. Ask for feedback inline: "How does this look? Anything you'd change?"
+**No display or browser** (e.g., Cowork, remote servers, headless VMs): generate
+the viewer with `--static <output_path>` to write a standalone HTML file instead of
+starting a server, and give the user a link or path they can open. The "Submit All
+Reviews" button then downloads `feedback.json` instead of saving it server-side —
+ask the user to put it where you can read it (you may need to request file access),
+and copy it into the workspace for the next iteration. If even static HTML can't
+reach the user, present each prompt and output directly in conversation and collect
+feedback inline.
 
-**Benchmarking**: Skip the quantitative benchmarking — it relies on baseline comparisons which aren't meaningful without subagents. Focus on qualitative feedback from the user.
+**No `claude` CLI**: description optimization (`run_loop.py` / `run_eval.py`)
+invokes `claude -p` and can't run. Skip it and tell the user why.
 
-**The iteration loop**: Same as before — improve the skill, rerun the test cases, ask for feedback — just without the browser reviewer in the middle. You can still organize results into iteration directories on the filesystem if you have one.
+**Read-only skill install path** (common when updating an installed skill): copy
+the skill to a writable location first, edit the copy, and package from it.
+Preserve the original directory name and `name` frontmatter — if the installed
+skill is `research-helper`, output `research-helper.skill`, not
+`research-helper-v2`.
 
-**Description optimization**: This section requires the `claude` CLI tool (specifically `claude -p`) which is only available in Claude Code. Skip it if you're on Claude.ai.
+Packaging (`package_skill.py`) needs only Python and a filesystem — it works in
+every environment.
 
-**Blind comparison**: Requires subagents. Skip it.
-
-**Packaging**: The `package_skill.py` script works anywhere with Python and a filesystem. On Claude.ai, you can run it and the user can download the resulting `.skill` file.
-
-**Updating an existing skill**: The user might be asking you to update an existing skill, not create a new one. In this case:
-- **Preserve the original name.** Note the skill's directory name and `name` frontmatter field -- use them unchanged. E.g., if the installed skill is `research-helper`, output `research-helper.skill` (not `research-helper-v2`).
-- **Copy to a writeable location before editing.** The installed skill path may be read-only. Copy to `/tmp/skill-name/`, edit there, and package from the copy.
-- **If packaging manually, stage in `/tmp/` first**, then copy to the output directory -- direct writes may fail due to permissions.
-
----
-
-## Cowork-Specific Instructions
-
-If you're in Cowork, the main things to know are:
-
-- You have subagents, so the main workflow (spawn test cases in parallel, run baselines, grade, etc.) all works. (However, if you run into severe problems with timeouts, it's OK to run the test prompts in series rather than parallel.)
-- You don't have a browser or display, so when generating the eval viewer, use `--static <output_path>` to write a standalone HTML file instead of starting a server. Then proffer a link that the user can click to open the HTML in their browser.
-- For whatever reason, the Cowork setup seems to disincline Claude from generating the eval viewer after running the tests, so just to reiterate: whether you're in Cowork or in Claude Code, after running tests, you should always generate the eval viewer for the human to look at examples before revising the skill yourself and trying to make corrections, using `generate_review.py` (not writing your own boutique html code). Sorry in advance but I'm gonna go all caps here: GENERATE THE EVAL VIEWER *BEFORE* evaluating inputs yourself. You want to get them in front of the human ASAP!
-- Feedback works differently: since there's no running server, the viewer's "Submit All Reviews" button will download `feedback.json` as a file. You can then read it from there (you may have to request access first).
-- Packaging works — `package_skill.py` just needs Python and a filesystem.
-- Description optimization (`run_loop.py` / `run_eval.py`) should work in Cowork just fine since it uses `claude -p` via subprocess, not a browser, but please save it until you've fully finished making the skill and the user agrees it's in good shape.
-- **Updating an existing skill**: The user might be asking you to update an existing skill, not create a new one. Follow the update guidance in the claude.ai section above.
+One ordering rule that holds everywhere: after test runs finish, get the results in
+front of the user (viewer or inline) *before* judging the outputs and revising the
+skill yourself. Your own read of the outputs is not a substitute for theirs.
 
 ---
 
@@ -480,17 +478,8 @@ The references/ directory has additional documentation:
 
 ---
 
-Repeating one more time the core loop here for emphasis:
-
-- Figure out what the skill is about
-- Draft or edit the skill
-- Run claude-with-access-to-the-skill on test prompts
-- With the user, evaluate the outputs:
-  - Create benchmark.json and run `eval-viewer/generate_review.py` to help the user review them
-  - Run quantitative evals
-- Repeat until you and the user are satisfied
-- Validate the skill; if the `present_files` tool is available, package it and return the .skill file.
-
-Please add steps to your TodoList, if you have such a thing, to make sure you don't forget. If you're in Cowork, please specifically put "Create evals JSON and run `eval-viewer/generate_review.py` so human can review test cases" in your TodoList to make sure it happens.
-
-Good luck!
+Add the core steps to your todo list so none get skipped: draft or edit the skill,
+run test cases (with baselines where available), generate the eval viewer for the
+user to review, read their feedback, improve, and repeat until you're both
+satisfied. Then validate the skill; if the `present_files` tool is available,
+package it and return the `.skill` file.
