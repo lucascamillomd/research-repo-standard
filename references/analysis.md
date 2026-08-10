@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.05 -->
+<!-- standard_version: 2026.08.10 -->
 
 # Reference: scientific analysis contract
 
@@ -74,9 +74,14 @@ APIs, or upstream software remain nondeterministic. Name the boundary instead.
 
 ## Independent critique
 
-When work turns on a scientific judgment — study design, estimand, statistical method,
-alternative explanations, the scope of a claim — obtain an independent critique
-before deciding or implementing work that depends on the judgment.
+Obtain an independent critique when defining or changing any of: an estimand, a
+study design, a statistical method or model choice, inclusion or exclusion rules, a
+missing-data policy, a causal interpretation, or the scope of a claim. Obtain it
+before deciding or implementing work that depends on the judgment. One critique
+covers one design or coherent batch of decisions — do not open a separate critique
+per individual judgment, and during bootstrap the single design-stage critique is
+that batch. The critique may run concurrently with work that does not depend on the
+judgment under review; only dependent work waits for its findings.
 
 A separate review subagent, independent of the implementing agent, applies
 `scientific-critical-thinking` (KDense
