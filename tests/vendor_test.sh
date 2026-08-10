@@ -112,7 +112,7 @@ fi
 
 # --- 6. every standard file carries a version stamp in its first 5 lines ---
 stamp_ok=1
-for f in "$ROOT"/AGENTS.md "$ROOT"/SKILL.md "$ROOT"/README.md "$ROOT"/references/*.md; do
+for f in "$ROOT"/AGENTS.md "$ROOT"/SKILL.md "$ROOT"/README.md "$ROOT"/references/*.md "$ROOT"/agents/*.md; do
     if ! head -5 "$f" | grep -q 'standard_version:'; then
         fail "missing standard_version stamp: ${f#"$ROOT"/}"
         stamp_ok=0

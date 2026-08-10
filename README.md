@@ -19,6 +19,8 @@ references/
   data.md              registry, schemas, validation, fixtures
   analysis.md          analysis plan, statistical reporting, critique
   figures.md           figure contract, exports, QA checklist
+agents/
+  code-simplifier.md   post-change simplification subagent profile (canonical copy)
 vendor.sh              copy AGENTS.md into a target repository
 ```
 
