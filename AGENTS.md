@@ -291,15 +291,18 @@ absence. P-values alone are insufficient. For predictive work, test that
 preprocessing, imputation, feature selection, and tuning saw only permitted training
 data.
 
-When work turns on a scientific judgment — study design, estimand, statistical
-method, alternative explanations, the scope of a claim — request an independent
-critique. A separate subagent applies `scientific-critical-thinking` (KDense
+An independent critique is required when defining or changing: an estimand, a study
+design, a statistical method or model choice, inclusion or exclusion rules, a
+missing-data policy, a causal interpretation, or the scope of a claim. One critique
+covers one design or coherent batch of decisions — not one critique per individual
+judgment. A separate subagent applies `scientific-critical-thinking` (KDense
 `k-dense-ai/scientific-agent-skills`) and returns findings without implementing
-anything. The critique is advisory; weigh it against the evidence and the task.
-Routine plumbing does not need one. A skill is guidance, not evidence — validate
-against primary documentation, known examples, and the study design.
-If the critique skill or a separate review subagent is unavailable, stop before
-making or implementing the scientific judgment and report the blocker.
+anything. The critique is advisory; weigh it against the evidence and the task. It
+may run concurrently with work that does not depend on the judgment under review;
+only dependent work waits. Routine plumbing does not need one. A skill is guidance,
+not evidence — validate against primary documentation, known examples, and the
+study design. If the critique skill or a separate review subagent is unavailable,
+stop before making or implementing the scientific judgment and report the blocker.
 
 ## Figures
 
