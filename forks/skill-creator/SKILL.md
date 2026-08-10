@@ -405,15 +405,26 @@ Take `best_description` from the JSON output and update the skill's SKILL.md fro
 
 ---
 
-### Package and Present (only if `present_files` tool is available)
+### Validate, Package, and Present
 
-Check whether you have access to the `present_files` tool. If you don't, skip this step. If you do, package the skill and present the .skill file to the user:
+Before packaging, validate the skill's structure and frontmatter:
+
+```bash
+python <skill-creator-path>/scripts/quick_validate.py <path/to/skill-folder>
+```
+
+Fix anything it reports before proceeding.
+
+Then check whether you have access to the `present_files` tool. If you don't, skip
+packaging — the skill directory itself is the deliverable. If you do, package the
+skill and present the `.skill` file to the user:
 
 ```bash
 python -m scripts.package_skill <path/to/skill-folder>
 ```
 
-After packaging, direct the user to the resulting `.skill` file path so they can install it.
+After packaging, direct the user to the resulting `.skill` file path so they can
+install it.
 
 ---
 
@@ -478,7 +489,7 @@ Repeating one more time the core loop here for emphasis:
   - Create benchmark.json and run `eval-viewer/generate_review.py` to help the user review them
   - Run quantitative evals
 - Repeat until you and the user are satisfied
-- Package the final skill and return it to the user.
+- Validate the skill; if the `present_files` tool is available, package it and return the .skill file.
 
 Please add steps to your TodoList, if you have such a thing, to make sure you don't forget. If you're in Cowork, please specifically put "Create evals JSON and run `eval-viewer/generate_review.py` so human can review test cases" in your TodoList to make sure it happens.
 
