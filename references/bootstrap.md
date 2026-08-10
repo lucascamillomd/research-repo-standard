@@ -167,9 +167,12 @@ standard-check: ## Report drift against the research-repo-standard source
 	"$(STANDARD_SRC)/vendor.sh" --check .
 ````
 
-It exits 0 when the vendored `AGENTS.md` matches a fresh vendor (the
-`## This repository` section is preserved and never counts as drift), 1 when
-drifted, 2 when it cannot check.
+`vendor.sh --check` exits 0 when the vendored `AGENTS.md` matches a fresh
+vendor (the `## This repository` section is preserved and never counts as
+drift) and `CLAUDE.md` is a symlink to it, 1 when drifted, and 2 when there is
+no `AGENTS.md` to check. Note that `make` collapses any failing recipe to its
+own exit 2, so branch on `vendor.sh --check` directly when the distinction
+matters.
 
 ## Configuration and secrets
 
