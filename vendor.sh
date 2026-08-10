@@ -21,10 +21,25 @@ usage() {
 # check, a renamed heading would silently produce a corrupted vendored file.
 verify_source() {
     local this using
-    this="$(grep -nx '## This repository' "$SRC/AGENTS.md" | head -1 | cut -d: -f1)"
-    using="$(grep -nx '## Using this standard' "$SRC/AGENTS.md" | head -1 | cut -d: -f1)"
+    this="$(grep -nx '## This repository' "$SRC/AGENTS.md" | head -1 | cut -d: -f1 || true)"
+    using="$(grep -nx '## Using this standard' "$SRC/AGENTS.md" | head -1 | cut -d: -f1 || true)"
     if [[ -z "$this" || -z "$using" ]] || (( this >= using )); then
         echo "vendor.sh: source AGENTS.md must contain '## This repository' followed by '## Using this standard'; aborting" >&2
+        exit 1
+    fi
+}
+
+# When the target already has '## This repository', its AGENTS.md must also
+# have a following '## Using this standard'; otherwise the section-extraction
+# awk would slurp everything to EOF and corrupt the splice.
+verify_target() {
+    local target="$1" this using
+    [[ -f "$target/AGENTS.md" ]] || return 0
+    this="$(grep -nx '## This repository' "$target/AGENTS.md" | head -1 | cut -d: -f1 || true)"
+    [[ -n "$this" ]] || return 0
+    using="$(grep -nx '## Using this standard' "$target/AGENTS.md" | head -1 | cut -d: -f1 || true)"
+    if [[ -z "$using" ]] || (( this >= using )); then
+        echo "vendor.sh: target AGENTS.md has '## This repository' but no following '## Using this standard'; refusing to splice" >&2
         exit 1
     fi
 }
@@ -62,6 +77,7 @@ if [[ ! -d "$TARGET" ]]; then
 fi
 
 verify_source
+verify_target "$TARGET"
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT

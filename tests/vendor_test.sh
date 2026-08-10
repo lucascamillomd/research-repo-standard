@@ -41,15 +41,41 @@ cp "$ROOT/vendor.sh" "$bad/vendor.sh"
 grep -vx '## Using this standard' "$ROOT/AGENTS.md" > "$bad/AGENTS.md"
 t3="$tmp/badtarget"; mkdir "$t3"
 echo "sentinel" > "$t3/AGENTS.md"
-if "$bad/vendor.sh" "$t3" >/dev/null 2>&1; then
-    fail "corrupted source must abort"
-else
+err3="$("$bad/vendor.sh" "$t3" 2>&1 >/dev/null)" && t3_ok=0 || t3_ok=$?
+if [[ "$t3_ok" -ne 0 ]]; then
     pass "corrupted source aborts"
+else
+    fail "corrupted source must abort"
+fi
+if echo "$err3" | grep -q "must contain '## This repository' followed by '## Using this standard'"; then
+    pass "corrupted source prints diagnostic"
+else
+    fail "corrupted source prints diagnostic"
 fi
 if [[ "$(cat "$t3/AGENTS.md")" == "sentinel" ]]; then
     pass "aborted vendor leaves target untouched"
 else
     fail "aborted vendor leaves target untouched"
+fi
+
+# --- 4. a target with '## This repository' but no '## Using this standard' aborts ---
+t4="$tmp/badtarget2"; mkdir "$t4"
+printf '## This repository\n\nSome content.\n' > "$t4/AGENTS.md"
+err4="$("$ROOT/vendor.sh" "$t4" 2>&1 >/dev/null)" && t4_ok=0 || t4_ok=$?
+if [[ "$t4_ok" -ne 0 ]]; then
+    pass "malformed target aborts"
+else
+    fail "malformed target must abort"
+fi
+if echo "$err4" | grep -q "## Using this standard"; then
+    pass "malformed target prints diagnostic"
+else
+    fail "malformed target prints diagnostic"
+fi
+if grep -q 'Some content' "$t4/AGENTS.md"; then
+    pass "aborted malformed-target vendor leaves target untouched"
+else
+    fail "aborted malformed-target vendor leaves target untouched"
 fi
 
 # --- final ---
