@@ -1,8 +1,8 @@
 ---
 name: research-repo-standard
-description: The operating standard for reproducible research repositories supporting a scientific analysis, study, or paper. Use whenever setting up such a repository and before any user-requested modification in a governed repository that creates, edits, moves, or deletes files; enforce the required brainstorming, scientific critique, figure, and configuration workflows, and consult the bootstrap, prerequisite, configuration, data, analysis, and figure contracts. Use even when the user does not name the standard, especially for vendoring or re-vendoring it, classifying or moving project settings, editing config/analysis.yaml or config/runtime.yaml, changing config.py or paths.py, registering datasets in config/datasets.yaml, writing validation, planning or reporting analyses in docs/ANALYSIS_PLAN.md, checking reproducibility, or producing publication figures and tables.
+description: The operating standard for reproducible research repositories supporting a scientific analysis, study, or paper. Use when bootstrapping such a repository, and before any file-changing work in a repository that vendors this standard's AGENTS.md — it governs modification gates, configuration and data ownership, analysis planning and independent critique, publication figures, vendoring, and drift checks.
 ---
-<!-- standard_version: 2026.08.05 -->
+<!-- standard_version: 2026.08.10 -->
 
 # Research repository standard
 
@@ -43,26 +43,16 @@ for a missing skill.
 This is a normative agent gate whose enforcement depends on the host loading and
 following the skill instructions; do not describe it as an operating-system control.
 
-In governance mode, each user-requested modification that creates, edits, moves, or
-deletes files opens one active `superpowers:brainstorming` gate. After design
-approval, its specification, plan, and approval-record artifacts may be created under
-the active gate, but the requested implementation files remain blocked. The gate
-completes only when the specification is committed and user-reviewed and the
-implementation plan is ready. Direct or delegated implementation inherits that
-completed gate and does not open a nested cycle. If the requested scope expands,
-reopen the same gate at design before implementing the new scope. Executing an
-already approved workflow solely to regenerate its declared outputs does not open a
-new gate; changing code, configuration, or contracts does. Read-only explanation,
-inspection, diagnosis, and status reporting are not modifications.
+In governance mode, `AGENTS.md` owns the modification-gate rules — the full gate,
+the light path, and the no-gate exemptions. It is already in context in a governed
+repository; apply it rather than a restatement.
 
-During governed work, invoke `scientific-critical-thinking` through an independent
-critique whenever the task turns on a scientific judgment, under the analysis
-contract, and invoke `nature-figure` for every plot under the figure contract.
+During governed work, obtain the independent `scientific-critical-thinking`
+critique when a trigger in the analysis contract applies, and follow the figure
+contract's two tiers for plots.
 
-For configuration work, read `references/configuration.md`. Stable scientific and
-result-affecting settings belong in `config/analysis.yaml`; only documented
-result-equivalent operations belong in optional `config/runtime.yaml`. `config.py`
-validates and passes typed values, while `paths.py` derives repository paths.
+For configuration work, `AGENTS.md` owns the ownership rules; read
+`references/configuration.md` for the full contract.
 
 Do not restate `AGENTS.md` back to the user — they already have it.
 
