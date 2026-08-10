@@ -110,6 +110,18 @@ else
     fail "--check restored symlink exits 0"
 fi
 
+# --- 6. every standard file carries a version stamp in its first 5 lines ---
+stamp_ok=1
+for f in "$ROOT"/AGENTS.md "$ROOT"/SKILL.md "$ROOT"/README.md "$ROOT"/references/*.md; do
+    if ! head -5 "$f" | grep -q 'standard_version:'; then
+        fail "missing standard_version stamp: ${f#"$ROOT"/}"
+        stamp_ok=0
+    fi
+done
+if (( stamp_ok )); then
+    pass "version stamps present"
+fi
+
 # --- final ---
 if (( FAILS > 0 )); then
     echo "$FAILS test(s) failed"
