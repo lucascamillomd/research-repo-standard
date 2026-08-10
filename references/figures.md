@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.04 -->
+<!-- standard_version: 2026.08.10 -->
 
 # Reference: plot and figure contract
 
@@ -7,8 +7,8 @@ rules; this expands the contract template and the QA checklist.
 
 ## Scope
 
-Every plot — exploratory, diagnostic, analytical, supplementary, or manuscript-bound —
-must:
+This contract applies in full to **publication figures**: manuscript-bound figures
+and analytical figures supporting a claim. Every publication figure must:
 
 1. use the `nature-figure` skill
 2. use Python exclusively for plotting, previewing, exporting, and visual QA
@@ -17,12 +17,17 @@ must:
 5. have traceable source data
 6. pass the complete export and QA contract
 
-Exploratory and diagnostic plots are not exempt. Their scientific role may be
-"diagnostic" or "exploratory," but they still require the contract, exports, source
-data, and QA.
+**Working plots** — exploratory and diagnostic — are exempt from this contract.
+They use Python, obey the determinism and seed rules, record which declared dataset
+or artifact they read, and write a single PNG under `results/diagnostics/`. No
+`nature-figure` invocation, no `docs/FIGURE_CONTRACT.md` entry, no multi-format
+export, no QA checklist. A working plot never silently becomes a publication
+figure: promotion goes through this full contract from the pre-plot contract
+onward.
 
 Passing bootstrap discovery does not replace task-time invocation of `nature-figure`
-for each plotting task. Before writing plotting code, that invocation must succeed. If
+for each publication-figure task. Before writing publication plotting code, that
+invocation must succeed. If
 `nature-figure` is missing or its task-time invocation fails, apply the repository-wide
 hard prerequisite gate: stop all file-changing work and report the exact blocker.
 
