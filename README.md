@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.05 -->
+<!-- standard_version: 2026.08.10 -->
 
 # research-repo-standard
 
@@ -51,12 +51,9 @@ host-specific installation, verification, and resumption.
 
 ## Configuration source of truth
 
-Stable scientific and result-affecting settings live in `config/analysis.yaml`.
-Optional `config/runtime.yaml` contains only operational settings demonstrated to be
-result-equivalent. `config.py` validates and consumes configuration; `paths.py` derives
-repository paths. See
-[`references/configuration.md`](references/configuration.md) for ownership, override,
-provenance, and migration rules.
+`AGENTS.md` owns the configuration ownership rules;
+[`references/configuration.md`](references/configuration.md) holds the full
+contract — ownership, overrides, provenance, and migration.
 
 ## Install as a Claude skill
 
@@ -75,9 +72,9 @@ Then fill in the `## This repository` section of the vendored `AGENTS.md`.
 ## Versioning
 
 Every file carries `standard_version`. Vendored copies keep the version they were
-vendored at; `make standard-check` in a governed repository reports drift against this
-source without resolving it — a project may legitimately refine the standard for its
-own science.
+vendored at; `make standard-check` in a governed repository (backed by
+`vendor.sh --check`) reports drift against this source without resolving it — a
+project may legitimately refine the standard for its own science.
 
 ## Design
 
