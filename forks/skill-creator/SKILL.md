@@ -40,6 +40,20 @@ It's OK to briefly explain terms if you're in doubt, and feel free to clarify te
 
 ## Creating a skill
 
+### When a skill is the wrong vehicle
+
+Not every repeated instruction should become a skill. Steer the user elsewhere
+when:
+
+- **It's a one-off task.** Just do the task — a skill pays off through reuse.
+- **It's a project-specific convention** (naming rules, review process, directory
+  layout): that belongs in the project's CLAUDE.md / AGENTS.md, which is always in
+  context without triggering.
+- **It's an automated behavior** ("every time I save, run X"): that needs hooks or
+  harness settings, which execute deterministically — a skill only advises.
+
+If one of these fits, say so and help with the better mechanism instead.
+
 ### Capture Intent
 
 Start by understanding the user's intent. The current conversation might already contain a workflow the user wants to capture (e.g., they say "turn this into a skill"). If so, extract answers from the conversation history first — the tools used, the sequence of steps, corrections the user made, input/output formats observed. The user may need to fill the gaps, and should confirm before proceeding to the next step.
@@ -61,6 +75,10 @@ Based on the user interview, fill in these components:
 
 - **name**: Skill identifier
 - **description**: When to trigger, what it does. This is the primary triggering mechanism - include both what the skill does AND specific contexts for when to use it. All "when to use" info goes here, not in the body. Note: currently Claude has a tendency to "undertrigger" skills -- to not use them when they'd be useful. To combat this, please make the skill descriptions a little bit "pushy". So for instance, instead of "How to build a simple fast dashboard to display internal Anthropic data.", you might write "How to build a simple fast dashboard to display internal Anthropic data. Make sure to use this skill whenever the user mentions dashboards, data visualization, internal metrics, or wants to display any kind of company data, even if they don't explicitly ask for a 'dashboard.'"
+  One boundary: never summarize the skill's internal workflow step-by-step in the
+  description. A description that narrates the process invites the model to follow
+  the summary instead of reading the skill body — and the body is where the real
+  instructions live. Be pushy about *when*, not about *how*.
 - **compatibility**: Required tools, dependencies (optional, rarely needed)
 - **the rest of the skill :)**
 
@@ -212,7 +230,7 @@ When each subagent task completes, you receive a notification containing `total_
 }
 ```
 
-This is the only opportunity to capture this data — it comes through the task notification and isn't persisted elsewhere. Process each notification as it arrives rather than trying to batch them.
+This is the only opportunity to capture this data — it comes through the task notification and isn't persisted elsewhere. Process each notification as it arrives rather than trying to batch them. If a notification is missed, or the runs happened inline without notifications, don't stall: write `null` for the missing fields and move on. Timing data is informative, not gating.
 
 ### Step 4: Grade, aggregate, and launch the viewer
 
