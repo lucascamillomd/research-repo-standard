@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.05 -->
+<!-- standard_version: 2026.08.10 -->
 <!-- Source: https://github.com/lucascamillomd/research-repo-standard -->
 
 # Reproducible Research Repository Standard
@@ -61,19 +61,44 @@ the host resolves all three exact canonical names. Do not install skills silentl
 modify global agent configuration without the user's authorization, or substitute a
 generic workflow for a missing skill.
 
-Each user-requested modification invokes `superpowers:brainstorming` and opens one
-active gate. After design approval, its specification, plan, and approval records may
-be created under that gate. The gate completes only when the specification is
-committed and reviewed by the user and the implementation plan is ready; requested
-implementation files remain blocked until then. All direct or delegated
-implementation inherits the completed gate. If the requested scope expands, reopen
-that same gate at design before implementing the new scope. Executing an already
-approved workflow solely to regenerate its declared outputs does not open a new gate;
-changing code, configuration, or contracts does. Read-only explanation, inspection,
-diagnosis, and status reporting are not modifications.
+Each user-requested modification that creates, edits, moves, or deletes files takes
+one of two paths. The agent classifies the request; when uncertain, use the full
+gate.
+
+**Full gate** — required for any result-affecting or contract-affecting change:
+estimands, inclusion or exclusion rules, statistical methods or models,
+`config/analysis.yaml`, data contracts and schemas, pipeline structure, publication
+figures, new analyses, new features, and changes to this standard's rules. Invoke
+`superpowers:brainstorming` and open one active gate. After design approval, the
+specification, plan, and approval records may be created under that gate; the
+requested implementation files remain blocked until the specification is committed
+and reviewed by the user and the implementation plan is ready. All direct or
+delegated implementation inherits the completed gate. If the requested scope
+expands, reopen that same gate at design before implementing the new scope.
+
+**Light path** — for mechanical, non-result-affecting changes: documentation and
+typo fixes, comment edits, lint or formatting fixes, renames with no interface
+change, refactors fully covered by existing tests, and added tests that do not
+change behavior. State the intent, the files to be touched, and why the change is
+non-result-affecting; obtain one user confirmation; implement. No specification or
+plan artifacts are created. If the change turns out to affect results, interfaces,
+or contracts, stop and reopen as a full gate before continuing.
+
+**No gate** — read-only explanation, inspection, diagnosis, and status reporting
+are not modifications. Executing an already approved workflow solely to regenerate
+its declared outputs does not open a new gate.
+
+| Request | Path |
+|---|---|
+| Fix a typo in README | light |
+| Rename a stage directory with no interface change | light |
+| Add a sensitivity analysis | full |
+| Change an inclusion threshold in `config/analysis.yaml` | full |
+| Rerun `make figures` unchanged | no gate |
+| Explain what a pipeline stage does | no gate |
 
 During repository bootstrap, the `superpowers:brainstorming` invocation for the
-repository design is this same modification gate, not an additional gate. Before
+repository design is this same full gate, not an additional gate. Before
 scaffolding, request an independent `scientific-critical-thinking` critique; it
 covers the question, claim, study design, estimand, and major validity risks. Invoke
 `nature-figure` for the figure strategy with Python fixed as the plotting language.
@@ -412,10 +437,11 @@ locations outside their contract.
 
 ## Working procedure
 
-Before the context and status checks below, apply the single normative modification
-gate under **Required agent skills**. Requested implementation files remain blocked
-until that gate completes; its inheritance, regeneration exemption, and scope-expansion
-rules govern the implementation that follows.
+Before the context and status checks below, classify the request under the
+modification gates in **Required agent skills** and apply the resulting path. Under
+a full gate, requested implementation files remain blocked until the gate
+completes; its inheritance, regeneration exemption, and scope-expansion rules
+govern the implementation that follows.
 
 Before changing anything: read this file, the README, the relevant `docs/`, nearby
 tests, and `git status`. Identify the scientific claim, the pipeline stage, the inputs
