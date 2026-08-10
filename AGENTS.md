@@ -454,6 +454,15 @@ affect scientific meaning, interfaces, data safety, or scope. Preserve unrelated
 While implementing: keep the change narrow and reuse what exists. Validate inputs
 before expensive computation. Update tests and documentation in the same change.
 
+When a modification changed code under `src/`, `scripts/`, or `tests/`, run a
+code-simplifier subagent over the changed code before declaring completion. It
+applies the profile at `.claude/agents/code-simplifier.md` — canonical copy in the
+`research-repo-standard` skill's `agents/` directory, or
+<https://github.com/lucascamillomd/research-repo-standard/blob/main/agents/code-simplifier.md>
+when the local file is absent — preserves behavior exactly, and its edits are
+verified by re-running the covering tests. The simplifier's own edits do not
+trigger another pass. Documentation- and configuration-only changes are exempt.
+
 Before declaring completion: run the checks the change warrants — format, lint,
 typecheck, test, and the verification gates — then inspect the actual generated
 tables, figures, reports, and manifests rather than trusting exit codes. Check

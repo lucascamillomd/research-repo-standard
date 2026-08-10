@@ -205,6 +205,13 @@ directories. Use `testthat` for reusable R logic, run via `make test-r`.
 Do not create a dedicated R package by default. R code stays minimal and may live in
 its numbered `scripts/` stage.
 
+## Code-simplifier profile
+
+Create `.claude/agents/code-simplifier.md` in the new repository by copying the
+canonical profile from the standard's `agents/code-simplifier.md`. The Working
+procedure in `AGENTS.md` requires a code-simplifier subagent pass after
+code-changing modifications; the copied profile is what that subagent applies.
+
 ## README
 
 Keep it concise: research question and one-paragraph scope, compact repository map,
