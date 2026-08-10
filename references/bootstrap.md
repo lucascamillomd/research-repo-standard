@@ -1,13 +1,11 @@
----
-name: standard-bootstrap
-description: Concrete tool configuration to write when a repository does not yet have it — uv, Ruff, ty, pre-commit, CI guards, Makefile skeleton. Read when creating these files; once they exist they are the source of truth and this document is history.
-standard_version: 2026.08.05
----
+<!-- standard_version: 2026.08.10 -->
 
 # Bootstrap: tool configuration
 
-Everything here describes files that do not exist yet. **Once written, those files are
-the source of truth** — read `pyproject.toml`, not this document.
+Concrete tool configuration — uv, Ruff, ty, pre-commit, CI guards, Makefile
+skeleton — to write when a repository does not yet have it. Everything here
+describes files that do not exist yet. **Once written, those files are the source
+of truth** — read `pyproject.toml`, not this document.
 
 ## Agent-skill preflight
 
@@ -148,6 +146,7 @@ all:         ## Light path from the smallest distributable checkpoint
 full:        ## Longest raw-to-publication path; reports manual boundaries
 verify-ci:   ## Data-free, or approved fixtures only
 verify-full: ## Complete workflow with real data
+standard-check: ## Report drift against the research-repo-standard source
 clean-*:     ## Remove only the named generated outputs
 ```
 
@@ -156,6 +155,21 @@ project. Never define a cleanup target that can reach `data/raw/`.
 
 Make may use phony high-level targets without pretending to offer file-level
 incrementality. Add real file dependencies only when they are reliable.
+
+`standard-check` calls the standard's own tooling:
+
+````make
+STANDARD_SRC ?= $(HOME)/.claude/skills/research-repo-standard
+
+standard-check: ## Report drift against the research-repo-standard source
+	@test -x "$(STANDARD_SRC)/vendor.sh" \
+	  || { echo "standard source not found at $(STANDARD_SRC); cannot check"; exit 2; }
+	"$(STANDARD_SRC)/vendor.sh" --check .
+````
+
+It exits 0 when the vendored `AGENTS.md` matches a fresh vendor (the
+`## This repository` section is preserved and never counts as drift), 1 when
+drifted, 2 when it cannot check.
 
 ## Configuration and secrets
 
