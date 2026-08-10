@@ -93,6 +93,23 @@ else
     fail "--check reports drift with exit 1 (got $rc)"
 fi
 
+# --- 5. --check: missing/wrong CLAUDE.md symlink exits 1 ---
+"$ROOT/vendor.sh" "$t1" >/dev/null
+rm "$t1/CLAUDE.md"
+"$ROOT/vendor.sh" --check "$t1" >/dev/null 2>&1
+rc=$?
+if [[ "$rc" -eq 1 ]]; then
+    pass "--check missing CLAUDE.md symlink exits 1"
+else
+    fail "--check missing CLAUDE.md symlink exits 1 (got $rc)"
+fi
+ln -sfn AGENTS.md "$t1/CLAUDE.md"
+if "$ROOT/vendor.sh" --check "$t1" >/dev/null 2>&1; then
+    pass "--check restored symlink exits 0"
+else
+    fail "--check restored symlink exits 0"
+fi
+
 # --- final ---
 if (( FAILS > 0 )); then
     echo "$FAILS test(s) failed"

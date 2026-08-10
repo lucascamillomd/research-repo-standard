@@ -97,13 +97,19 @@ if (( CHECK )); then
     src_version="$(sed -n '1s/.*standard_version: \([0-9.]*\).*/\1/p' "$SRC/AGENTS.md")"
     tgt_version="$(sed -n '1s/.*standard_version: \([0-9.]*\).*/\1/p' "$TARGET/AGENTS.md")"
     echo "source standard_version: ${src_version:-unknown}; vendored standard_version: ${tgt_version:-unknown}"
+    drift=0
     if diff -u "$TARGET/AGENTS.md" "$work/AGENTS.md"; then
         echo "standard-check: clean"
-        exit 0
     else
         echo "standard-check: drift (diff above: '-' vendored copy, '+' fresh vendor)"
-        exit 1
+        drift=1
     fi
+    link="$(readlink "$TARGET/CLAUDE.md" 2>/dev/null || true)"
+    if [[ "$link" != "AGENTS.md" ]]; then
+        echo "standard-check: CLAUDE.md is not a symlink to AGENTS.md"
+        drift=1
+    fi
+    exit "$drift"
 fi
 
 # Move into place only after the whole file is built, so a failure partway
