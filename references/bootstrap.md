@@ -60,6 +60,21 @@ for another PEP 517 backend.
 dev = ["coverage", "pre-commit", "pytest", "ruff", "ty"]
 ```
 
+`loguru` is a runtime dependency, not a dev one — stage logging is part of the
+pipeline. Configure sinks in the stage script, not in `src/`: library code calls
+`logger.<level>()` and leaves sink configuration to the caller, so importing the
+package never installs a handler. A stage's entry point removes the default sink and
+adds its own, one console sink and one file sink under `logs/`:
+
+```python
+logger.remove()
+logger.add(sys.stderr, level=os.environ.get("LOG_LEVEL", "INFO"))
+logger.add(paths.LOGS / "02_fit_{time}.log", level="DEBUG", rotation="20 MB")
+```
+
+Verbosity is operational, so an environment variable may set it; nothing else about
+logging is configurable and no scientific setting is ever read from `LOG_LEVEL`.
+
 ## Ruff
 
 Line length 100. Stable rules only — do not enable all rules indiscriminately, do not
@@ -200,7 +215,19 @@ Put language- or purpose-specific containers under `docker/<language-or-tool>/`.
 pin the base image by immutable digest when feasible, constrain packages with
 `renv.lock`, document CRAN/Bioconductor and system-library limitations, expose build
 and execution through Make and a checked-in wrapper, and mount only required
-directories. Use `testthat` for reusable R logic, run via `make test-r`.
+directories. Use `testthat` for reusable R logic, run via `make test-r`. Pin `logger`
+in `renv.lock` — it is the R counterpart to `loguru`, and R stages log through it
+under the same contract:
+
+```r
+log_appender(appender_tee(file.path(logs_dir, "03_fit.log")))
+log_threshold(INFO)
+log_info("fitted {n} models on {nrow(df)} rows", n = length(fits))
+```
+
+`appender_tee()` writes to console and file at once, matching the two-sink Python
+setup. Keep the R logging surface this small; anything more elaborate belongs in
+Python.
 
 Do not create a dedicated R package by default. R code stays minimal and may live in
 its numbered `scripts/` stage.

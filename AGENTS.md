@@ -370,6 +370,18 @@ unversioned. Containers exist for runtimes uv cannot manage (R, system libraries
 wrapping ordinary Python in Docker adds opacity over an environment that is already
 reproducible. R must never generate a plot.
 
+Stages report progress through a logger, never `print()` or `cat()`: `loguru` in
+Python, the `logger` package in R. Each stage configures a console sink and a file
+sink under `logs/` at entry, logs the parameters it resolved, the inputs it read, the
+outputs it wrote, and every skipped or failed unit — enough to tell a long-running
+stage apart from a hung one, and to reconstruct afterwards where a run diverged.
+Timestamps belong in log records and log filenames, never in result filenames.
+Log levels carry meaning: `DEBUG` for developer detail, `INFO` for stage progress,
+`WARNING` for a recoverable deviation a reader must know about, `ERROR` for a unit
+that failed. Never log secrets, credentials, or restricted identifiers — the
+redaction rules for provenance apply identically here. Logs are diagnostic and
+gitignored; the provenance manifest, not the log, is the record of what a run did.
+
 Stable researcher-editable values have one versioned YAML owner. Scientific and
 result-affecting settings — seed, thresholds, inclusion rules, transformations, model
 parameters, and any batch size that may affect optimization — live in
