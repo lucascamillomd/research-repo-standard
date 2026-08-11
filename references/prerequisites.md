@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.10 -->
+<!-- standard_version: 2026.08.11 -->
 
 # Reference: required agent skills
 
@@ -8,15 +8,25 @@ packages and not project data.
 
 ## Hard gate
 
-The following skills must be installed and discoverable before the bootstrap interview
-or any user-requested modification that creates, edits, moves, or deletes files in a
-governed repository:
+All three skills must be installed and discoverable before the bootstrap interview —
+bootstrap actively uses each one. In an established governed repository the
+requirement is scoped to the work that depends on each skill:
 
-| Skill | Authoritative source | Required role |
+| Skill | Authoritative source | Required before |
 |---|---|---|
-| `superpowers:brainstorming` | <https://github.com/obra/superpowers> | Design and approval before every full-gate modification |
-| `scientific-critical-thinking` | <https://github.com/k-dense-ai/scientific-agent-skills> | Independent critique during bootstrap and later scientific judgments |
-| `nature-figure` | <https://github.com/Yuan1z0825/nature-skills> | Figure strategy during bootstrap and the full workflow for every plot |
+| `superpowers:brainstorming` | <https://github.com/obra/superpowers> | Any user-requested modification that creates, edits, moves, or deletes files |
+| `scientific-critical-thinking` | <https://github.com/k-dense-ai/scientific-agent-skills> | Work meeting an independent-critique trigger in the analysis contract |
+| `nature-figure` | <https://github.com/Yuan1z0825/nature-skills> | Work that writes or modifies plotting code or figure outputs |
+
+A missing skill blocks exactly the work that depends on it and nothing else. If a
+task's scope expands to meet a trigger it did not start with, stop at that point and
+verify the newly required skill before continuing.
+
+This standard was last validated against Superpowers v6.1.1,
+`k-dense-ai/scientific-agent-skills` commit `757b63b` (2026-07-24), and
+`Yuan1z0825/nature-skills` commit `db69e11` (2026-08-03). Newer upstream releases
+are expected to work, but review their changes before relying on behavior that
+differs from these versions.
 
 Executing an already approved workflow solely to regenerate declared outputs is not a
 new modification. Changes to code, configuration, or contracts are modifications.

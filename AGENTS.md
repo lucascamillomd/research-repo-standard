@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.10 -->
+<!-- standard_version: 2026.08.11 -->
 <!-- Source: https://github.com/lucascamillomd/research-repo-standard -->
 
 # Reproducible Research Repository Standard
@@ -49,17 +49,32 @@ requirements may refine this standard.
 ## Required agent skills
 
 `superpowers:brainstorming`, `scientific-critical-thinking`, and `nature-figure` are
-all hard prerequisites. Before a user-requested modification that will create, edit,
-move, or delete files, use the agent host's native skill listing or resolver to
-confirm all three exact names. A directory or `SKILL.md` file alone is not a pass. If
-a host has no native listing or resolver, all three skills count as unverifiable and
-unavailable. If any name is missing or unverifiable, stop before repository
+hard prerequisites, each scoped to the work that depends on it:
+
+- `superpowers:brainstorming` — required before every user-requested modification
+  that will create, edit, move, or delete files; it drives the modification gate
+  itself.
+- `scientific-critical-thinking` — additionally required when the task meets an
+  independent-critique trigger in the Analysis section, and throughout bootstrap.
+- `nature-figure` — additionally required when the task writes or modifies plotting
+  code or figure outputs, and throughout bootstrap.
+
+The scoping exists so a missing skill blocks exactly the work that would need it —
+an uninstalled figure skill must not block a documentation fix — while work that
+does need it still fails early, at classification rather than mid-implementation.
+If a task's scope expands to meet a trigger it did not start with, stop at that
+point and verify the newly required skill before continuing.
+
+Verify with the agent host's native skill listing or resolver, confirming exact
+names. A directory or `SKILL.md` file alone is not a pass. If a host has no native
+listing or resolver, the required skills count as unverifiable and unavailable. If
+a required skill is missing or unverifiable, stop before the dependent repository
 mutations and consult the canonical prerequisite contract at
 <https://github.com/lucascamillomd/research-repo-standard/blob/main/references/prerequisites.md>.
 If that reference cannot be reached, report it and remain blocked. Resume only when
-the host resolves all three exact canonical names. Do not install skills silently,
-modify global agent configuration without the user's authorization, or substitute a
-generic workflow for a missing skill.
+the host resolves the required names. Do not install skills silently, modify global
+agent configuration without the user's authorization, or substitute a generic
+workflow for a missing skill.
 
 Each user-requested modification that creates, edits, moves, or deletes files takes
 one of three paths. The agent classifies the request; when uncertain, use the full
@@ -142,11 +157,12 @@ blocks you, stop and say so rather than working around it.
    behaviour, not scientific truth. Never claim a result is valid because the
    workflow executed, and never claim reproducibility you have not run.
 9. **No credentials or secret values** in logs, committed files, or `.env.example`.
-10. **Required agent workflows are gates.** Availability of
-    `superpowers:brainstorming`, `scientific-critical-thinking`, and `nature-figure`
-    is required before file-changing work in a user-requested modification;
-    invocation follows the modification-gate, bootstrap, and task-specific conditions
-    in this standard. A missing or unverifiable skill stops file-changing work. Do
+10. **Required agent workflows are gates.** `superpowers:brainstorming` must be
+    available before any file-changing user-requested modification;
+    `scientific-critical-thinking` and `nature-figure` must be available for the
+    work scoped to them in **Required agent skills**. Invocation follows the
+    modification-gate, bootstrap, and task-specific conditions in this standard. A
+    missing or unverifiable required skill stops the work that depends on it. Do
     not imitate or replace an unavailable skill.
 11. **Configuration has one owner.** Stable scientific and operational settings live
     in versioned YAML, never as hidden Python globals or defaults. Derived internal

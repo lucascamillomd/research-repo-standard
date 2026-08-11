@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.10 -->
+<!-- standard_version: 2026.08.11 -->
 
 # Reference: plot and figure contract
 
@@ -23,8 +23,9 @@ data, and QA.
 
 Passing bootstrap discovery does not replace task-time invocation of `nature-figure`
 for each plotting task. Before writing plotting code, that invocation must succeed. If
-`nature-figure` is missing or its task-time invocation fails, apply the repository-wide
-hard prerequisite gate: stop all file-changing work and report the exact blocker.
+`nature-figure` is missing or its task-time invocation fails, stop all plotting and
+figure-related file-changing work and report the exact blocker; work that does not
+touch figures may continue.
 
 Never use R or another language to render a preview, fallback, assembly, or substitute
 plot. If Python or a required Python plotting dependency is unavailable, stop the

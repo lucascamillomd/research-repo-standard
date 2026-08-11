@@ -1,10 +1,15 @@
 ---
 name: research-repo-standard
-description: The operating standard for reproducible research repositories supporting a scientific analysis, study, or paper. Use when bootstrapping such a repository, and before any file-changing work in a repository that vendors this standard's AGENTS.md — it governs modification gates, configuration and data ownership, analysis planning and independent critique, figures, vendoring, and drift checks.
+description: The operating standard for reproducible research repositories supporting a scientific analysis, study, or paper. Use when bootstrapping such a repository, and before any file-changing work in a repository that vendors this standard's AGENTS.md — it governs modification gates, configuration and data ownership, analysis planning and independent critique, figures, vendoring, and drift checks. Not for general-purpose software projects or scratch analyses that will not support a scientific claim.
 ---
-<!-- standard_version: 2026.08.10 -->
+<!-- standard_version: 2026.08.11 -->
 
 # Research repository standard
+
+This standard is for repositories whose purpose is to support a scientific claim —
+an analysis, study, or paper. It does not govern general-purpose software projects,
+teaching materials, or scratch exploration that will never support a claim; apply it
+when the work is, or is intended to become, the evidence behind one.
 
 Two modes.
 
@@ -25,20 +30,22 @@ deliberately omits:
 
 ## Required agent skills
 
-Read `references/prerequisites.md`. Before the bootstrap interview or any
-user-requested modification in a governed repository that creates, edits, moves, or
-deletes files, use the host-native skill listing or resolver to confirm these exact
-names:
+Read `references/prerequisites.md`. Before the bootstrap interview, use the
+host-native skill listing or resolver to confirm all three exact names — bootstrap
+actively uses each of them:
 
 - `superpowers:brainstorming`
 - `scientific-critical-thinking`
 - `nature-figure`
 
-If any is missing, stop at preflight, before the bootstrap interview or repository
-mutations, identify it, and give the user the installation and session-reload
-instructions from the prerequisite reference. Resume only after the host resolves all
-three names. File presence alone is not a pass, and no generic workflow may substitute
-for a missing skill.
+In a governed repository the requirement is scoped to the work that depends on each
+skill; `AGENTS.md` defines that scoping alongside the modification gate it owns.
+
+If a required skill is missing, stop at preflight, before the bootstrap interview or
+the dependent repository mutations, identify it, and give the user the installation
+and session-reload instructions from the prerequisite reference. Resume only after
+the host resolves the required names. File presence alone is not a pass, and no
+generic workflow may substitute for a missing skill.
 
 This is a normative agent gate whose enforcement depends on the host loading and
 following the skill instructions; do not describe it as an operating-system control.

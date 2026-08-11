@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.10 -->
+<!-- standard_version: 2026.08.11 -->
 
 # research-repo-standard
 
@@ -39,15 +39,17 @@ reference material into every project.
 
 ## Hard prerequisites
 
-Repository bootstrap and later governed modifications require these discoverable agent
-skills:
+Repository bootstrap requires all three of these discoverable agent skills; in an
+established governed repository each is required only for the work that depends on
+it (brainstorming for any file-changing modification, the other two when a task
+meets their critique or figure scope):
 
 - `superpowers:brainstorming`
 - `scientific-critical-thinking`
 - `nature-figure`
 
-Bootstrap actively uses all three. Missing prerequisites stop work before repository
-changes; they are not installed by uv or `make setup`. See
+Missing prerequisites stop the dependent work before repository changes; they are
+not installed by uv or `make setup`. See
 [`references/prerequisites.md`](references/prerequisites.md) for authoritative sources,
 host-specific installation, verification, and resumption.
 
@@ -73,10 +75,12 @@ Then fill in the `## This repository` section of the vendored `AGENTS.md`.
 
 ## Versioning
 
-Every file carries `standard_version`. Vendored copies keep the version they were
-vendored at; `make standard-check` in a governed repository (backed by
-`vendor.sh --check`) reports drift against this source without resolving it — a
-project may legitimately refine the standard for its own science.
+Every file carries `standard_version` — the date the file last materially changed,
+so stamps legitimately differ across files in this repository. Vendored copies keep
+the version they were vendored at; `make standard-check` in a governed repository
+(backed by `vendor.sh --check`) reports drift against this source's `AGENTS.md`
+without resolving it — a project may legitimately refine the standard for its own
+science.
 
 ## Design
 

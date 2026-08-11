@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.10 -->
+<!-- standard_version: 2026.08.11 -->
 
 # Reference: scientific analysis contract
 
@@ -94,10 +94,10 @@ working agent's self-critique is not a substitute.
 
 Routine documentation, formatting, plumbing, and faithful implementation work do not
 require a critique unless they introduce scientific judgment.
-`scientific-critical-thinking` remains an always-on hard repository prerequisite. If
-the skill is missing, cannot be resolved, or cannot be invoked, apply the
-repository-wide hard prerequisite gate: stop all file-changing work and report the
-exact blocker. If the skill resolves but an independent review subagent is unavailable
+`scientific-critical-thinking` is a hard prerequisite scoped to critique-triggering
+work. If the skill is missing, cannot be resolved, or cannot be invoked, stop the
+work that meets a critique trigger and report the exact blocker; file-changing work
+outside the critique triggers may continue. If the skill resolves but an independent review subagent is unavailable
 when scientific judgment is required, stop before deciding or implementing the
 dependent judgment and report the exact blocker. Only work that depends on that
 judgment is blocked; unrelated work may continue.
