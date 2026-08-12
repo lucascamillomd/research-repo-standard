@@ -99,7 +99,11 @@ cat > "$tmp/bin/mv" <<'EOF'
 set -e
 args=("$@")
 count=${#args[@]}
-printf '%s\n%s\n' "${args[$((count - 2))]}" "${args[$((count - 1))]}" > "$MV_LOG"
+source=${args[$((count - 2))]}
+destination=${args[$((count - 1))]}
+source_parent="$(cd "$(dirname "$source")/.." && pwd -P)"
+destination_dir="$(cd "$(dirname "$destination")" && pwd -P)"
+printf '%s\n%s\n%s\n' "$source_parent" "$destination_dir" "$(basename "$destination")" > "$MV_LOG"
 exec "$REAL_MV" "$@"
 EOF
 chmod +x "$tmp/bin/mv"
@@ -107,13 +111,18 @@ t5="$tmp/staging-target"; mkdir "$t5"
 MV_LOG="$tmp/mv.log" REAL_MV="$real_mv" PATH="$tmp/bin:$PATH" \
     "$ROOT/vendor.sh" "$t5" >/dev/null
 {
-    IFS= read -r staged
-    IFS= read -r destination
+    IFS= read -r source_parent
+    IFS= read -r destination_dir
+    IFS= read -r destination_name
 } < "$tmp/mv.log"
-case "$staged:$destination" in
-    "$t5"/*:"$t5/AGENTS.md") pass "vendor stages beside the destination" ;;
-    *) fail "vendor stages beside the destination" ;;
-esac
+target_dir="$(cd "$t5" && pwd -P)"
+if [[ "$source_parent" == "$target_dir" ]] \
+    && [[ "$destination_dir" == "$target_dir" ]] \
+    && [[ "$destination_name" == "AGENTS.md" ]]; then
+    pass "vendor stages beside the destination"
+else
+    fail "vendor stages beside the destination"
+fi
 
 # --- 6. every standard file carries a version stamp in its first 5 lines ---
 stamp_ok=1
