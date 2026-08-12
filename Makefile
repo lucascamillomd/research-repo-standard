@@ -12,7 +12,10 @@ lint: ## Check Markdown, shell, frontmatter, and whitespace
 	bash tests/quality_test.sh
 
 test: ## Run vendoring, adapter, documentation-contract, and quality tests
-	bash tools/quality.sh test
+	bash tests/vendor_test.sh
+	bash tests/adapter_test.sh
+	bash tests/consistency_test.sh
+	bash tests/quality_test.sh
 
 check: ## Run every non-mutating repository check
 	bash tools/quality.sh check

@@ -15,31 +15,31 @@ frontmatter_files=(SKILL.md agents/code-simplifier.md)
 required_keys=(name description standard_version)
 markdownlint="$ROOT/node_modules/.bin/markdownlint-cli2"
 
+if ! command -v mise > /dev/null 2>&1; then
+  echo "tests/quality_test.sh: mise is required for pinned quality dependencies" >&2
+  exit 1
+fi
 if [[ ! -x "$markdownlint" ]]; then
-  if ! command -v mise > /dev/null 2>&1; then
-    echo "tests/quality_test.sh: mise is required to install pinned quality dependencies" >&2
-    exit 1
-  fi
   mise exec -- npm ci > /dev/null
 fi
 
-lint_markdown_stdin() {
-  mise exec -- "$markdownlint" --no-globs - > /dev/null 2>&1
+lint_markdown() {
+  mise exec -- "$markdownlint" --no-globs "$@" > /dev/null 2>&1
 }
 
-if printf '# Test\n\n   %smake title=x\n\trecipe\n   %s\n' '````' '````' | lint_markdown_stdin; then
+if printf '# Test\n\n   %smake title=x\n\trecipe\n   %s\n' '````' '````' | lint_markdown -; then
   pass "Markdown tabs are allowed in parsed make fences"
 else
   fail "Markdown tabs are allowed in parsed make fences"
 fi
 
-if printf '# Test\n\n~~~text\n%smake\n\trecipe\n%s\n~~~\n' '```' '```' | lint_markdown_stdin; then
+if printf '# Test\n\n~~~text\n%smake\n\trecipe\n%s\n~~~\n' '```' '```' | lint_markdown -; then
   fail "make-looking content inside a non-make fence must not allow tabs"
 else
   pass "make-looking content inside a non-make fence does not allow tabs"
 fi
 
-if printf '# Test\n\n<script>\n%smake\n\trecipe\n%s\n</script>\n' '```' '```' | lint_markdown_stdin; then
+if printf '# Test\n\n<script>\n%smake\n\trecipe\n%s\n</script>\n' '```' '```' | lint_markdown -; then
   fail "make-looking content inside raw HTML must not allow tabs"
 else
   pass "make-looking content inside raw HTML does not allow tabs"
@@ -107,16 +107,13 @@ for relative_file in "${frontmatter_files[@]}"; do
   fi
 done
 
+tracked_markdown=()
 while IFS= read -r -d '' relative_file; do
   file="$ROOT/$relative_file"
-  if ! LC_ALL=C grep -Iq . "$file" && [[ -s "$file" ]]; then
-    continue
-  fi
-
   if [[ "$relative_file" == *.md ]]; then
-    if ! mise exec -- "$markdownlint" --no-globs "$relative_file" > /dev/null 2>&1; then
-      fail "tracked Markdown violates the pinned lint contract: $relative_file"
-    fi
+    tracked_markdown+=("$relative_file")
+  elif ! LC_ALL=C grep -Iq . "$file" && [[ -s "$file" ]]; then
+    continue
   elif [[ "$relative_file" != Makefile ]] && grep -q $'\t' "$file"; then
     fail "tracked text file contains tabs: $relative_file"
   fi
@@ -132,8 +129,12 @@ while IFS= read -r -d '' relative_file; do
   fi
 done < <(git -C "$ROOT" ls-files -z)
 
+if ((${#tracked_markdown[@]} > 0)) && ! lint_markdown "${tracked_markdown[@]}"; then
+  fail "tracked Markdown violates the pinned lint contract"
+fi
+
 if ((FAILS == 0)); then
-  pass "tracked text files contain no tabs or trailing whitespace and end with a newline"
+  pass "tracked files satisfy Markdown and text quality contracts"
 else
   printf '%s\n' "$FAILS test(s) failed"
   exit 1
