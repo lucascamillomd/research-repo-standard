@@ -33,8 +33,7 @@ through environment variables or Python defaults.
 
 Label every analysis exploratory or confirmatory. An exploratory result must not
 silently become confirmatory. Record post hoc changes and their rationale in
-`docs/DECISIONS.md` or the lab notebook *before* presenting them as part of the final
-workflow.
+`docs/lab_notebook.md` *before* presenting them as part of the final workflow.
 
 ## Statistical reporting
 

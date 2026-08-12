@@ -44,9 +44,8 @@ This is agent-host tooling and is not installed by project uv or Make.
 
 The examples below resolve current upstream releases. After installation, bootstrap
 must record each installed plugin or skill version or source revision, together with
-the Agent Skills installer version, in durable repository setup provenance. Use
-`docs/DECISIONS.md` once the scaffold exists. Review upgrades before changing that
-record.
+the Agent Skills installer version, in `docs/lab_notebook.md` once the scaffold
+exists. Review upgrades before changing that record.
 
 ## Codex installation
 

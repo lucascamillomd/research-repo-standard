@@ -8,31 +8,18 @@ Classify each stable researcher-editable value in this order:
 
 1. If changing a value can alter the dataset, estimate, model, figure, or scientific
    claim, put it in `config/analysis.yaml`.
-2. If it is demonstrated to preserve intended results while changing only performance
-   or resilience, put it in optional `config/runtime.yaml` and record the equivalence
-   rationale in `docs/DECISIONS.md`.
-3. If it is secret or machine-specific, supply it through an environment variable.
-4. If it is derived from repository structure or another setting, compute it in
+2. If it is secret or machine-specific, supply it through an environment variable.
+3. If it is derived from repository structure or another setting, compute it in
    `paths.py` or `config.py`; do not duplicate it in YAML.
-5. If changing it inherently changes the implementation, keep it as a named Python
+4. If changing it inherently changes the implementation, keep it as a named Python
    constant.
-
-When classification is uncertain, treat the value as scientific. Without a durable
-equivalence rationale, it does not belong in `runtime.yaml`.
-
-The rationale for a runtime setting identifies the evidence or invariant supporting
-result equivalence. A name such as “batch size,” “worker count,” or “retry limit” is
-not itself evidence. Training batch size remains in `analysis.yaml` whenever it may
-affect optimization; a demonstrated result-equivalent I/O batch may be runtime
-configuration.
 
 ## Configuration files
 
 ```text
 config/
 ├── datasets.yaml              # mandatory provenance and legal-use registry
-├── analysis.yaml              # mandatory scientific and result-affecting settings
-└── runtime.yaml               # optional proven result-equivalent operational settings
+└── analysis.yaml              # mandatory scientific and result-affecting settings
 ```
 
 `datasets.yaml` remains governed by the separate data contract; its presence here
@@ -44,12 +31,9 @@ inclusion rules, transformations, model parameters, and every other stable value
 can affect results. When randomness is used, declare `random_seed: 42` explicitly.
 Do not invent a seed field for a fully deterministic workflow.
 
-Create `runtime.yaml` only when the repository has stable performance or resilience
-settings with a recorded result-equivalence rationale. Do not scaffold an empty file.
-
 Python version, packaging metadata, tool configuration, and locked dependencies keep
 their existing sources of truth in `.python-version`, `pyproject.toml`, and `uv.lock`.
-Do not duplicate them in analysis or runtime YAML. Do not create a catch-all
+Do not duplicate them in analysis YAML. Do not create a catch-all
 `project.yaml` or `settings.yaml`.
 
 ## Loading and overrides
@@ -109,12 +93,11 @@ project setting:
 1. Inventory and classify the values using the ownership decision above.
 2. Obtain authorization before changing scientific meaning, an estimand, an inclusion
    rule, or a data contract.
-3. Move stable scientific values to `analysis.yaml`; move stable operational values
-   to `runtime.yaml` only with a recorded result-equivalence rationale.
+3. Move stable scientific values to `analysis.yaml`.
 4. Keep derived paths in `paths.py` and machine-specific values in environment
    variables.
 5. Preserve existing behavior with focused tests before intentionally changing values.
-6. Record the migration and any authorized value change in `docs/DECISIONS.md`.
+6. Record the migration and any authorized value change in `docs/lab_notebook.md`.
 
 ## Tests
 

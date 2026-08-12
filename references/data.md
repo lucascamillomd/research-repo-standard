@@ -65,9 +65,9 @@ imputation.
 
 ## Data dictionary
 
-Record units, semantics, coding, provenance, and missing-value meanings in
-`docs/DATA.md` or a linked machine-readable dictionary. Terse column names are not
-documentation.
+Record units, semantics, coding, provenance, and missing-value meanings in a
+machine-readable schema or dictionary linked from the corresponding
+`config/datasets.yaml` entry. Terse column names are not documentation.
 
 ## Fixtures
 
