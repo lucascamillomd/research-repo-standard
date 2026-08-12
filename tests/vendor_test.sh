@@ -10,14 +10,16 @@ fail() { printf 'FAIL: %s\n' "$*"; FAILS=$((FAILS+1)); }
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
-# --- 1. fresh vendor copies AGENTS.md and symlinks CLAUDE.md ---
-t1="$tmp/fresh"; mkdir "$t1"
+# --- 1. fresh vendor copies only portable AGENTS.md ---
+t1="$tmp/fresh"
+mkdir "$t1"
 "$ROOT/vendor.sh" "$t1" >/dev/null
 if diff -q "$ROOT/AGENTS.md" "$t1/AGENTS.md" >/dev/null \
-   && [[ "$(readlink "$t1/CLAUDE.md")" == "AGENTS.md" ]]; then
-    pass "fresh vendor"
+    && [[ ! -e "$t1/CLAUDE.md" ]] \
+    && [[ ! -e "$t1/CODEX.md" ]]; then
+    pass "fresh portable vendor"
 else
-    fail "fresh vendor"
+    fail "fresh portable vendor"
 fi
 
 # --- 2. re-vendor preserves a modified '## This repository' section, no .bak ---
@@ -78,39 +80,18 @@ else
     fail "aborted malformed-target vendor leaves target untouched"
 fi
 
-# --- 4. --check: clean vendor exits 0, edited target exits 1 ---
-if "$ROOT/vendor.sh" --check "$t1" >/dev/null 2>&1; then
-    pass "--check clean"
+# --- deleted interface: --check is rejected as usage ---
+set +e
+check_output="$("$ROOT/vendor.sh" --check "$t1" 2>&1)"
+check_rc=$?
+set -e
+if [[ "$check_rc" -eq 2 ]] && grep -q 'usage: vendor.sh <target-repo>' <<<"$check_output"; then
+    pass "removed --check interface is rejected"
 else
-    fail "--check clean"
-fi
-echo "local drift line" >> "$t1/AGENTS.md"
-"$ROOT/vendor.sh" --check "$t1" >/dev/null 2>&1
-rc=$?
-if [[ "$rc" -eq 1 ]]; then
-    pass "--check reports drift with exit 1"
-else
-    fail "--check reports drift with exit 1 (got $rc)"
+    fail "removed --check interface is rejected"
 fi
 
-# --- 5. --check: missing/wrong CLAUDE.md symlink exits 1 ---
-"$ROOT/vendor.sh" "$t1" >/dev/null
-rm "$t1/CLAUDE.md"
-"$ROOT/vendor.sh" --check "$t1" >/dev/null 2>&1
-rc=$?
-if [[ "$rc" -eq 1 ]]; then
-    pass "--check missing CLAUDE.md symlink exits 1"
-else
-    fail "--check missing CLAUDE.md symlink exits 1 (got $rc)"
-fi
-ln -sfn AGENTS.md "$t1/CLAUDE.md"
-if "$ROOT/vendor.sh" --check "$t1" >/dev/null 2>&1; then
-    pass "--check restored symlink exits 0"
-else
-    fail "--check restored symlink exits 0"
-fi
-
-# --- 6. every standard file carries a version stamp in its first 5 lines ---
+# --- 5. every standard file carries a version stamp in its first 5 lines ---
 stamp_ok=1
 for f in "$ROOT"/AGENTS.md "$ROOT"/SKILL.md "$ROOT"/README.md "$ROOT"/references/*.md "$ROOT"/agents/*.md; do
     if ! head -5 "$f" | grep -q 'standard_version:'; then

@@ -29,23 +29,20 @@ done < <(grep -rho 'research-repo-standard/blob/main/[A-Za-z0-9/._-]*' \
          | sed 's|research-repo-standard/blob/main/||' | sort -u)
 (( urls_ok )) && pass "GitHub blob URLs resolve to repository files"
 
-# --- 3. vendor.sh --check exit codes match bootstrap.md documentation ---
-tmp="$(mktemp -d)"
-trap 'rm -rf "$tmp"' EXIT
-mkdir "$tmp/empty"
-"$ROOT/vendor.sh" --check "$tmp/empty" >/dev/null 2>&1
-rc=$?
-if [[ "$rc" -eq 2 ]]; then
-    pass "--check with no AGENTS.md exits 2 as documented"
+# --- 3. host adapters are documented by the prerequisite owner ---
+if grep -qs 'adapters/claude-code\.sh' "$ROOT/references/prerequisites.md" \
+    && grep -qs 'adapters/codex\.sh' "$ROOT/references/prerequisites.md"; then
+    pass "host adapters are documented by the prerequisite owner"
 else
-    fail "--check with no AGENTS.md exits 2 as documented (got $rc)"
+    fail "host adapters are documented by the prerequisite owner"
 fi
 
-# --- 4. canonical code-simplifier profile exists where AGENTS.md points ---
-if [[ -f "$ROOT/agents/code-simplifier.md" ]]; then
-    pass "canonical code-simplifier profile present"
+# --- 4. portable simplifier profile is routed from AGENTS.md ---
+if grep -qs 'agents/code-simplifier\.md' "$ROOT/AGENTS.md" \
+    && [[ -f "$ROOT/agents/code-simplifier.md" ]]; then
+    pass "portable simplifier profile is routed from AGENTS.md"
 else
-    fail "canonical code-simplifier profile present"
+    fail "portable simplifier profile is routed from AGENTS.md"
 fi
 
 # --- 5. removed generated documents are not prescribed by the standard ---
