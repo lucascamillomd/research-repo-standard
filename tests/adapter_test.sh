@@ -23,21 +23,27 @@ else
 fi
 
 claude_profile="$target/.claude/agents/code-simplifier.md"
-claude_expected="$tmp/claude-expected.md"
-{
-    cat <<'EOF'
----
-name: code-simplifier
-description: Simplifies and refines code for clarity, consistency, and maintainability while preserving all functionality. Focuses on recently modified code unless instructed otherwise.
----
-EOF
+claude_frontmatter_keys="$(
     awk '
-        delimiters < 2 && /^---$/ { delimiters++; next }
-        delimiters >= 2 { print }
-    ' "$ROOT/agents/code-simplifier.md"
-} > "$claude_expected"
-if cmp -s "$claude_expected" "$claude_profile" \
-    && ! grep -Eq '^model:' "$claude_profile"; then
+        NR == 1 && /^---$/ { in_frontmatter = 1; next }
+        in_frontmatter && /^---$/ { exit }
+        in_frontmatter && /^[[:alnum:]_-]+:/ {
+            key = $0
+            sub(/:.*/, "", key)
+            print key
+        }
+    ' "$claude_profile" | sort
+)"
+awk '
+    delimiters < 2 && /^---$/ { delimiters++; next }
+    delimiters >= 2 { print }
+' "$ROOT/agents/code-simplifier.md" > "$tmp/canonical-simplifier-body"
+awk '
+    delimiters < 2 && /^---$/ { delimiters++; next }
+    delimiters >= 2 { print }
+' "$claude_profile" > "$tmp/claude-simplifier-body"
+if [[ "$claude_frontmatter_keys" == $'description\nname' ]] \
+    && cmp -s "$tmp/canonical-simplifier-body" "$tmp/claude-simplifier-body"; then
     pass "Claude adapter installs provider-neutral simplifier profile"
 else
     fail "Claude adapter installs provider-neutral simplifier profile"
