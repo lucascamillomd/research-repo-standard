@@ -48,6 +48,25 @@ else
     fail "canonical code-simplifier profile present"
 fi
 
+# --- 5. removed generated documents are not prescribed by the standard ---
+removed_docs_ok=1
+for removed in PIPELINE DATA DECISIONS METHODS; do
+    if grep -Rqs "docs/${removed}\.md" "$ROOT/AGENTS.md" "$ROOT/SKILL.md" "$ROOT/references"; then
+        fail "removed generated document is still prescribed: docs/${removed}.md"
+        removed_docs_ok=0
+    fi
+done
+(( removed_docs_ok )) && pass "removed generated documents are not prescribed"
+
+# --- 6. consequential decisions use the lab notebook ---
+if grep -qs 'docs/lab_notebook\.md' "$ROOT/AGENTS.md" \
+    && grep -Rqs 'docs/lab_notebook\.md' "$ROOT/references/analysis.md" \
+        "$ROOT/references/configuration.md" "$ROOT/references/prerequisites.md"; then
+    pass "lab notebook owns consequential decision records"
+else
+    fail "lab notebook owns consequential decision records"
+fi
+
 # --- final ---
 if (( FAILS > 0 )); then
     echo "$FAILS test(s) failed"
