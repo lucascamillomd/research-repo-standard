@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.11 -->
+<!-- standard_version: 2026.08.12 -->
 <!-- Source: https://github.com/lucascamillomd/research-repo-standard -->
 
 # Reproducible Research Repository Standard
@@ -103,6 +103,13 @@ or contracts, stop and reopen as a full gate before continuing.
 are not modifications. Executing an already approved workflow solely to regenerate
 its declared outputs does not open a new gate.
 
+A question is a request for an answer, not for changes. "How hard would it be",
+"what are your thoughts", "why does", "should we", "is it possible", "can X do Y" —
+these ask rather than instruct, and they are answered with nothing edited. When the
+answer implies a change that is obvious and trivial, still answer first, then offer
+it and wait to be asked. Editing in place of answering costs the user the chance to
+disagree with a premise they were still testing.
+
 | Request | Path |
 |---|---|
 | Fix a typo in README | light |
@@ -111,6 +118,7 @@ its declared outputs does not open a new gate.
 | Change an inclusion threshold in `config/analysis.yaml` | full |
 | Rerun `make figures` unchanged | no gate |
 | Explain what a pipeline stage does | no gate |
+| Ask how hard it would be to swap the model | no gate |
 
 During repository bootstrap, the `superpowers:brainstorming` invocation for the
 repository design is this same full gate, not an additional gate. Before
@@ -181,6 +189,8 @@ blocks you, stop and say so rather than working around it.
 7. Tests cover scientific invariants and contracts, not only successful execution.
 8. Every plot uses Python and the full `nature-figure` workflow.
 9. Distinguish computational success from scientific validity.
+10. The science is complex; the repository should not add to it. Finding the simplest
+    honest way to solve a problem is part of solving it, not a finishing touch.
 
 ## Repository layout
 
@@ -359,6 +369,13 @@ elsewhere.
 
 ## Code
 
+Build what the current claim requires, and keep looking for the version of the
+problem that needs less machinery — a reformulation that removes a stage, a data
+shape that removes a special case. A parameter with one caller, a strategy
+interface with one implementation, or a configuration knob no analysis sets is scope
+taken on speculation, and it has to be documented, tested, and reproduced like
+everything else. Generalize when the second real case arrives.
+
 Scripts orchestrate; they do not implement. Anything worth testing lives in `src/`
 and is imported. A stage script never imports another stage script — if two stages
 need the same logic, it belongs in the package. Scripts within a stage should be
@@ -412,6 +429,14 @@ docstrings that explain scientific meaning, units, ranges, array shapes, datafra
 grain and required columns, missing-value behaviour, side effects, and failure
 conditions. Express types in annotations, not prose.
 
+Comments carry what the code cannot: why this approach over the obvious one, which
+paper or protocol a constant comes from, what a caller must know before reaching for
+a function. They are not a line-by-line narration of syntax. A comment that no longer
+matches the code beneath it is a defect, and in scientific code it is the kind that
+survives review — a reader trusts a stated unit, cohort, or assumption over the
+arithmetic. Update comments and docstrings in the same change as the code they
+describe, or delete them.
+
 Ruff formats and lints; ty type-checks; pre-commit runs the fast hooks. In an
 established repository `pyproject.toml` and `.pre-commit-config.yaml` are the source
 of truth for their configuration — read them rather than assuming.
@@ -450,6 +475,15 @@ and rendering contracts, known analytical examples, scientific invariants and
 boundary cases, deterministic or golden-file outputs, and a small end-to-end smoke
 test.
 
+A test earns its place by naming one behaviour it would catch breaking. Prefer few
+sharp tests over many shallow ones: one end-to-end smoke test tells you the wiring
+holds and a second one tells you nothing, and a suite padded with tests that only
+assert code ran hides the handful that assert science. When behaviour is deleted,
+delete its tests with it — a test kept to guard a removed feature pins an absence
+in place and misleads the next reader about what the pipeline does. A test that
+reproduces a real defect is always worth writing; a test written to raise a number
+is not.
+
 Coverage is a smoke detector, not a goal. What must be tested directly, whatever the
 percentage says: scientific transformations, estimands, exclusion rules, validation,
 and output contracts. A rising coverage number over untested science is a worse state
@@ -479,8 +513,17 @@ tests, and `git status`. Identify the scientific claim, the pipeline stage, the 
 and outputs, and which contracts are affected. Surface assumptions that materially
 affect scientific meaning, interfaces, data safety, or scope. Preserve unrelated work.
 
-While implementing: keep the change narrow and reuse what exists. Validate inputs
-before expensive computation. Update tests and documentation in the same change.
+Destruction is never implied. Deleting files, dropping columns or rows, overwriting
+existing results, resetting or rewriting Git history, and force-pushing are things
+the user asks for explicitly; a request to change something is not a request to
+remove what was there. When a task appears to need one, say what would be destroyed
+and whether it is recoverable, then wait.
+
+While implementing: keep the change narrow and reuse what exists. If a materially
+better approach exists — a simpler design, a sounder estimand, a cheaper pipeline —
+propose it at the gate rather than building it unasked; the bold idea is welcome,
+the silent substitution is a scope change. Validate inputs before expensive
+computation. Update tests and documentation in the same change.
 
 When a modification changed code under `src/`, `scripts/`, or `tests/`, run a
 code-simplifier subagent over the changed code before declaring completion. It
