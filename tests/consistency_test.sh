@@ -45,7 +45,30 @@ else
     fail "portable simplifier profile is routed from AGENTS.md"
 fi
 
-# --- 5. removed generated documents are not prescribed by the standard ---
+# --- 5. simplifier profile and policy are provider neutral ---
+profile_ok=1
+if grep -Eq '^model:' "$ROOT/agents/code-simplifier.md"; then
+    fail "canonical simplifier profile must not select a provider model"
+    profile_ok=0
+fi
+if grep -Eq '\.claude/agents|Claude Code|Anthropic|Codex|OpenAI' "$ROOT/agents/code-simplifier.md"; then
+    fail "canonical simplifier profile must be host neutral"
+    profile_ok=0
+fi
+(( profile_ok )) && pass "canonical simplifier profile is provider neutral"
+
+policy_ok=1
+if ! grep -qs 'independent code-simplification pass' "$ROOT/AGENTS.md"; then
+    fail "AGENTS.md must require an independent code-simplification pass"
+    policy_ok=0
+fi
+if grep -Eq '\.claude/agents/' "$ROOT/AGENTS.md"; then
+    fail "AGENTS.md must resolve the simplifier through the current host adapter"
+    policy_ok=0
+fi
+(( policy_ok )) && pass "AGENTS.md routes an independent host-neutral simplification pass"
+
+# --- 6. removed generated documents are not prescribed by the standard ---
 removed_docs_ok=1
 for removed in PIPELINE DATA DECISIONS METHODS; do
     if grep -Rqs "docs/${removed}\.md" "$ROOT/AGENTS.md" "$ROOT/SKILL.md" "$ROOT/references"; then
@@ -55,7 +78,7 @@ for removed in PIPELINE DATA DECISIONS METHODS; do
 done
 (( removed_docs_ok )) && pass "removed generated documents are not prescribed"
 
-# --- 6. consequential decisions use the lab notebook ---
+# --- 7. consequential decisions use the lab notebook ---
 if grep -qs 'docs/lab_notebook\.md' "$ROOT/AGENTS.md" \
     && grep -Rqs 'docs/lab_notebook\.md' "$ROOT/references/analysis.md" \
         "$ROOT/references/configuration.md" "$ROOT/references/prerequisites.md"; then

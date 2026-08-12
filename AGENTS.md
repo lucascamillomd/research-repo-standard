@@ -405,14 +405,14 @@ propose it at the gate rather than building it unasked; the bold idea is welcome
 the silent substitution is a scope change. Validate inputs before expensive
 computation. Update tests and documentation in the same change.
 
-When a modification changed code under `src/`, `scripts/`, or `tests/`, run a
-code-simplifier subagent over the changed code before declaring completion. It
-applies the profile at `.claude/agents/code-simplifier.md` — canonical copy in the
-`research-repo-standard` skill's `agents/` directory, or
-<https://github.com/lucascamillomd/research-repo-standard/blob/main/agents/code-simplifier.md>
-when the local file is absent — preserves behavior exactly, and its edits are
-verified by re-running the covering tests. The simplifier's own edits do not
-trigger another pass. Documentation- and configuration-only changes are exempt.
+When a modification changed code under `src/`, `scripts/`, or `tests/`, run an
+independent code-simplification pass before declaring completion. The delegated review
+agent applies the canonical `agents/code-simplifier.md` profile installed or resolved
+through the current host adapter, preserves behavior exactly, and does not implement
+new requirements. Re-run the covering tests after any simplifier edit. The simplifier's
+own edits do not trigger another pass. Documentation- and configuration-only changes
+are exempt. If the host cannot launch an independent review agent or resolve the
+canonical profile, report the blocker instead of substituting an unreviewed self-pass.
 
 Before declaring completion: run the checks the change warrants — format, lint,
 typecheck, test, and the verification gates — then inspect the actual generated
