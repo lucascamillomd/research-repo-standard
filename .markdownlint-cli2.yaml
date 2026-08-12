@@ -1,0 +1,12 @@
+config:
+  default: true
+  MD013: false
+  MD033: false
+globs:
+  - "**/*.md"
+ignores:
+  - ".git/**"
+  - ".claude/worktrees/**"
+  - ".remember/**"
+  - ".superpowers/**"
+  - "node_modules/**"

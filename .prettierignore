@@ -1,0 +1,5 @@
+.git/
+.claude/worktrees/
+.remember/
+.superpowers/
+node_modules/
