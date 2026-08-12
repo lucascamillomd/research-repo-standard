@@ -128,6 +128,49 @@ else
     printf '%s\n' "$drift_matches"
 fi
 
+# --- 12. detailed figure naming has one canonical owner ---
+figure_owner_ok=1
+if grep -Fqs 'mf1_{short_descriptive_name}' "$ROOT/references/figures.md" \
+    && grep -Fqs 'edf1_{short_descriptive_name}' "$ROOT/references/figures.md" \
+    && grep -Fqs 'svg/mf1_hazard_ratio_distribution.svg' "$ROOT/references/figures.md" \
+    && grep -Fqs 'pdf/mf1_hazard_ratio_distribution.pdf' "$ROOT/references/figures.md" \
+    && grep -Fqs 'tiff/mf1_hazard_ratio_distribution.tiff' "$ROOT/references/figures.md" \
+    && grep -Fqs 'png/mf1_hazard_ratio_distribution.png' "$ROOT/references/figures.md" \
+    && grep -Fqs 'mf1_hazard_ratio_distribution.csv' "$ROOT/references/figures.md"; then
+    pass "figure reference owns detailed atomic asset naming"
+else
+    fail "figure reference must own detailed atomic asset naming and examples"
+    figure_owner_ok=0
+fi
+if grep -Fqs 'main_figure_1' "$ROOT/AGENTS.md" \
+    && grep -Fqs 'extended_data_figure_2' "$ROOT/AGENTS.md" \
+    && ! grep -Eq 'mf1_hazard_ratio_distribution|edf1_\{short_descriptive_name\}|\{svg,pdf,tiff,png\}' "$ROOT/AGENTS.md"; then
+    pass "AGENTS.md keeps only general publication identifiers"
+else
+    fail "AGENTS.md must keep general identifiers without detailed figure asset grammar"
+    figure_owner_ok=0
+fi
+
+# --- 13. domain references declare the policy/procedure boundary ---
+domain_owners_ok=1
+for reference in configuration data analysis; do
+    if grep -Fqs '`AGENTS.md` owns the normative portable policy' "$ROOT/references/$reference.md" \
+        && grep -Fqs 'procedural expansion' "$ROOT/references/$reference.md"; then
+        pass "$reference reference declares normative policy and procedural ownership"
+    else
+        fail "$reference reference must identify AGENTS.md as policy owner and itself as procedural expansion"
+        domain_owners_ok=0
+    fi
+done
+
+# --- 14. simplifier profile delegates naming and configuration policy ---
+if ! grep -Eq 'config/analysis\.yaml|random_seed:|test_[a-z]|datasets\.yaml' \
+    "$ROOT/agents/code-simplifier.md"; then
+    pass "simplifier profile contains no independent configuration or test-naming grammar"
+else
+    fail "simplifier profile must delegate configuration and test-naming grammar to repository authorities"
+fi
+
 # --- final ---
 if (( FAILS > 0 )); then
     echo "$FAILS test(s) failed"

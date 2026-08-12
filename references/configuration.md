@@ -2,6 +2,10 @@
 
 # Reference: configuration ownership contract
 
+`AGENTS.md` owns the normative portable policy.
+This reference is its procedural expansion for classifying, loading, migrating, and
+testing configuration.
+
 ## Ownership decision
 
 Classify each stable researcher-editable value in this order:

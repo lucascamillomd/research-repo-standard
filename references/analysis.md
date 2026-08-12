@@ -2,8 +2,9 @@
 
 # Reference: scientific analysis contract
 
-Read when planning or reporting a confirmatory analysis. `AGENTS.md` states the rules;
-this expands the templates.
+`AGENTS.md` owns the normative portable policy.
+This reference is its procedural expansion for planning, executing, and reporting
+confirmatory analyses.
 
 ## Analysis plan
 
@@ -82,7 +83,7 @@ per individual judgment, and during bootstrap the single design-stage critique i
 that batch. The critique may run concurrently with work that does not depend on the
 judgment under review; only dependent work waits for its findings.
 
-A separate review subagent, independent of the implementing agent, applies
+An independent review agent, separate from the implementing agent, applies
 `scientific-critical-thinking` (KDense
 `k-dense-ai/scientific-agent-skills`) to the proposed approach and the relevant
 repository context, and returns findings **without implementing the task**. The
@@ -96,7 +97,7 @@ require a critique unless they introduce scientific judgment.
 `scientific-critical-thinking` is a hard prerequisite scoped to critique-triggering
 work. If the skill is missing, cannot be resolved, or cannot be invoked, stop the
 work that meets a critique trigger and report the exact blocker; file-changing work
-outside the critique triggers may continue. If the skill resolves but an independent review subagent is unavailable
+outside the critique triggers may continue. If the skill resolves but an independent review agent is unavailable
 when scientific judgment is required, stop before deciding or implementing the
 dependent judgment and report the exact blocker. Only work that depends on that
 judgment is blocked; unrelated work may continue.

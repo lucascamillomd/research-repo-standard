@@ -2,8 +2,10 @@
 
 # Reference: plot and figure contract
 
-Read before writing any plotting code, and again during QA. `AGENTS.md` states the
-rules; this expands the contract template and the QA checklist.
+`AGENTS.md` owns the normative portable figure policy; this reference is its procedural
+expansion and the sole owner of detailed atomic asset naming, export paths, assembly
+conventions, the contract template, and the QA checklist. Read it before planning a
+figure, writing plotting code, modifying figure outputs, and performing QA.
 
 ## Scope
 
@@ -67,12 +69,14 @@ atomic asset names or renders.
 
 ## Atomic panels and source data
 
+Publication figures use identifiers such as `main_figure_1` and
+`extended_data_figure_1`; their atomic assets use the corresponding deterministic
+semantic stems `mf1_{short_descriptive_name}` and `edf1_{short_descriptive_name}`.
 Each panel has an explicit function or specification, is independently reproducible,
-reads a declared validated input, uses deterministic semantic naming
-(`mf1_{short_descriptive_name}`, `edf1_{short_descriptive_name}`), omits manuscript
-panel letters from both filename and rendered plot, exposes the statistics shown, maps
-to a source-data file, and exports without depending on a previously mutated plotting
-session.
+reads a declared validated input, omits manuscript panel letters from both filename
+and rendered plot, exposes the statistics shown, maps to a source-data file, and
+exports without depending on a previously mutated plotting session. Use the same
+atomic stem for SVG, PDF, TIFF, PNG, and the panel's source-data file.
 
 ```text
 results/

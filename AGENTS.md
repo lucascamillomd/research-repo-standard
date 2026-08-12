@@ -146,7 +146,7 @@ blocks you, stop and say so rather than working around it.
 │   └── lab_notebook.md             # append-only chronology and decision record
 ├── logs/                           # gitignored
 ├── results/
-│   ├── figures/<figure_id>/{svg,pdf,tiff,png}/
+│   ├── figures/<figure_id>/             # editable and preview exports
 │   ├── source_data/<figure_id>/
 │   ├── tables/
 │   └── reports/
@@ -199,7 +199,9 @@ machine-readable identifiers; human-readable titles and aliases go in
 `config/datasets.yaml`.
 
 Publication artifacts use explicit identifiers: `main_figure_1`,
-`extended_data_figure_2`, `main_table_1`, `supplementary_table_3`.
+`extended_data_figure_2`, `main_table_1`, `supplementary_table_3`. Detailed atomic
+figure-asset and source-data naming is defined by the figure reference and is loaded
+before figure work.
 
 ## Data
 
@@ -247,22 +249,16 @@ scientific judgment and report the blocker.
 Every plot — exploratory, diagnostic, analytical, supplementary, or manuscript-bound
 — uses the `nature-figure` skill, is written in Python, is implemented as importable
 functions under `src/<package_name>/figures/`, has traceable source data, and exports
-all four formats: editable SVG, editable PDF, 600 dpi TIFF, PNG preview. Each format
-lives in its own extension-named directory under `results/figures/<figure_id>/`.
+editable SVG and PDF, 600 dpi TIFF, and a PNG preview.
 
 Consult the canonical `references/figures.md` procedure before planning a figure,
-writing plotting code, or modifying figure outputs, and record the contract in
-`docs/FIGURE_CONTRACT.md` first. Never use R or another language to render a preview,
-fallback, or substitute plot. If `nature-figure`, Python, or a required Python
+writing plotting code, modifying figure outputs, or performing QA, and record the
+contract in `docs/FIGURE_CONTRACT.md` first. That procedure owns atomic asset naming,
+export paths, and assembly conventions. Never use R or another language to render a
+preview, fallback, or substitute plot. If `nature-figure`, Python, or a required Python
 dependency is unavailable, stop before plotting and report the exact blocker rather
-than rendering something else.
-
-Atomic figure assets carry a semantic name, never a panel letter. Panel letters are
-layout metadata applied at assembly and must never rename or alter an underlying
-asset. The detailed naming grammar lives in `references/figures.md`.
-
-Consult `references/figures.md` again during figure QA and open the exported SVG; a
-successful `savefig` call is not evidence of a correct export.
+than rendering something else. Open the exported SVG during QA; a successful `savefig`
+call is not evidence of a correct export.
 
 ## Workflow interface
 

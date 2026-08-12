@@ -2,8 +2,9 @@
 
 # Reference: data contract
 
-Read when registering a dataset, defining a schema, or writing validation.
-`AGENTS.md` states the rules; this expands the mechanics.
+`AGENTS.md` owns the normative portable policy.
+This reference is its procedural expansion for registering datasets, defining schemas,
+and writing validation.
 
 ## Directory semantics
 
