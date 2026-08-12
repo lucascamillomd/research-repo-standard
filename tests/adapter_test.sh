@@ -29,9 +29,11 @@ else
     fail "Claude adapter installs provider-neutral simplifier profile"
 fi
 
+claude_profile="$target/.claude/agents/code-simplifier.md"
+claude_before="$(cksum "$claude_profile")"
 "$ROOT/adapters/claude-code.sh" "$target" >/dev/null
 if [[ "$(readlink "$target/CLAUDE.md" 2>/dev/null || true)" == "AGENTS.md" ]] \
-    && [[ -f "$target/.claude/agents/code-simplifier.md" ]]; then
+    && [[ "$(cksum "$claude_profile")" == "$claude_before" ]]; then
     pass "Claude adapter is idempotent"
 else
     fail "Claude adapter is idempotent"
@@ -46,14 +48,16 @@ if [[ -f "$codex_profile" ]] \
     && grep -q 'agents/code-simplifier\.md' "$codex_profile" \
     && [[ -f "$target/agents/code-simplifier.md" ]] \
     && [[ ! -e "$target/CODEX.md" ]] \
-    && ! grep -Eq '^[[:space:]]*(model|model_reasoning_effort)[[:space:]]*=' "$codex_profile"; then
+    && ! grep -Eq '^[[:space:]]*(model|model_reasoning_effort|sandbox_mode|mcp_servers|skills\.config)[[:space:]]*=' "$codex_profile"; then
     pass "Codex adapter installs provider-neutral simplifier profile"
 else
     fail "Codex adapter installs provider-neutral simplifier profile"
 fi
 
+codex_before="$(cksum "$codex_profile" "$target/agents/code-simplifier.md")"
 "$ROOT/adapters/codex.sh" "$target" >/dev/null
-if [[ -f "$codex_profile" ]] && [[ ! -e "$target/CODEX.md" ]]; then
+if [[ "$(cksum "$codex_profile" "$target/agents/code-simplifier.md")" == "$codex_before" ]] \
+    && [[ ! -e "$target/CODEX.md" ]]; then
     pass "Codex adapter is idempotent"
 else
     fail "Codex adapter is idempotent"
