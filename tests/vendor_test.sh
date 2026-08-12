@@ -101,9 +101,13 @@ args=("$@")
 count=${#args[@]}
 source=${args[$((count - 2))]}
 destination=${args[$((count - 1))]}
-source_parent="$(cd "$(dirname "$source")/.." && pwd -P)"
+source_dir="$(cd "$(dirname "$source")" && pwd -P)"
 destination_dir="$(cd "$(dirname "$destination")" && pwd -P)"
-printf '%s\n%s\n%s\n' "$source_parent" "$destination_dir" "$(basename "$destination")" > "$MV_LOG"
+probe="$destination_dir/.vendor-same-filesystem-probe"
+ln "$source" "$probe"
+rm "$probe"
+printf '%s\n%s\n%s\n' \
+    "$source_dir" "$destination_dir" "$(basename "$destination")" > "$MV_LOG"
 exec "$REAL_MV" "$@"
 EOF
 chmod +x "$tmp/bin/mv"
@@ -111,12 +115,16 @@ t5="$tmp/staging-target"; mkdir "$t5"
 MV_LOG="$tmp/mv.log" REAL_MV="$real_mv" PATH="$tmp/bin:$PATH" \
     "$ROOT/vendor.sh" "$t5" >/dev/null
 {
-    IFS= read -r source_parent
+    IFS= read -r source_dir
     IFS= read -r destination_dir
     IFS= read -r destination_name
 } < "$tmp/mv.log"
 target_dir="$(cd "$t5" && pwd -P)"
-if [[ "$source_parent" == "$target_dir" ]] \
+case "$source_dir" in
+    "$target_dir"|"$target_dir"/*) source_inside_target=1 ;;
+    *) source_inside_target=0 ;;
+esac
+if (( source_inside_target )) \
     && [[ "$destination_dir" == "$target_dir" ]] \
     && [[ "$destination_name" == "AGENTS.md" ]]; then
     pass "vendor stages beside the destination"
