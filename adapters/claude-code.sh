@@ -20,6 +20,18 @@ if [[ ! -f "$TARGET/AGENTS.md" ]]; then
     exit 1
 fi
 
+if [[ -L "$TARGET/CLAUDE.md" ]]; then
+    if [[ "$(readlink "$TARGET/CLAUDE.md")" != "AGENTS.md" ]]; then
+        echo "$(basename "$0"): refusing to replace existing CLAUDE.md symlink" >&2
+        exit 1
+    fi
+elif [[ -e "$TARGET/CLAUDE.md" ]]; then
+    echo "$(basename "$0"): refusing to replace existing CLAUDE.md" >&2
+    exit 1
+else
+    ln -s AGENTS.md "$TARGET/CLAUDE.md"
+fi
+
 mkdir -p "$TARGET/.claude/agents"
 {
     cat <<'EOF'
@@ -33,5 +45,4 @@ EOF
         delimiters >= 2 { print }
     ' "$SRC/agents/code-simplifier.md"
 } > "$TARGET/.claude/agents/code-simplifier.md"
-ln -sfn AGENTS.md "$TARGET/CLAUDE.md"
 printf 'installed Claude Code adapter -> %s\n' "$TARGET"

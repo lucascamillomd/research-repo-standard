@@ -53,9 +53,35 @@ claude_before="$(cksum "$claude_profile")"
 "$ROOT/adapters/claude-code.sh" "$target" >/dev/null
 if [[ "$(readlink "$target/CLAUDE.md" 2>/dev/null || true)" == "AGENTS.md" ]] \
     && [[ "$(cksum "$claude_profile")" == "$claude_before" ]]; then
-    pass "Claude adapter is idempotent"
+    pass "Claude adapter accepts the exact policy alias idempotently"
 else
-    fail "Claude adapter is idempotent"
+    fail "Claude adapter accepts the exact policy alias idempotently"
+fi
+
+claude_file_conflict="$tmp/claude-file-conflict"
+mkdir "$claude_file_conflict"
+cp "$target/AGENTS.md" "$claude_file_conflict/AGENTS.md"
+printf 'custom Claude instructions\n' > "$claude_file_conflict/CLAUDE.md"
+if claude_file_error="$("$ROOT/adapters/claude-code.sh" "$claude_file_conflict" 2>&1)"; then
+    fail "Claude adapter rejects a conflicting policy file"
+elif grep -q 'refusing to replace existing CLAUDE.md' <<<"$claude_file_error" \
+    && [[ "$(cat "$claude_file_conflict/CLAUDE.md")" == "custom Claude instructions" ]]; then
+    pass "Claude adapter preserves a conflicting policy file"
+else
+    fail "Claude adapter preserves a conflicting policy file"
+fi
+
+claude_link_conflict="$tmp/claude-link-conflict"
+mkdir "$claude_link_conflict"
+cp "$target/AGENTS.md" "$claude_link_conflict/AGENTS.md"
+ln -s OTHER.md "$claude_link_conflict/CLAUDE.md"
+if claude_link_error="$("$ROOT/adapters/claude-code.sh" "$claude_link_conflict" 2>&1)"; then
+    fail "Claude adapter rejects a conflicting policy symlink"
+elif grep -q 'refusing to replace existing CLAUDE.md symlink' <<<"$claude_link_error" \
+    && [[ "$(readlink "$claude_link_conflict/CLAUDE.md")" == "OTHER.md" ]]; then
+    pass "Claude adapter preserves a conflicting policy symlink"
+else
+    fail "Claude adapter preserves a conflicting policy symlink"
 fi
 
 "$ROOT/adapters/codex.sh" "$target" >/dev/null
