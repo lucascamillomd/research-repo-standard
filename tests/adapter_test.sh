@@ -23,17 +23,14 @@ else
 fi
 
 claude_profile="$target/.claude/agents/code-simplifier.md"
-claude_frontmatter_keys="$(
+claude_frontmatter="$(
     awk '
         NR == 1 && /^---$/ { in_frontmatter = 1; next }
         in_frontmatter && /^---$/ { exit }
-        in_frontmatter && /^[[:alnum:]_-]+:/ {
-            key = $0
-            sub(/:.*/, "", key)
-            print key
-        }
-    ' "$claude_profile" | sort
+        in_frontmatter { print }
+    ' "$claude_profile"
 )"
+expected_claude_frontmatter=$'name: code-simplifier\ndescription: Simplifies and refines code for clarity, consistency, and maintainability while preserving all functionality. Focuses on recently modified code unless instructed otherwise.'
 awk '
     delimiters < 2 && /^---$/ { delimiters++; next }
     delimiters >= 2 { print }
@@ -42,7 +39,7 @@ awk '
     delimiters < 2 && /^---$/ { delimiters++; next }
     delimiters >= 2 { print }
 ' "$claude_profile" > "$tmp/claude-simplifier-body"
-if [[ "$claude_frontmatter_keys" == $'description\nname' ]] \
+if [[ "$claude_frontmatter" == "$expected_claude_frontmatter" ]] \
     && cmp -s "$tmp/canonical-simplifier-body" "$tmp/claude-simplifier-body"; then
     pass "Claude adapter installs provider-neutral simplifier profile"
 else
