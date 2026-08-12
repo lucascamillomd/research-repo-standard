@@ -22,14 +22,27 @@ else
     fail "Claude adapter creates relative policy alias"
 fi
 
-if [[ -f "$target/.claude/agents/code-simplifier.md" ]] \
-    && ! grep -Eq '^model:' "$target/.claude/agents/code-simplifier.md"; then
+claude_profile="$target/.claude/agents/code-simplifier.md"
+claude_expected="$tmp/claude-expected.md"
+{
+    cat <<'EOF'
+---
+name: code-simplifier
+description: Simplifies and refines code for clarity, consistency, and maintainability while preserving all functionality. Focuses on recently modified code unless instructed otherwise.
+---
+EOF
+    awk '
+        delimiters < 2 && /^---$/ { delimiters++; next }
+        delimiters >= 2 { print }
+    ' "$ROOT/agents/code-simplifier.md"
+} > "$claude_expected"
+if cmp -s "$claude_expected" "$claude_profile" \
+    && ! grep -Eq '^model:' "$claude_profile"; then
     pass "Claude adapter installs provider-neutral simplifier profile"
 else
     fail "Claude adapter installs provider-neutral simplifier profile"
 fi
 
-claude_profile="$target/.claude/agents/code-simplifier.md"
 claude_before="$(cksum "$claude_profile")"
 "$ROOT/adapters/claude-code.sh" "$target" >/dev/null
 if [[ "$(readlink "$target/CLAUDE.md" 2>/dev/null || true)" == "AGENTS.md" ]] \
@@ -46,7 +59,7 @@ if [[ -f "$codex_profile" ]] \
     && grep -Eq '^[[:space:]]*description[[:space:]]*=' "$codex_profile" \
     && grep -Eq '^[[:space:]]*developer_instructions[[:space:]]*=' "$codex_profile" \
     && grep -q 'agents/code-simplifier\.md' "$codex_profile" \
-    && [[ -f "$target/agents/code-simplifier.md" ]] \
+    && cmp -s "$ROOT/agents/code-simplifier.md" "$target/agents/code-simplifier.md" \
     && [[ ! -e "$target/CODEX.md" ]] \
     && ! grep -Eq '^[[:space:]]*(model|model_reasoning_effort|sandbox_mode|mcp_servers|skills\.config)[[:space:]]*=' "$codex_profile"; then
     pass "Codex adapter installs provider-neutral simplifier profile"
