@@ -11,11 +11,11 @@ Operating standard for repositories that support scientific analyses and papers.
 *Per-repository section — the only part expected to differ from the source. Replace it.*
 
 <!-- What question does this repository answer, and what claim does it support? -->
-<!-- Where should a reader start: README, docs/PIPELINE.md, make help. -->
+<!-- Where should a reader start: README or make help. -->
 
 ## Using this standard
 
-This file is always in context and is self-sufficient for every rule below. Deeper
+Deeper
 reference material is deliberately **not** vendored here — it lives in the
 `research-repo-standard` skill. Invoke that skill by name when you need:
 
@@ -27,114 +27,44 @@ reference material is deliberately **not** vendored here — it lives in the
 | the analysis contract | planning or reporting a confirmatory analysis |
 | the figure contract | the contract template and the full QA checklist |
 
-Do not look for a `references/` directory in this repository; there isn't one. If the
-skill is unavailable — another agent, a collaborator's checkout — this file still
-governs. Say what you could not consult rather than inventing the detail.
-
-In an established repository the working files are the source of truth:
-`pyproject.toml` for lint and type configuration, `make help` for the workflow
-interface, `config/datasets.yaml` for provenance, existing `config/analysis.yaml` and
-`config/runtime.yaml` (when present) for project settings, and `docs/PIPELINE.md` for
-the stage graph. This standard states what must be true; it does not restate their
-contents. Where this file and a working file disagree, assume the working file is
-current and this file is stale — say so rather than quietly editing either to match.
-
 Placeholders (`<repo-name>`, `<package_name>`, `<dataset_id>`, `<figure_id>`) are for
 substitution. Never create a path containing angle brackets.
 
 Explicit user instructions, and legal, institutional, journal, and data-use
-requirements, take precedence over everything here. Project-specific scientific
-requirements may refine this standard.
+requirements, take precedence over everything here.
 
 ## Required agent skills
 
-`superpowers:brainstorming`, `scientific-critical-thinking`, and `nature-figure` are
-hard prerequisites, each scoped to the work that depends on it:
+Invoke the skills required by the modification gate and the task-specific
+**Analysis** and **Figures** sections. Verify exact names with the host's native
+resolver as described in the canonical
+[prerequisite contract](https://github.com/lucascamillomd/research-repo-standard/blob/main/references/prerequisites.md);
+file presence alone is insufficient. A missing or unverifiable skill blocks only its
+dependent work. Do not silently install skills, change global agent configuration,
+or substitute another workflow. If scope expands, verify any newly required skill
+before continuing.
 
-- `superpowers:brainstorming` — required before every user-requested modification
-  that will create, edit, move, or delete files; it drives the modification gate
-  itself.
-- `scientific-critical-thinking` — additionally required when the task meets an
-  independent-critique trigger in the Analysis section, and throughout bootstrap.
-- `nature-figure` — additionally required when the task writes or modifies plotting
-  code or figure outputs, and throughout bootstrap.
+Classify every requested file modification into one path; when uncertain, use the
+full gate:
 
-The scoping exists so a missing skill blocks exactly the work that would need it —
-an uninstalled figure skill must not block a documentation fix — while work that
-does need it still fails early, at classification rather than mid-implementation.
-If a task's scope expands to meet a trigger it did not start with, stop at that
-point and verify the newly required skill before continuing.
+- **Full gate:** result-affecting or contract-affecting changes, including scientific
+  decisions, analysis configuration, data contracts, pipeline structure, figures,
+  features, and this standard's rules. Invoke `superpowers:brainstorming`. Do not
+  implement until the approved specification is committed and reviewed and the plan
+  is ready. Direct and delegated implementation inherits the completed gate; reopen
+  it at design if scope expands.
+- **Light path:** mechanical, non-result-affecting changes such as documentation,
+  comments, formatting, behavior-preserving renames or tested refactors, and tests
+  that do not change behavior. State the intent, files, and why the change is
+  non-result-affecting; obtain one confirmation, then implement without specification
+  or plan artifacts. Escalate to the full gate if results, interfaces, or contracts
+  may change.
+- **No gate:** read-only explanation, inspection, diagnosis, status reporting, and
+  regeneration of declared outputs from an already approved workflow. Questions ask
+  for answers, not edits; answer first and wait for an explicit change request.
 
-Verify with the agent host's native skill listing or resolver, confirming exact
-names. A directory or `SKILL.md` file alone is not a pass. If a host has no native
-listing or resolver, the required skills count as unverifiable and unavailable. If
-a required skill is missing or unverifiable, stop before the dependent repository
-mutations and consult the canonical prerequisite contract at
-<https://github.com/lucascamillomd/research-repo-standard/blob/main/references/prerequisites.md>.
-If that reference cannot be reached, report it and remain blocked. Resume only when
-the host resolves the required names. Do not install skills silently, modify global
-agent configuration without the user's authorization, or substitute a generic
-workflow for a missing skill.
-
-Each user-requested modification that creates, edits, moves, or deletes files takes
-one of three paths. The agent classifies the request; when uncertain, use the full
-gate.
-
-**Full gate** — required for any result-affecting or contract-affecting change:
-estimands, inclusion or exclusion rules, statistical methods or models,
-`config/analysis.yaml`, data contracts and schemas, pipeline structure, figures,
-new analyses, new features, and changes to this standard's rules. Invoke
-`superpowers:brainstorming` and open one active gate. After design approval, the
-specification, plan, and approval records may be created under that gate; the
-requested implementation files remain blocked until the specification is committed
-and reviewed by the user and the implementation plan is ready. All direct or
-delegated implementation inherits the completed gate. If the requested scope
-expands, reopen that same gate at design before implementing the new scope.
-
-**Light path** — for mechanical, non-result-affecting changes: documentation and
-typo fixes, comment edits, lint or formatting fixes, renames with no interface
-change, refactors fully covered by existing tests, and added tests that do not
-change behavior. State the intent, the files to be touched, and why the change is
-non-result-affecting; obtain one user confirmation; implement. No specification or
-plan artifacts are created. If the change turns out to affect results, interfaces,
-or contracts, stop and reopen as a full gate before continuing.
-
-**No gate** — read-only explanation, inspection, diagnosis, and status reporting
-are not modifications. Executing an already approved workflow solely to regenerate
-its declared outputs does not open a new gate.
-
-A question is a request for an answer, not for changes. "How hard would it be",
-"what are your thoughts", "why does", "should we", "is it possible", "can X do Y" —
-these ask rather than instruct, and they are answered with nothing edited. When the
-answer implies a change that is obvious and trivial, still answer first, then offer
-it and wait to be asked. Editing in place of answering costs the user the chance to
-disagree with a premise they were still testing.
-
-| Request | Path |
-|---|---|
-| Fix a typo in README | light |
-| Rename a stage directory with no interface change | light |
-| Add a sensitivity analysis | full |
-| Change an inclusion threshold in `config/analysis.yaml` | full |
-| Rerun `make figures` unchanged | no gate |
-| Explain what a pipeline stage does | no gate |
-| Ask how hard it would be to swap the model | no gate |
-
-During repository bootstrap, the `superpowers:brainstorming` invocation for the
-repository design is this same full gate, not an additional gate. Before
-scaffolding, request an independent `scientific-critical-thinking` critique; it
-covers the question, claim, study design, estimand, and major validity risks. Invoke
-`nature-figure` for the figure strategy with Python fixed as the plotting language.
-If no plots are planned, record that outcome in the approved design. While the gate
-is active, only the minimum target-repository initialization needed to store and
-commit the process artifacts is allowed; all remaining scaffolding stays blocked
-until the gate completes.
-
-`scientific-critical-thinking` and `nature-figure` still apply under their
-task-specific Analysis and Figures conditions below.
-
-This is a normative agent instruction, not an operating-system access control. It
-depends on the agent host loading and following this file.
+These are normative agent instructions enforced by the host, not operating-system
+access controls.
 
 ## The floor
 
@@ -150,8 +80,8 @@ blocks you, stop and say so rather than working around it.
 3. **Estimands, inclusion rules, and data contracts change only with authorization**,
    and the change is recorded before results built on it are presented.
 4. **Exploratory never silently becomes confirmatory.** Analyses are labelled. Post
-   hoc changes and their rationale are recorded in `docs/DECISIONS.md` or the lab
-   notebook before the result is presented as planned.
+   hoc changes and their rationale are recorded in `docs/lab_notebook.md` before the
+   result is presented as planned.
 5. **No silent complete-case filtering.** Missingness is reported before exclusions
    or imputation. Inclusion and exclusion criteria are code, not prose.
 6. **Seed 42**, propagated explicitly and recorded in configuration, whenever
@@ -161,18 +91,14 @@ blocks you, stop and say so rather than working around it.
 7. **Outputs are written transactionally** — build a temporary artifact, validate it,
    then replace the declared destination. A failed run must not leave output that
    looks complete.
-8. **Do not overstate what was verified.** Passing tests establish implementation
-   behaviour, not scientific truth. Never claim a result is valid because the
-   workflow executed, and never claim reproducibility you have not run.
-9. **No credentials or secret values** in logs, committed files, or `.env.example`.
-10. **Required agent workflows are gates.** `superpowers:brainstorming` must be
+8. **Required agent workflows are gates.** `superpowers:brainstorming` must be
     available before any file-changing user-requested modification;
     `scientific-critical-thinking` and `nature-figure` must be available for the
     work scoped to them in **Required agent skills**. Invocation follows the
     modification-gate, bootstrap, and task-specific conditions in this standard. A
     missing or unverifiable required skill stops the work that depends on it. Do
     not imitate or replace an unavailable skill.
-11. **Configuration has one owner.** Stable scientific and operational settings live
+9. **Configuration has one owner.** Stable scientific and operational settings live
     in versioned YAML, never as hidden Python globals or defaults. Derived internal
     paths stay in `paths.py`; secrets and machine-specific roots stay in environment
     variables. Unknown, missing, or duplicate-owned values fail before computation;
@@ -186,10 +112,8 @@ blocks you, stop and say so rather than working around it.
 4. Numbered stage directories under `scripts/` make execution order visible.
 5. Scripts are thin orchestration entry points, not libraries.
 6. Inputs, parameters, outputs, assumptions, and manual boundaries are explicit.
-7. Tests cover scientific invariants and contracts, not only successful execution.
-8. Every plot uses Python and the full `nature-figure` workflow.
-9. Distinguish computational success from scientific validity.
-10. The science is complex; the repository should not add to it. Finding the simplest
+7. Every plot uses Python and the full `nature-figure` workflow.
+8. The science is complex; the repository should not add to it. Finding the simplest
     honest way to solve a problem is part of solving it, not a finishing touch.
 
 ## Repository layout
@@ -207,8 +131,7 @@ blocks you, stop and say so rather than working around it.
 ├── .pre-commit-config.yaml
 ├── config/
 │   ├── datasets.yaml
-│   ├── analysis.yaml
-│   └── runtime.yaml                  # optional, proven result-equivalent operations
+│   └── analysis.yaml
 ├── data/
 │   ├── raw/<dataset_id>/           # immutable source material, as received
 │   ├── interim/<dataset_id>/       # intermediate, not yet analysis-ready
@@ -219,12 +142,8 @@ blocks you, stop and say so rather than working around it.
 │   └── r/                          # only when R is required
 ├── docs/
 │   ├── ANALYSIS_PLAN.md            # prospective and updated analysis plan
-│   ├── DATA.md                     # datasets, variables, units, schemas, access
-│   ├── DECISIONS.md                # durable decisions with rationale
 │   ├── FIGURE_CONTRACT.md          # contract and QA record for every plot
-│   ├── METHODS.md                  # implementation-level scientific methods
-│   ├── PIPELINE.md                 # stage graph, I/O, runtimes, manual barriers
-│   └── lab_notebook.md             # append-only chronological record
+│   └── lab_notebook.md             # append-only chronology and decision record
 ├── logs/                           # gitignored
 ├── results/
 │   ├── figures/<figure_id>/{svg,pdf,tiff,png}/
@@ -252,19 +171,16 @@ blocks you, stop and say so rather than working around it.
 The top-level layout is a contract. Adding a new top-level directory is a structural
 decision — say so before doing it.
 
-Stage 03 may be renamed to a concrete name (`03_scoring`, `03_modeling`) when that
-describes the project better. Irrelevant stages may be omitted rather than committed
-empty, but the remaining numbering and dependencies must stay legible. Later stages
-depend only on declared earlier-stage artifacts; the full graph lives in
-`docs/PIPELINE.md`.
+`docs/lab_notebook.md` is append-only. Each consequential decision records its date,
+the decision, rationale and evidence, authorization source, and affected analyses,
+configuration, data contracts, figures, or outputs. A correction or reversal appends
+a new entry naming what it supersedes; routine run detail belongs in logs and
+provenance manifests.
 
-No `archive/`, `old/`, or `deprecated/` directories. Git history is the record of
-superseded work; a dead file left on disk will eventually be imported by someone who
-cannot tell it is dead.
-
-No `notebooks/` directory unless the user explicitly revises this standard. Hidden
-execution order defeats diffing, testing, and rerunning; analysis logic belongs in
-`src/` and `scripts/`.
+The stage names and numbers inside `scripts/` are suggestions that can be adapted for
+the project. The Makefile dependency graph is canonical; `make help` exposes the
+workflow, numbered stages show normal order, and the README records the shortest
+reproduction path plus manual or external boundaries.
 
 ## Naming
 
@@ -291,11 +207,9 @@ Publication artifacts use explicit identifiers: `main_figure_1`,
 `processed/` is validated with a defined row grain and schema. `external/` is
 reference material, not study observations.
 
-Nothing durable is stored as pickle — it cannot be read without the exact
-environment that wrote it, and it executes code on load. A durable artifact is
-readable by someone who has only the file. Typed intermediates default to Parquet;
+Typed intermediates default to Parquet;
 publication source data to CSV or TSV, so a reader can open it without a Python
-environment.
+environment. Don't use pickle.
 
 Every dataset is registered in `config/datasets.yaml`. A reader must be able to
 answer, without reading code: what this data is, where it came from, which version,
@@ -319,14 +233,11 @@ data.
 An independent critique is required when defining or changing: an estimand, a study
 design, a statistical method or model choice, inclusion or exclusion rules, a
 missing-data policy, a causal interpretation, or the scope of a claim. One critique
-covers one design or coherent batch of decisions — not one critique per individual
-judgment. A separate subagent applies `scientific-critical-thinking` (KDense
+covers one design or coherent batch of decisions. A separate subagent applies `scientific-critical-thinking` (KDense
 `k-dense-ai/scientific-agent-skills`) and returns findings without implementing
 anything. The critique is advisory; weigh it against the evidence and the task. It
 may run concurrently with work that does not depend on the judgment under review;
-only dependent work waits. Routine plumbing does not need one. A skill is guidance,
-not evidence — validate against primary documentation, known examples, and the
-study design. If the critique skill or a separate review subagent is unavailable,
+only dependent work waits. Routine plumbing does not need one. If the critique skill or a separate review subagent is unavailable,
 stop before making or implementing the scientific judgment and report the blocker.
 
 ## Figures
@@ -347,7 +258,7 @@ Atomic figure assets carry a semantic name, never a panel letter —
 applied at assembly and must never rename or alter an underlying asset. Use the same
 name stem across every export format and its source-data file.
 
-Open the exported SVG and PDF as part of QA; a successful `savefig` call is not
+Open the exported SVG as part of QA; a successful `savefig` call is not
 evidence of a correct export.
 
 ## Workflow interface
@@ -359,22 +270,7 @@ Beyond that a reader must be able to reach quality checks, the analysis, the fig
 the full pipeline, and cleanup — named to fit the project. `make help` is the source
 of truth for what exists, not this file.
 
-`make all` is what a stranger runs first. It must not quietly start a large download
-or an hours-long job. Anything heavy, metered, or long gets its own target and says
-so in `make help`. The cheapest complete path runs from the smallest distributable
-processed checkpoint.
-
-The stage graph has one canonical definition. Do not build a competing workflow graph
-elsewhere.
-
 ## Code
-
-Build what the current claim requires, and keep looking for the version of the
-problem that needs less machinery — a reformulation that removes a stage, a data
-shape that removes a special case. A parameter with one caller, a strategy
-interface with one implementation, or a configuration knob no analysis sets is scope
-taken on speculation, and it has to be documented, tested, and reproduced like
-everything else. Generalize when the second real case arrives.
 
 Scripts orchestrate; they do not implement. Anything worth testing lives in `src/`
 and is imported. A stage script never imports another stage script — if two stages
@@ -383,28 +279,21 @@ independently runnable when their inputs permit.
 
 Each runtime has one job. Python does the science. Shell wires up environments and
 containers and stops there — a transformation written in shell is untested and
-unversioned. Containers exist for runtimes uv cannot manage (R, system libraries);
-wrapping ordinary Python in Docker adds opacity over an environment that is already
-reproducible. R must never generate a plot.
+unversioned. Containers exist for runtimes uv cannot manage (R, system libraries).
 
 Stages report progress through a logger, never `print()` or `cat()`: `loguru` in
 Python, the `logger` package in R. Each stage configures a console sink and a file
 sink under `logs/` at entry, logs the parameters it resolved, the inputs it read, the
 outputs it wrote, and every skipped or failed unit — enough to tell a long-running
 stage apart from a hung one, and to reconstruct afterwards where a run diverged.
-Timestamps belong in log records and log filenames, never in result filenames.
 Log levels carry meaning: `DEBUG` for developer detail, `INFO` for stage progress,
 `WARNING` for a recoverable deviation a reader must know about, `ERROR` for a unit
-that failed. Never log secrets, credentials, or restricted identifiers — the
-redaction rules for provenance apply identically here. Logs are diagnostic and
-gitignored; the provenance manifest, not the log, is the record of what a run did.
+that failed.
 
 Stable researcher-editable values have one versioned YAML owner. Scientific and
 result-affecting settings — seed, thresholds, inclusion rules, transformations, model
 parameters, and any batch size that may affect optimization — live in
-`config/analysis.yaml`. Optional `config/runtime.yaml` contains only stable operational
-settings demonstrated to preserve results; record the equivalence rationale in
-`docs/DECISIONS.md`. When uncertain, classify the value as scientific.
+`config/analysis.yaml`.
 
 `config.py` strictly validates YAML, rejects unknown and missing fields, composes only
 permitted overrides, and returns immutable typed objects passed explicitly into
@@ -422,7 +311,7 @@ same validation as YAML.
 For established repositories, apply this migration when editing the function or entry
 point that reads a module-level project setting. Preserve behavior with tests, obtain
 authorization before changing scientific meaning, and record the migration in
-`docs/DECISIONS.md`.
+`docs/lab_notebook.md`.
 
 Public functions and classes in `src/` have typed interfaces and Google-style
 docstrings that explain scientific meaning, units, ranges, array shapes, dataframe row
@@ -462,10 +351,6 @@ Commit lightweight final tables, source data, editable figures, and deterministi
 manifests when licensing permits. Ignore caches, environments, logs, bulky
 intermediates, and regenerable binaries.
 
-Every README classifies the project honestly as (1) computationally reproducible with
-included or public inputs, (2) reproducible with user-supplied inputs, or (3)
-partially reproducible because an upstream resource or environment is unavailable.
-
 ## Testing
 
 Organize tests around behaviour, scientific components, and contracts rather than
@@ -483,11 +368,6 @@ delete its tests with it — a test kept to guard a removed feature pins an abse
 in place and misleads the next reader about what the pipeline does. A test that
 reproduces a real defect is always worth writing; a test written to raise a number
 is not.
-
-Coverage is a smoke detector, not a goal. What must be tested directly, whatever the
-percentage says: scientific transformations, estimands, exclusion rules, validation,
-and output contracts. A rising coverage number over untested science is a worse state
-than a low one.
 
 Use exact comparison for stable tabular and vector output, and explicit justified
 tolerances for floating point. CI-runnable verification uses fixtures already in the
