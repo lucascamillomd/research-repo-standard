@@ -7,27 +7,11 @@ skeleton — to write when a repository does not yet have it. Everything here
 describes files that do not exist yet. **Once written, those files are the source
 of truth** — read `pyproject.toml`, not this document.
 
-## Agent-skill preflight
+## Agent-host prerequisites
 
-Before the interview, scaffolding, Python selection, or tool configuration, run the
-discovery procedure defined in `references/prerequisites.md` once in the current agent
-session. All three exact skill names must resolve. If any name does not resolve, stop
-before the interview and report the exact blocker. Do not scaffold, select Python,
-write tool configuration, or run `make setup`.
-
-For this preflight, a session is one continuous top-level agent context. An agent-host
-restart or reload, or a fresh top-level context, starts a new session and repeats
-discovery. Context compaction or an in-plan subagent dispatch does not create a new
-session, so do not repeat bootstrap discovery for either. Each subagent must still
-resolve and invoke the skill it is assigned to apply.
-
-After preflight, bootstrap invokes all three skills in their declared design stages,
-including `scientific-critical-thinking` through an independent-subagent scientific
-critique.
-
-Agent skills are not uv dependencies. The generated `make setup` target creates the
-locked project environment and installs pre-commit hooks; it does not install or
-validate global agent skills.
+Complete the host-specific discovery, installation, delegated-agent verification, and
+recovery procedure in `references/prerequisites.md` before the bootstrap interview.
+Agent-host prerequisites remain separate from the generated repository's `make setup`.
 
 ## Environment
 
@@ -161,7 +145,6 @@ all:         ## Light path from the smallest distributable checkpoint
 full:        ## Longest raw-to-publication path; reports manual boundaries
 verify-ci:   ## Data-free, or approved fixtures only
 verify-full: ## Complete workflow with real data
-standard-check: ## Report drift against the research-repo-standard source
 clean-*:     ## Remove only the named generated outputs
 ```
 
@@ -171,36 +154,15 @@ project. Never define a cleanup target that can reach `data/raw/`.
 Make may use phony high-level targets without pretending to offer file-level
 incrementality. Add real file dependencies only when they are reliable.
 
-`standard-check` calls the standard's own tooling:
-
-````make
-STANDARD_SRC ?= $(HOME)/.claude/skills/research-repo-standard
-
-standard-check: ## Report drift against the research-repo-standard source
-	@test -x "$(STANDARD_SRC)/vendor.sh" \
-	  || { echo "standard source not found at $(STANDARD_SRC); cannot check"; exit 2; }
-	"$(STANDARD_SRC)/vendor.sh" --check .
-````
-
-`vendor.sh --check` exits 0 when the vendored `AGENTS.md` matches a fresh
-vendor (the `## This repository` section is preserved and never counts as
-drift) and `CLAUDE.md` is a symlink to it, 1 when drifted, and 2 when there is
-no `AGENTS.md` to check. Note that `make` collapses any failing recipe to its
-own exit 2, so branch on `vendor.sh --check` directly when the distinction
-matters.
-
 ## Configuration and secrets
 
 Read `references/configuration.md` before creating YAML, `config.py`, `paths.py`, CLI
 overrides, or configuration provenance. TOML remains the source of truth for packaging
 and tool configuration. Create mandatory `config/datasets.yaml` and
-`config/analysis.yaml`; create `config/runtime.yaml` only when stable operational
-settings exist and their result-equivalence rationale is recorded in
-`docs/DECISIONS.md`.
+`config/analysis.yaml`.
 
 Put every stable scientific or result-affecting value explicitly in
-`config/analysis.yaml`. Put only proven result-equivalent performance and resilience
-settings in optional `config/runtime.yaml`. Do not create an empty runtime file.
+`config/analysis.yaml`.
 `config.py` validates strict typed schemas and contains no project values or hidden
 result-affecting defaults. `paths.py` derives internal paths and reads permitted
 machine-specific roots from environment variables.
@@ -234,10 +196,10 @@ its numbered `scripts/` stage.
 
 ## Code-simplifier profile
 
-Create `.claude/agents/code-simplifier.md` in the new repository by copying the
-canonical profile from the standard's `agents/code-simplifier.md`. The Working
-procedure in `AGENTS.md` requires a code-simplifier subagent pass after
-code-changing modifications; the copied profile is what that subagent applies.
+Copy the canonical `agents/code-simplifier.md` profile into the new repository as part
+of the approved scaffold. Then, only when the user selected one, run the separate host
+adapter documented in `references/prerequisites.md`; the adapter installs the host's
+supported independent-agent integration without changing portable core vendoring.
 
 ## README
 

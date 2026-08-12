@@ -1,10 +1,11 @@
 <!-- standard_version: 2026.08.11 -->
 
-# Reference: required agent skills
+# Reference: agent-host prerequisites
 
-Read before bootstrapping a research repository and whenever a governed repository
-reports a missing prerequisite. These are agent-environment dependencies, not Python
-packages and not project data.
+This is the authoritative host-integration procedure for installing or resolving the
+standard, its required skills, and delegated-agent profiles. Apply it before bootstrap
+and whenever a governed repository reports a missing host capability. These are global
+agent-environment dependencies, not generated project packages or data.
 
 ## Hard gate
 
@@ -47,6 +48,23 @@ must record each installed plugin or skill version or source revision, together 
 the Agent Skills installer version, in `docs/lab_notebook.md` once the scaffold
 exists. Review upgrades before changing that record.
 
+## Resolve this standard
+
+In Codex, install or expose this repository as the `research-repo-standard` skill under
+a discovered `.agents/skills/research-repo-standard/` location, then confirm the exact
+name appears in the host skill listing. Codex natively loads governed repository policy
+from `AGENTS.md`; no `CODEX.md` sidecar is used. Official discovery documentation:
+<https://learn.chatgpt.com/docs/build-skills> and
+<https://learn.chatgpt.com/docs/agent-configuration/agents-md>.
+
+In Claude Code, install or expose this repository as the `research-repo-standard` skill
+under a discovered `.claude/skills/research-repo-standard/` location, then confirm the
+exact name appears in the host skill listing. Claude Code can consume governed policy
+through the optional adapter's relative `CLAUDE.md -> AGENTS.md` alias; where symlinks
+are unavailable, use the documented `CLAUDE.md` file containing `@AGENTS.md` instead.
+Official discovery documentation: <https://code.claude.com/docs/en/skills> and
+<https://code.claude.com/docs/en/memory>.
+
 ## Codex installation
 
 Install Superpowers from the Codex plugin marketplace: open **Plugins** in the Codex
@@ -65,7 +83,9 @@ Verify the two scientific skills with:
 npx skills list --global --agent codex --json
 ```
 
-Verify Superpowers through the Codex plugin resolver or listing.
+Verify Superpowers through the Codex plugin resolver or listing. At planning time,
+confirm the companion `superpowers:writing-plans` skill resolves from that installation;
+it is used after design approval rather than treated as a fourth bootstrap hard gate.
 
 ## Claude Code installation
 
@@ -88,11 +108,45 @@ Verify the two scientific skills with:
 npx skills list --global --agent claude-code --json
 ```
 
-Verify Superpowers through the Claude Code plugin resolver or listing.
+Verify Superpowers through the Claude Code plugin resolver or listing. At planning
+time, confirm the companion `superpowers:writing-plans` skill resolves from that
+installation; it is used after design approval rather than treated as a fourth
+bootstrap hard gate.
 
 For other agent hosts, follow the installation instructions in each authoritative
 source and install only the required skill folders. Review third-party skill contents
 and provenance before installation.
+
+## Install the selected project host adapter
+
+Core vendoring is always separate: `./vendor.sh <target-repo>` writes only `AGENTS.md`.
+After that command, run only the adapter the user selected:
+
+```bash
+./adapters/claude-code.sh <target-repo>
+./adapters/codex.sh <target-repo>
+```
+
+The Claude Code adapter creates the documented policy alias and installs the simplifier
+profile at `.claude/agents/code-simplifier.md`. The Codex adapter installs
+`.codex/agents/code-simplifier.toml` plus the canonical
+`agents/code-simplifier.md`; it creates no `CODEX.md`. Adapter files are generated
+project integration, while the skills above are global host setup.
+
+## Delegated-agent verification
+
+A delegated agent does not inherit previously invoked skill content merely because the
+parent used it. In Claude Code, preload the needed skill in the custom-agent `skills`
+field or require the worker to invoke an available skill explicitly; creating the first
+`.claude/agents/` or skill directory during a session may require restart. In Codex, a
+spawned run rebuilds the effective `AGENTS.md` chain from its working directory and
+inherits parent agent configuration unless the custom TOML overrides it; the installed
+simplifier wrapper explicitly routes to `agents/code-simplifier.md`.
+
+Functionally smoke-test delegated propagation by launching an independent review agent
+in the target repository and requiring it to name the applicable `AGENTS.md` policy,
+resolve or read its assigned skill/profile, and return findings without implementation.
+A file existing on disk is not enough.
 
 ## Verify and resume
 

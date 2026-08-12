@@ -1,6 +1,6 @@
 ---
 name: research-repo-standard
-description: The operating standard for reproducible research repositories supporting a scientific analysis, study, or paper. Use when bootstrapping such a repository, and before any file-changing work in a repository that vendors this standard's AGENTS.md — it governs modification gates, configuration and data ownership, analysis planning and independent critique, figures, vendoring, and drift checks. Not for general-purpose software projects or scratch analyses that will not support a scientific claim.
+description: The operating standard for reproducible research repositories supporting a scientific analysis, study, or paper. Use when bootstrapping such a repository, and before any file-changing work in a repository that vendors this standard's AGENTS.md — it governs modification gates, configuration and data ownership, analysis planning and independent critique, figures, and vendoring. Not for general-purpose software projects or scratch analyses that will not support a scientific claim.
 ---
 <!-- standard_version: 2026.08.12 -->
 
@@ -26,29 +26,16 @@ deliberately omits:
 | `references/bootstrap.md` | writing tool config, CI, or a Makefile that does not exist yet |
 | `references/data.md` | registering a dataset, defining a schema, writing validation |
 | `references/analysis.md` | planning or reporting a confirmatory analysis |
-| `references/figures.md` | before writing any plotting code, and again during figure QA |
+| `references/figures.md` | before figure planning, plotting-code work, or modifying figure outputs, and again during figure QA |
 
 ## Required agent skills
 
-Read `references/prerequisites.md`. Before the bootstrap interview, use the
-host-native skill listing or resolver to confirm all three exact names — bootstrap
-actively uses each of them:
-
-- `superpowers:brainstorming`
-- `scientific-critical-thinking`
-- `nature-figure`
-
-In a governed repository the requirement is scoped to the work that depends on each
-skill; `AGENTS.md` defines that scoping alongside the modification gate it owns.
-
-If a required skill is missing, stop at preflight, before the bootstrap interview or
-the dependent repository mutations, identify it, and give the user the installation
-and session-reload instructions from the prerequisite reference. Resume only after
-the host resolves the required names. File presence alone is not a pass, and no
-generic workflow may substitute for a missing skill.
-
-This is a normative agent gate whose enforcement depends on the host loading and
-following the skill instructions; do not describe it as an operating-system control.
+Apply the host discovery, installation, delegated-agent verification, and recovery
+procedure in `references/prerequisites.md` once before the bootstrap interview. In a
+governed repository, apply it before work that depends on a required capability;
+`AGENTS.md` owns that scoping and the modification gates. Resume only when the host
+resolves the required names, and do not substitute another workflow for a missing
+capability.
 
 In governance mode, `AGENTS.md` owns the modification-gate rules — the full gate,
 the light path, and the no-gate exemptions. It is already in context in a governed
@@ -71,16 +58,18 @@ Do not restate `AGENTS.md` back to the user — they already have it.
 2. **Start brainstorming.** Invoke `superpowers:brainstorming`. Explore context, ask
    the interview questions below, and compare design approaches. Do not seek final
    design approval yet.
-3. **Critique the science.** Request an independent subagent that applies
+3. **Critique the science.** Request an independent review agent that applies
    `scientific-critical-thinking` to the proposed question, claim, study design,
    estimand, and major validity risks without implementing. Every material finding
    must be incorporated or explicitly dispositioned in the design. The critique is
    advisory: adopt a recommendation only when it is justified by the evidence and
    task.
-4. **Define the figure strategy.** Invoke `nature-figure`. Python is fixed by this
-   standard and must not be reopened; if `nature-figure` offers a backend choice, this
-   standard controls. Define expected outputs, source data, exports, and QA; when no
-   plots are planned, record that explicitly.
+4. **Define the figure strategy.** Read `references/figures.md`, then invoke
+   `nature-figure` before figure planning, plotting-code work, or output modification;
+   consult the reference again during QA. Python is fixed by this standard and must not
+   be reopened; if `nature-figure` offers a backend choice, this standard controls.
+   Define expected outputs, source data, exports, and QA; when no plots are planned,
+   record that explicitly.
 5. **Approve and document.** Return to the brainstorming workflow, present the
    integrated design, and obtain approval. If the target repository is not yet
    initialized, initialize only its Git repository and create only the process-artifact
@@ -96,31 +85,20 @@ Do not restate `AGENTS.md` back to the user — they already have it.
    `references/configuration.md` when creating configuration files and loaders. Agent
    prerequisites precede and remain separate from the generated repository's
    `make setup` target.
-8. **Vendor and identify.** Run `./vendor.sh <target-repo>`; it copies `AGENTS.md` and
-   symlinks `CLAUDE.md` to it, and nothing else is vendored. Fill in the vendored
-   `AGENTS.md` `## This repository` section, then report what was created, assumptions,
-   and unresolved boundaries.
+8. **Vendor and identify.** Run `./vendor.sh <target-repo>`; portable core vendoring
+   writes only `AGENTS.md`. If the user selected a supported host adapter, run it as a
+   separate optional step. Fill in the vendored `AGENTS.md` `## This repository`
+   section, then report what was created, assumptions, and unresolved boundaries.
 
 ## Interview
 
 1. What is the primary research question and intended scientific claim?
 2. Should the license be MIT, or should the repository remain unlicensed/proprietary?
-3. Which currently supported stable Python minor version?
-4. What datasets are expected?
-5. Which workflow stages are needed, and which processed-data checkpoint can be shared?
-6. Are R or other non-Python tools required, and can they run in a pinned container?
-7. What are the expected tables, plots, reports, and publication targets?
-8. Which steps cannot be automated because of licensing, compute, or external
+3. What datasets are expected?
+4. Which workflow stages are needed, and which processed-data checkpoint can be shared?
+5. Are R or other non-Python tools required, and can they run in a pinned container?
+6. What are the expected tables, plots, reports, and publication targets?
+7. Which steps cannot be automated because of licensing, compute, or external
    environment constraints?
-9. What verification can run in public CI, and what requires external inputs or tools?
-
-**Do not create a `LICENSE` until question 2 is answered.** Do not assume a company or
-otherwise private repository should use MIT. If no choice is available, leave the
-repository unlicensed and report that as unresolved.
-
-## Drift
-
-A repository vendors `AGENTS.md` at the version stamped in its first line. When this
-source changes, vendored copies do not — that is intended, since a project may
-legitimately refine the standard for its own science. `make standard-check` in a
-governed repository reports the difference; it does not resolve it.
+8. What verification can run in public CI, and what requires external inputs or tools?
+9. Which journal and publication type is this repo expected to support?

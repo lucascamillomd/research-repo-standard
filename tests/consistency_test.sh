@@ -87,6 +87,47 @@ else
     fail "lab notebook owns consequential decision records"
 fi
 
+# --- 8. workflow routes figure work through the figure reference ---
+if grep -qs 'references/figures\.md' "$ROOT/SKILL.md" \
+    && grep -qis 'before.*plot' "$ROOT/SKILL.md"; then
+    pass "SKILL.md routes plotting to the figure reference"
+else
+    fail "SKILL.md routes plotting to the figure reference"
+fi
+
+# --- 9. bootstrap delegates host prerequisites to their owner ---
+if grep -qs 'references/prerequisites\.md' "$ROOT/references/bootstrap.md" \
+    && ! grep -qs '^## Agent-skill preflight' "$ROOT/references/bootstrap.md"; then
+    pass "bootstrap delegates host prerequisites"
+else
+    fail "bootstrap delegates host prerequisites"
+fi
+
+# --- 10. portable policy does not prescribe a specific host integration ---
+if ! grep -Eq 'CLAUDE\.md.*symlink|\.claude/agents' "$ROOT/AGENTS.md"; then
+    pass "AGENTS.md is host neutral"
+else
+    fail "AGENTS.md is host neutral"
+fi
+
+# --- 11. removed drift-check interfaces are absent from live documentation ---
+removed_standard='standard'"-check"
+removed_vendor='vendor\.sh '"--check"
+removed_drift='drift '"checks"
+drift_pattern="$removed_standard|$removed_vendor|$removed_drift"
+drift_matches="$({
+    grep -HnE "$drift_pattern" \
+        "$ROOT/AGENTS.md" "$ROOT/SKILL.md" "$ROOT/README.md" "$ROOT/vendor.sh" \
+        "$ROOT"/references/*.md "$ROOT"/tests/*.sh 2>/dev/null || true
+} | grep -v '/tests/vendor_test\.sh:' \
+    | grep -v '/tests/consistency_test\.sh:' || true)"
+if [[ -z "$drift_matches" ]]; then
+    pass "removed drift-check interfaces are absent from live documentation"
+else
+    fail "removed drift-check interfaces are absent from live documentation"
+    printf '%s\n' "$drift_matches"
+fi
+
 # --- final ---
 if (( FAILS > 0 )); then
     echo "$FAILS test(s) failed"

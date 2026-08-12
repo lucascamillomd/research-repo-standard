@@ -3,8 +3,8 @@
 
 # Reproducible Research Repository Standard
 
-Operating standard for repositories that support scientific analyses and papers.
-`CLAUDE.md` is a symlink to this file.
+Portable governed policy for repositories that support scientific analyses and papers.
+`AGENTS.md` is the normative policy regardless of which supported agent host applies it.
 
 ## This repository
 
@@ -15,9 +15,9 @@ Operating standard for repositories that support scientific analyses and papers.
 
 ## Using this standard
 
-Deeper
-reference material is deliberately **not** vendored here — it lives in the
-`research-repo-standard` skill. Invoke that skill by name when you need:
+Detailed references are deliberately **not** vendored here — they remain in the
+`research-repo-standard` skill and expand procedure without owning or weakening any
+required safety rule in this policy. Invoke that skill by name when you need:
 
 | Invoke it for | When |
 |---|---|
@@ -120,7 +120,7 @@ blocks you, stop and say so rather than working around it.
 
 ```text
 <repo-name>/
-├── AGENTS.md                       # this standard; CLAUDE.md symlinks here
+├── AGENTS.md                       # portable governed policy
 ├── README.md
 ├── LICENSE                         # only after the user chooses a license
 ├── Makefile
@@ -233,12 +233,14 @@ data.
 An independent critique is required when defining or changing: an estimand, a study
 design, a statistical method or model choice, inclusion or exclusion rules, a
 missing-data policy, a causal interpretation, or the scope of a claim. One critique
-covers one design or coherent batch of decisions. A separate subagent applies `scientific-critical-thinking` (KDense
+covers one design or coherent batch of decisions. A separate independent review agent
+applies `scientific-critical-thinking` (KDense
 `k-dense-ai/scientific-agent-skills`) and returns findings without implementing
 anything. The critique is advisory; weigh it against the evidence and the task. It
 may run concurrently with work that does not depend on the judgment under review;
-only dependent work waits. Routine plumbing does not need one. If the critique skill or a separate review subagent is unavailable,
-stop before making or implementing the scientific judgment and report the blocker.
+only dependent work waits. Routine plumbing does not need one. If the critique skill
+or an independent review agent is unavailable, stop before making or implementing the
+scientific judgment and report the blocker.
 
 ## Figures
 
@@ -248,18 +250,19 @@ functions under `src/<package_name>/figures/`, has traceable source data, and ex
 all four formats: editable SVG, editable PDF, 600 dpi TIFF, PNG preview. Each format
 lives in its own extension-named directory under `results/figures/<figure_id>/`.
 
-Record the contract in `docs/FIGURE_CONTRACT.md` **before** writing plotting code.
-Never use R or another language to render a preview, fallback, or substitute plot. If
-`nature-figure`, Python, or a required Python dependency is unavailable, stop before
-plotting and report the exact blocker rather than rendering something else.
+Consult the canonical `references/figures.md` procedure before planning a figure,
+writing plotting code, or modifying figure outputs, and record the contract in
+`docs/FIGURE_CONTRACT.md` first. Never use R or another language to render a preview,
+fallback, or substitute plot. If `nature-figure`, Python, or a required Python
+dependency is unavailable, stop before plotting and report the exact blocker rather
+than rendering something else.
 
-Atomic figure assets carry a semantic name, never a panel letter —
-`mf1_hazard_ratio_distribution`, not `mf1a`. Panel letters are layout metadata
-applied at assembly and must never rename or alter an underlying asset. Use the same
-name stem across every export format and its source-data file.
+Atomic figure assets carry a semantic name, never a panel letter. Panel letters are
+layout metadata applied at assembly and must never rename or alter an underlying
+asset. The detailed naming grammar lives in `references/figures.md`.
 
-Open the exported SVG as part of QA; a successful `savefig` call is not
-evidence of a correct export.
+Consult `references/figures.md` again during figure QA and open the exported SVG; a
+successful `savefig` call is not evidence of a correct export.
 
 ## Workflow interface
 

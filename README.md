@@ -11,11 +11,13 @@ The standard has two modes:
 
 - **Bootstrapping:** the `research-repo-standard` skill guides the design and
   creation of a new research repository.
-- **Governance:** an existing repository vendors `AGENTS.md`, which provides the
-  self-contained rules that collaborators, CI, and agents follow.
+- **Governance:** an existing repository vendors `AGENTS.md`, the portable governed
+  policy applied by supported agent hosts.
 
-Only `AGENTS.md` is copied into governed repositories. Supporting detail remains
-in this source repository and is loaded through the skill when needed.
+Core vendoring copies only `AGENTS.md`. Optional, user-selected adapters install host
+integration separately, and bootstrap may seed the canonical simplifier profile for an
+adapter without making it part of portable vendoring. Supporting detail remains in this
+source repository and is loaded through the skill when needed.
 
 ## Repository structure
 
@@ -33,8 +35,10 @@ agents/
   code-simplifier.md       post-change simplification agent profile
 tests/
   consistency_test.sh      checks links and cross-file consistency
-  vendor_test.sh           tests vendoring and drift checks
-vendor.sh                  copies the standard into a target repository
+  vendor_test.sh           tests portable vendoring and replacement safety
+  adapter_test.sh          tests optional host integration
+adapters/                  installs optional host integration
+vendor.sh                  copies only AGENTS.md into a target repository
 ```
 
 ## Vendor into a project
@@ -43,4 +47,9 @@ vendor.sh                  copies the standard into a target repository
 ~/research-repo-standard/vendor.sh /path/to/repo
 ```
 
-Then complete the `## This repository` section in the vendored `AGENTS.md`.
+Then complete the `## This repository` section in the vendored `AGENTS.md`. If the
+user selected a supported host adapter, install it separately as documented in
+`references/prerequisites.md`.
+
+`make check` is the aggregate source-repository validation entry point once the quality
+toolchain is installed.
