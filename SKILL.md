@@ -31,7 +31,7 @@ self-sufficient for the rules. Load a reference here only for detail it delibera
 | `references/bootstrap.md`     | writing tool config, CI, or a Makefile that does not exist yet                                        |
 | `references/data.md`          | registering a dataset, defining a schema, writing validation                                          |
 | `references/analysis.md`      | planning or reporting a confirmatory analysis                                                         |
-| `references/figures.md`       | before figure planning, plotting-code work, or modifying figure outputs, and again during figure QA   |
+| `references/figures.md`       | before figure planning, plotting-code work, modifying figure outputs, and again before figure QA      |
 
 ## Required agent skills
 
@@ -67,10 +67,10 @@ Do not restate `AGENTS.md` back to the user — they already have it.
    dispositioned in the design. The critique is advisory: adopt a recommendation only when it is
    justified by the evidence and task.
 4. **Define the figure strategy.** Read `references/figures.md`, then invoke `nature-figure` before
-   figure planning, plotting-code work, or output modification; consult the reference again during
-   QA. Python is fixed by this standard and must not be reopened; if `nature-figure` offers a
-   backend choice, this standard controls. Define expected outputs, source data, exports, and QA;
-   when no plots are planned, record that explicitly.
+   figure planning, plotting-code work, or output modification; consult the reference again before
+   performing QA. Python is fixed by this standard and must not be reopened; if `nature-figure`
+   offers a backend choice, this standard controls. Define expected outputs, source data, exports,
+   and QA; when no plots are planned, record that explicitly.
 5. **Approve and document.** Return to the brainstorming workflow, present the integrated design,
    and obtain approval. If the target repository is not yet initialized, initialize only its Git
    repository and create only the process-artifact path needed for the specification. This minimal

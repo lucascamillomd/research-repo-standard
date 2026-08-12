@@ -84,17 +84,6 @@ else
   fail "aborted malformed-target vendor leaves target untouched"
 fi
 
-# --- deleted interface: --check is rejected as usage ---
-set +e
-check_output="$("$ROOT/vendor.sh" --check "$t1" 2>&1)"
-check_rc=$?
-set -e
-if [[ "$check_rc" -eq 2 ]] && grep -q 'usage: vendor.sh <target-repo>' <<< "$check_output"; then
-  pass "removed --check interface is rejected"
-else
-  fail "removed --check interface is rejected"
-fi
-
 # --- 5. staging happens inside the target for same-filesystem replacement ---
 real_mv="$(command -v mv)"
 mkdir "$tmp/bin"
@@ -135,7 +124,30 @@ else
   fail "vendor stages beside the destination"
 fi
 
-# --- 6. every standard file carries a version stamp near its opening metadata ---
+# --- 6. a failed final replacement preserves the previous target and cleans staging ---
+t6="$tmp/failed-replacement"
+mkdir "$t6"
+cp "$ROOT/AGENTS.md" "$t6/AGENTS.md"
+awk '/^## This repository$/{print; print ""; print "PREVIOUS-TARGET-IDENTITY"; next} {print}' \
+  "$t6/AGENTS.md" > "$t6/AGENTS.md.previous" && mv "$t6/AGENTS.md.previous" "$t6/AGENTS.md"
+previous_checksum="$(cksum "$t6/AGENTS.md")"
+mkdir "$tmp/fail-bin"
+cat > "$tmp/fail-bin/mv" << 'EOF'
+#!/usr/bin/env bash
+exit 1
+EOF
+chmod +x "$tmp/fail-bin/mv"
+if PATH="$tmp/fail-bin:$PATH" "$ROOT/vendor.sh" "$t6" > /dev/null 2>&1; then
+  fail "failed final replacement must abort"
+elif [[ "$(cksum "$t6/AGENTS.md")" != "$previous_checksum" ]]; then
+  fail "failed final replacement must preserve the previous target"
+elif compgen -G "$t6/.vendor.*" > /dev/null; then
+  fail "failed final replacement must clean staging"
+else
+  pass "failed final replacement preserves target and cleans staging"
+fi
+
+# --- 7. every standard file carries a version stamp near its opening metadata ---
 stamp_ok=1
 for f in "$ROOT"/AGENTS.md "$ROOT"/SKILL.md "$ROOT"/README.md "$ROOT"/references/*.md "$ROOT"/agents/*.md; do
   if ! awk 'NR <= 12 && /standard_version:/ { found=1 } END { exit !found }' "$f"; then

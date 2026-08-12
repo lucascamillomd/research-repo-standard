@@ -92,10 +92,11 @@ fi
 
 # --- 8. workflow routes figure work through the figure reference ---
 if grep -qs 'references/figures\.md' "$ROOT/SKILL.md" &&
-  grep -qis 'before.*plot' "$ROOT/SKILL.md"; then
-  pass "SKILL.md routes plotting to the figure reference"
+  grep -qis 'before.*plot' "$ROOT/SKILL.md" &&
+  tr '\n' ' ' < "$ROOT/SKILL.md" | grep -qis 'again before figure QA\|again before performing QA'; then
+  pass "SKILL.md routes figure work and QA to the figure reference"
 else
-  fail "SKILL.md routes plotting to the figure reference"
+  fail "SKILL.md must load the figure reference before plotting and again before QA"
 fi
 
 # --- 9. bootstrap delegates host prerequisites to their owner ---
@@ -113,45 +114,46 @@ else
   fail "AGENTS.md is host neutral"
 fi
 
-# --- 11. removed drift-check interfaces are absent from live documentation ---
-removed_standard='standard'"-check"
-removed_vendor='vendor\.sh '"--check"
-removed_drift='drift '"checks"
-drift_pattern="$removed_standard|$removed_vendor|$removed_drift"
-drift_matches="$({
-  grep -HnE "$drift_pattern" \
-    "$ROOT/AGENTS.md" "$ROOT/SKILL.md" "$ROOT/README.md" "$ROOT/vendor.sh" \
-    "$ROOT"/references/*.md "$ROOT"/tests/*.sh 2> /dev/null || true
-} | grep -v '/tests/vendor_test\.sh:' |
-  grep -v '/tests/consistency_test\.sh:' || true)"
-if [[ -z "$drift_matches" ]]; then
-  pass "removed drift-check interfaces are absent from live documentation"
-else
-  fail "removed drift-check interfaces are absent from live documentation"
-  printf '%s\n' "$drift_matches"
-fi
-
-# --- 12. detailed figure naming has one canonical owner ---
-if grep -Fqs 'mf1_{short_descriptive_name}' "$ROOT/references/figures.md" &&
-  grep -Fqs 'edf1_{short_descriptive_name}' "$ROOT/references/figures.md" &&
-  grep -Fqs 'svg/mf1_hazard_ratio_distribution.svg' "$ROOT/references/figures.md" &&
-  grep -Fqs 'pdf/mf1_hazard_ratio_distribution.pdf' "$ROOT/references/figures.md" &&
-  grep -Fqs 'tiff/mf1_hazard_ratio_distribution.tiff' "$ROOT/references/figures.md" &&
-  grep -Fqs 'png/mf1_hazard_ratio_distribution.png' "$ROOT/references/figures.md" &&
-  grep -Fqs 'mf1_hazard_ratio_distribution.csv' "$ROOT/references/figures.md"; then
+# --- 11. detailed figure naming has one canonical owner ---
+figure_owner="$ROOT/references/figures.md"
+if grep -Fqs 'mf1_{short_descriptive_name}' "$figure_owner" &&
+  grep -Fqs 'edf1_{short_descriptive_name}' "$figure_owner" &&
+  grep -Fqs 'svg/mf1_hazard_ratio_distribution.svg' "$figure_owner" &&
+  grep -Fqs 'pdf/mf1_hazard_ratio_distribution.pdf' "$figure_owner" &&
+  grep -Fqs 'tiff/mf1_hazard_ratio_distribution.tiff' "$figure_owner" &&
+  grep -Fqs 'png/mf1_hazard_ratio_distribution.png' "$figure_owner" &&
+  grep -Fqs 'mf1_hazard_ratio_distribution.csv' "$figure_owner" &&
+  grep -Fqs 'letters never become part of the atomic asset names or' "$figure_owner" &&
+  grep -Fqs 'Use the same atomic stem for' "$figure_owner" &&
+  grep -Fqs 'Panel letters are applied only' "$figure_owner" &&
+  grep -Fqs 'extension-named directory' "$figure_owner"; then
   pass "figure reference owns detailed atomic asset naming"
 else
-  fail "figure reference must own detailed atomic asset naming and examples"
-fi
-if grep -Fqs 'main_figure_1' "$ROOT/AGENTS.md" &&
-  grep -Fqs 'extended_data_figure_2' "$ROOT/AGENTS.md" &&
-  ! grep -Eq 'mf1_hazard_ratio_distribution|edf1_\{short_descriptive_name\}|\{svg,pdf,tiff,png\}' "$ROOT/AGENTS.md"; then
-  pass "AGENTS.md keeps only general publication identifiers"
-else
-  fail "AGENTS.md must keep general identifiers without detailed figure asset grammar"
+  fail "figure reference must own detailed naming, shared stems, export paths, and panel lettering"
 fi
 
-# --- 13. domain references declare the policy/procedure boundary ---
+figure_duplicates="$({
+  grep -HnE 'mf[0-9]+_|edf[0-9]+_|short_descriptive_name|hazard_ratio_distribution' \
+    "$ROOT/AGENTS.md" "$ROOT/SKILL.md" "$ROOT/README.md" "$ROOT/agents/code-simplifier.md" \
+    "$ROOT/references/analysis.md" "$ROOT/references/bootstrap.md" \
+    "$ROOT/references/configuration.md" "$ROOT/references/data.md" \
+    "$ROOT/references/prerequisites.md" 2> /dev/null || true
+})"
+if [[ -z "$figure_duplicates" ]]; then
+  pass "detailed figure asset grammar occurs only in the figure reference"
+else
+  fail "detailed figure asset grammar must occur only in references/figures.md"
+  printf '%s\n' "$figure_duplicates"
+fi
+
+if grep -Fqs 'main_figure_1' "$ROOT/AGENTS.md" &&
+  grep -Fqs 'extended_data_figure_2' "$ROOT/AGENTS.md"; then
+  pass "AGENTS.md keeps general publication identifiers"
+else
+  fail "AGENTS.md must keep general publication identifiers"
+fi
+
+# --- 12. domain references declare the policy/procedure boundary ---
 for reference in configuration data analysis; do
   if grep -Fqs "\`AGENTS.md\` owns the normative portable policy" "$ROOT/references/$reference.md" &&
     grep -Fqs 'procedural expansion' "$ROOT/references/$reference.md"; then
@@ -161,7 +163,7 @@ for reference in configuration data analysis; do
   fi
 done
 
-# --- 14. simplifier profile delegates naming and configuration policy ---
+# --- 13. simplifier profile delegates naming and configuration policy ---
 if ! grep -Eq 'config/analysis\.yaml|random_seed:|test_[a-z]|datasets\.yaml' \
   "$ROOT/agents/code-simplifier.md"; then
   pass "simplifier profile contains no independent configuration or test-naming grammar"

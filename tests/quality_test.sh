@@ -34,11 +34,16 @@ for relative_file in "${frontmatter_files[@]}"; do
 
   for key in "${required_keys[@]}"; do
     if [[ "$key" == standard_version && "$relative_file" == SKILL.md ]]; then
-      key_count="$(grep -Ec '^<!--[[:space:]]*standard_version:[^>]*-->$' "$file" || true)"
+      version_pattern='^<!--[[:space:]]*standard_version:[^>]*-->$'
+      key_count="$(grep -Ec "$version_pattern" "$file" || true)"
       if [[ "$key_count" -eq 1 ]] && ! awk '
         /^---$/ { delimiters++; next }
         delimiters == 2 && /^[[:space:]]*$/ { next }
-        delimiters == 2 { exit !/^<!--[[:space:]]*standard_version:[^>]*-->$/ }
+        delimiters == 2 {
+          found = /^<!--[[:space:]]*standard_version:[^>]*-->$/
+          exit
+        }
+        END { exit !found }
       ' "$file"; then
         key_count=0
       fi
@@ -78,16 +83,42 @@ while IFS= read -r -d '' relative_file; do
 
   if [[ "$relative_file" == *.md ]]; then
     if ! awk '
-      /^```make[[:space:]]*$/ { in_make_fence = 1; next }
-      /^~~~make[[:space:]]*$/ { in_make_fence = 2; next }
-      in_make_fence == 1 && /^```[[:space:]]*$/ { in_make_fence = 0; next }
-      in_make_fence == 2 && /^~~~[[:space:]]*$/ { in_make_fence = 0; next }
-      !in_make_fence && index($0, "\t") { exit 1 }
+      function strip_indent(line, spaces) {
+        match(line, /^ */)
+        spaces = RLENGTH
+        if (spaces <= 3) return substr(line, spaces + 1)
+        return line
+      }
+      function fence_length(line, marker, count) {
+        marker = substr(line, 1, 1)
+        if (marker != "`" && marker != "~") return 0
+        for (count = 1; substr(line, count + 1, 1) == marker; count++);
+        return count
+      }
+      {
+        line = strip_indent($0)
+        fence_size = fence_length(line)
+        marker = substr(line, 1, 1)
+        rest = substr(line, fence_size + 1)
+        if (!in_make_fence && fence_size >= 3 && rest ~ /^[[:space:]]*make[[:space:]]*$/) {
+          in_make_fence = marker
+          opening_length = fence_size
+          next
+        }
+        if (in_make_fence == marker && fence_size >= opening_length && rest ~ /^[[:space:]]*$/) {
+          in_make_fence = ""
+          next
+        }
+        if (!in_make_fence && index($0, "\t")) exit 1
+      }
     ' "$file"; then
       fail "tracked Markdown contains tabs outside make fences: $relative_file"
     fi
   elif [[ "$relative_file" != Makefile ]] && grep -q $'\t' "$file"; then
     fail "tracked text file contains tabs: $relative_file"
+  fi
+  if grep -q $'\r' "$file"; then
+    fail "tracked text file contains carriage returns: $relative_file"
   fi
   if grep -qE '[[:blank:]]+$' "$file"; then
     fail "tracked text file contains trailing whitespace: $relative_file"
