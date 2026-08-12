@@ -29,6 +29,14 @@ else
     fail "Claude adapter installs provider-neutral simplifier profile"
 fi
 
+"$ROOT/adapters/claude-code.sh" "$target" >/dev/null
+if [[ "$(readlink "$target/CLAUDE.md" 2>/dev/null || true)" == "AGENTS.md" ]] \
+    && [[ -f "$target/.claude/agents/code-simplifier.md" ]]; then
+    pass "Claude adapter is idempotent"
+else
+    fail "Claude adapter is idempotent"
+fi
+
 "$ROOT/adapters/codex.sh" "$target" >/dev/null
 codex_profile="$target/.codex/agents/code-simplifier.toml"
 if [[ -f "$codex_profile" ]] \
@@ -41,6 +49,26 @@ if [[ -f "$codex_profile" ]] \
     pass "Codex adapter installs provider-neutral simplifier profile"
 else
     fail "Codex adapter installs provider-neutral simplifier profile"
+fi
+
+"$ROOT/adapters/codex.sh" "$target" >/dev/null
+if [[ -f "$codex_profile" ]] && [[ ! -e "$target/CODEX.md" ]]; then
+    pass "Codex adapter is idempotent"
+else
+    fail "Codex adapter is idempotent"
+fi
+
+missing="$tmp/missing"
+mkdir "$missing"
+if "$ROOT/adapters/claude-code.sh" "$missing" >/dev/null 2>&1; then
+    fail "Claude adapter requires vendored AGENTS.md"
+else
+    pass "Claude adapter requires vendored AGENTS.md"
+fi
+if "$ROOT/adapters/codex.sh" "$missing" >/dev/null 2>&1; then
+    fail "Codex adapter requires vendored AGENTS.md"
+else
+    pass "Codex adapter requires vendored AGENTS.md"
 fi
 
 if (( FAILS > 0 )); then
