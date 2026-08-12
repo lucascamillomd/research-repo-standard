@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Vendor the standard into a target repository.
+# Vendor the portable standard into a target repository.
 #
-# Copies AGENTS.md and points CLAUDE.md at it. Nothing else is vendored --
-# references/ stays in the skill and loads on demand.
+# Copies AGENTS.md only. Detailed references remain in the skill, while optional
+# host integration is installed separately through adapters/.
 #
 # Re-vendoring preserves the target's "## This repository" section. That
 # section is the project's identity and the only part expected to differ from
@@ -13,7 +13,7 @@ set -euo pipefail
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
-    echo "usage: vendor.sh <target-repo> | vendor.sh --check <target-repo>" >&2
+    echo "usage: vendor.sh <target-repo>" >&2
     exit 2
 }
 
@@ -68,11 +68,6 @@ build_vendored() {
     fi
 }
 
-CHECK=0
-if [[ "${1:-}" == "--check" ]]; then
-    CHECK=1
-    shift
-fi
 [[ $# -eq 1 ]] || usage
 TARGET="$1"
 
@@ -89,46 +84,12 @@ trap 'rm -rf "$work"' EXIT
 
 build_vendored "$work/AGENTS.md" "$TARGET"
 
-if (( CHECK )); then
-    if [[ ! -f "$TARGET/AGENTS.md" ]]; then
-        echo "vendor.sh: no AGENTS.md in $TARGET to check" >&2
-        exit 2
-    fi
-    src_version="$(sed -n '1s/.*standard_version: \([0-9.]*\).*/\1/p' "$SRC/AGENTS.md")"
-    tgt_version="$(sed -n '1s/.*standard_version: \([0-9.]*\).*/\1/p' "$TARGET/AGENTS.md")"
-    echo "source standard_version: ${src_version:-unknown}; vendored standard_version: ${tgt_version:-unknown}"
-    drift=0
-    if diff -u "$TARGET/AGENTS.md" "$work/AGENTS.md"; then
-        echo "standard-check: AGENTS.md matches a fresh vendor"
-    else
-        echo "standard-check: drift (diff above: '-' vendored copy, '+' fresh vendor)"
-        drift=1
-    fi
-    link="$(readlink "$TARGET/CLAUDE.md" 2>/dev/null || true)"
-    if [[ "$link" != "AGENTS.md" ]]; then
-        echo "standard-check: CLAUDE.md is not a symlink to AGENTS.md"
-        drift=1
-    fi
-    # Every check above has run; only now is a single verdict meaningful. A
-    # per-check "clean" line would otherwise claim success before the symlink
-    # check has had its say.
-    if (( drift )); then
-        echo "standard-check: drift"
-    else
-        echo "standard-check: clean"
-    fi
-    exit "$drift"
-fi
-
 # Move into place only after the whole file is built, so a failure partway
 # through cannot leave a half-written standard behind. The target is a git
 # repository; git is the backup, so no .bak file is written.
 had_section=0
 [[ -s "$work/section" ]] && had_section=1
 mv "$work/AGENTS.md" "$TARGET/AGENTS.md"
-
-# CLAUDE.md is a symlink so there is one file, not two that can disagree.
-ln -sfn AGENTS.md "$TARGET/CLAUDE.md"
 
 version="$(sed -n '1s/.*standard_version: \([0-9.]*\).*/\1/p' "$SRC/AGENTS.md")"
 echo "vendored standard_version: $version -> $TARGET"
