@@ -2,22 +2,22 @@
 
 # research-repo-standard
 
-An operating standard for reproducible repositories that support a scientific
-analysis, study, or paper.
+An operating standard for reproducible repositories that support a scientific analysis, study, or
+paper.
 
 ## How it works
 
 The standard has two modes:
 
-- **Bootstrapping:** the `research-repo-standard` skill guides the design and
-  creation of a new research repository.
-- **Governance:** an existing repository vendors `AGENTS.md`, the portable governed
-  policy applied by supported agent hosts.
+- **Bootstrapping:** the `research-repo-standard` skill guides the design and creation of a new
+  research repository.
+- **Governance:** an existing repository vendors `AGENTS.md`, the portable governed policy applied
+  by supported agent hosts.
 
-Core vendoring copies only `AGENTS.md`. Optional, user-selected adapters install host
-integration separately, and bootstrap may seed the canonical simplifier profile for an
-adapter without making it part of portable vendoring. Supporting detail remains in this
-source repository and is loaded through the skill when needed.
+Core vendoring copies only `AGENTS.md`. Optional, user-selected adapters install host integration
+separately, and bootstrap may seed the canonical simplifier profile for an adapter without making it
+part of portable vendoring. Supporting detail remains in this source repository and is loaded
+through the skill when needed.
 
 ## Repository structure
 
@@ -47,9 +47,8 @@ vendor.sh                  copies only AGENTS.md into a target repository
 ~/research-repo-standard/vendor.sh /path/to/repo
 ```
 
-Then complete the `## This repository` section in the vendored `AGENTS.md`. If the
-user selected a supported host adapter, install it separately as documented in
-`references/prerequisites.md`.
+Then complete the `## This repository` section in the vendored `AGENTS.md`. If the user selected a
+supported host adapter, install it separately as documented in `references/prerequisites.md`.
 
-`make check` is the aggregate source-repository validation entry point once the quality
-toolchain is installed.
+`make check` is the aggregate source-repository validation entry point once the quality toolchain is
+installed.

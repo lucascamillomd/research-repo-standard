@@ -13,35 +13,35 @@ set -euo pipefail
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
-    echo "usage: vendor.sh <target-repo>" >&2
-    exit 2
+  echo "usage: vendor.sh <target-repo>" >&2
+  exit 2
 }
 
 # The splice below assumes these two headings exist in this order; without the
 # check, a renamed heading would silently produce a corrupted vendored file.
 verify_source() {
-    local this using
-    this="$(grep -nx '## This repository' "$SRC/AGENTS.md" | head -1 | cut -d: -f1 || true)"
-    using="$(grep -nx '## Using this standard' "$SRC/AGENTS.md" | head -1 | cut -d: -f1 || true)"
-    if [[ -z "$this" || -z "$using" ]] || (( this >= using )); then
-        echo "vendor.sh: source AGENTS.md must contain '## This repository' followed by '## Using this standard'; aborting" >&2
-        exit 1
-    fi
+  local this using
+  this="$(grep -nx '## This repository' "$SRC/AGENTS.md" | head -1 | cut -d: -f1 || true)"
+  using="$(grep -nx '## Using this standard' "$SRC/AGENTS.md" | head -1 | cut -d: -f1 || true)"
+  if [[ -z "$this" || -z "$using" ]] || ((this >= using)); then
+    echo "vendor.sh: source AGENTS.md must contain '## This repository' followed by '## Using this standard'; aborting" >&2
+    exit 1
+  fi
 }
 
 # When the target already has '## This repository', its AGENTS.md must also
 # have a following '## Using this standard'; otherwise the section-extraction
 # awk would slurp everything to EOF and corrupt the splice.
 verify_target() {
-    local target="$1" this using
-    [[ -f "$target/AGENTS.md" ]] || return 0
-    this="$(grep -nx '## This repository' "$target/AGENTS.md" | head -1 | cut -d: -f1 || true)"
-    [[ -n "$this" ]] || return 0
-    using="$(grep -nx '## Using this standard' "$target/AGENTS.md" | head -1 | cut -d: -f1 || true)"
-    if [[ -z "$using" ]] || (( this >= using )); then
-        echo "vendor.sh: target AGENTS.md has '## This repository' but no following '## Using this standard'; refusing to splice" >&2
-        exit 1
-    fi
+  local target="$1" this using
+  [[ -f "$target/AGENTS.md" ]] || return 0
+  this="$(grep -nx '## This repository' "$target/AGENTS.md" | head -1 | cut -d: -f1 || true)"
+  [[ -n "$this" ]] || return 0
+  using="$(grep -nx '## Using this standard' "$target/AGENTS.md" | head -1 | cut -d: -f1 || true)"
+  if [[ -z "$using" ]] || ((this >= using)); then
+    echo "vendor.sh: target AGENTS.md has '## This repository' but no following '## Using this standard'; refusing to splice" >&2
+    exit 1
+  fi
 }
 
 # Build the vendored AGENTS.md into $1 for target $2, preserving the target's
@@ -51,29 +51,29 @@ verify_target() {
 # the awk shipped with macOS rejects newlines in -v values, so a multi-line
 # section silently breaks the substitution there.
 build_vendored() {
-    local out="$1" target="$2" work
-    work="$(dirname "$out")"
-    if [[ -f "$target/AGENTS.md" ]]; then
-        awk '/^## This repository$/{s=1;next} /^## Using this standard$/{s=0} s' \
-            "$target/AGENTS.md" > "$work/section"
-    else
-        : > "$work/section"
-    fi
-    if [[ -s "$work/section" ]]; then
-        awk '{print} /^## This repository$/{exit}'  "$SRC/AGENTS.md" > "$work/head"
-        awk '/^## Using this standard$/{f=1} f'     "$SRC/AGENTS.md" > "$work/tail"
-        cat "$work/head" "$work/section" "$work/tail" > "$out"
-    else
-        cp "$SRC/AGENTS.md" "$out"
-    fi
+  local out="$1" target="$2" work
+  work="$(dirname "$out")"
+  if [[ -f "$target/AGENTS.md" ]]; then
+    awk '/^## This repository$/{s=1;next} /^## Using this standard$/{s=0} s' \
+      "$target/AGENTS.md" > "$work/section"
+  else
+    : > "$work/section"
+  fi
+  if [[ -s "$work/section" ]]; then
+    awk '{print} /^## This repository$/{exit}' "$SRC/AGENTS.md" > "$work/head"
+    awk '/^## Using this standard$/{f=1} f' "$SRC/AGENTS.md" > "$work/tail"
+    cat "$work/head" "$work/section" "$work/tail" > "$out"
+  else
+    cp "$SRC/AGENTS.md" "$out"
+  fi
 }
 
 [[ $# -eq 1 ]] || usage
 TARGET="$1"
 
 if [[ ! -d "$TARGET" ]]; then
-    echo "vendor.sh: not a directory: $TARGET" >&2
-    exit 1
+  echo "vendor.sh: not a directory: $TARGET" >&2
+  exit 1
 fi
 
 verify_source
@@ -96,8 +96,8 @@ mv "$work/AGENTS.md" "$TARGET/AGENTS.md"
 version="$(sed -n '1s/.*standard_version: \([0-9.]*\).*/\1/p' "$SRC/AGENTS.md")"
 echo "vendored standard_version: $version -> $TARGET"
 
-if (( had_section )); then
-    echo "preserved the existing '## This repository' section"
+if ((had_section)); then
+  echo "preserved the existing '## This repository' section"
 else
-    echo "next: fill in the '## This repository' section of $TARGET/AGENTS.md"
+  echo "next: fill in the '## This repository' section of $TARGET/AGENTS.md"
 fi

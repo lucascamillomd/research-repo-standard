@@ -2,22 +2,21 @@
 
 # Bootstrap: tool configuration
 
-Concrete tool configuration — uv, Ruff, ty, pre-commit, CI guards, Makefile
-skeleton — to write when a repository does not yet have it. Everything here
-describes files that do not exist yet. **Once written, those files are the source
-of truth** — read `pyproject.toml`, not this document.
+Concrete tool configuration — uv, Ruff, ty, pre-commit, CI guards, Makefile skeleton — to write when
+a repository does not yet have it. Everything here describes files that do not exist yet. **Once
+written, those files are the source of truth** — read `pyproject.toml`, not this document.
 
 ## Agent-host prerequisites
 
-Complete the host-specific discovery, installation, delegated-agent verification, and
-recovery procedure in `references/prerequisites.md` before the bootstrap interview.
-Agent-host prerequisites remain separate from the generated repository's `make setup`.
+Complete the host-specific discovery, installation, delegated-agent verification, and recovery
+procedure in `references/prerequisites.md` before the bootstrap interview. Agent-host prerequisites
+remain separate from the generated repository's `make setup`.
 
 ## Environment
 
-Select a currently supported stable Python minor during the interview. Record it in
-both `.python-version` and `project.requires-python`. Do not carry a stale version
-forward from a previous project.
+Select a currently supported stable Python minor during the interview. Record it in both
+`.python-version` and `project.requires-python`. Do not carry a stale version forward from a
+previous project.
 
 uv manages all ordinary Python operations:
 
@@ -28,27 +27,26 @@ uv lock                   uv sync --locked
 uv run --locked <command> uv build
 ```
 
-No direct `pip install`, Poetry, Pipenv, or Conda for the primary environment. An
-incompatible upstream model or tool may use an explicitly isolated environment only
-when the limitation and the exact invocation are documented.
+No direct `pip install`, Poetry, Pipenv, or Conda for the primary environment. An incompatible
+upstream model or tool may use an explicitly isolated environment only when the limitation and the
+exact invocation are documented.
 
-Commit `uv.lock`; never hand-edit it. Declare meaningful compatibility bounds in
-`pyproject.toml`. Use exact top-level pins only for demonstrated compatibility,
-serialization, binary, or model constraints.
+Commit `uv.lock`; never hand-edit it. Declare meaningful compatibility bounds in `pyproject.toml`.
+Use exact top-level pins only for demonstrated compatibility, serialization, binary, or model
+constraints.
 
-Use Hatchling and the `src/<package_name>` layout unless there is a documented reason
-for another PEP 517 backend.
+Use Hatchling and the `src/<package_name>` layout unless there is a documented reason for another
+PEP 517 backend.
 
 ```toml
 [dependency-groups]
 dev = ["coverage", "pre-commit", "pytest", "ruff", "ty"]
 ```
 
-`loguru` is a runtime dependency, not a dev one — stage logging is part of the
-pipeline. Configure sinks in the stage script, not in `src/`: library code calls
-`logger.<level>()` and leaves sink configuration to the caller, so importing the
-package never installs a handler. A stage's entry point removes the default sink and
-adds its own, one console sink and one file sink under `logs/`:
+`loguru` is a runtime dependency, not a dev one — stage logging is part of the pipeline. Configure
+sinks in the stage script, not in `src/`: library code calls `logger.<level>()` and leaves sink
+configuration to the caller, so importing the package never installs a handler. A stage's entry
+point removes the default sink and adds its own, one console sink and one file sink under `logs/`:
 
 ```python
 logger.remove()
@@ -56,13 +54,13 @@ logger.add(sys.stderr, level=os.environ.get("LOG_LEVEL", "INFO"))
 logger.add(paths.LOGS / "02_fit_{time}.log", level="DEBUG", rotation="20 MB")
 ```
 
-Verbosity is operational, so an environment variable may set it; nothing else about
-logging is configurable and no scientific setting is ever read from `LOG_LEVEL`.
+Verbosity is operational, so an environment variable may set it; nothing else about logging is
+configurable and no scientific setting is ever read from `LOG_LEVEL`.
 
 ## Ruff
 
-Line length 100. Stable rules only — do not enable all rules indiscriminately, do not
-enable preview rules, and avoid rules that conflict with the formatter.
+Line length 100. Stable rules only — do not enable all rules indiscriminately, do not enable preview
+rules, and avoid rules that conflict with the formatter.
 
 ```toml
 [tool.ruff]
@@ -81,9 +79,9 @@ convention = "google"
 quote-style = "double"
 ```
 
-Allow only safe automatic fixes globally. An inline suppression must be narrow and
-explained when the reason is not obvious. A repository-wide ignore requires a comment
-in `pyproject.toml` giving the reason.
+Allow only safe automatic fixes globally. An inline suppression must be narrow and explained when
+the reason is not obvious. A repository-wide ignore requires a comment in `pyproject.toml` giving
+the reason.
 
 ## Type checking
 
@@ -95,8 +93,8 @@ python-version = "3.11"
 include = ["src", "scripts", "tests"]
 ```
 
-Apply practical, documented per-file exceptions for scientific dependencies with
-incomplete type information rather than disabling type checking globally.
+Apply practical, documented per-file exceptions for scientific dependencies with incomplete type
+information rather than disabling type checking globally.
 
 ## Pre-commit
 
@@ -104,13 +102,12 @@ incomplete type information rather than disabling type checking globally.
 uv run --locked pre-commit install
 ```
 
-Required hooks: Ruff safe lint fixes, Ruff formatting, trailing-whitespace removal,
-end-of-file normalization, YAML and TOML validation, merge-conflict detection,
-private-key detection, and a configurable large-file guard.
+Required hooks: Ruff safe lint fixes, Ruff formatting, trailing-whitespace removal, end-of-file
+normalization, YAML and TOML validation, merge-conflict detection, private-key detection, and a
+configurable large-file guard.
 
-Use **local** Ruff hooks that call `uv run --locked ruff ...` so there is not a second
-independently pinned Ruff version. Generic non-Python hooks may use pinned upstream
-hook repositories.
+Use **local** Ruff hooks that call `uv run --locked ruff ...` so there is not a second independently
+pinned Ruff version. Generic non-Python hooks may use pinned upstream hook repositories.
 
 Do not run pytest or the full test suite in pre-commit. Tests belong in Make and CI.
 
@@ -148,38 +145,35 @@ verify-full: ## Complete workflow with real data
 clean-*:     ## Remove only the named generated outputs
 ```
 
-Beyond `help`, `setup`, `test`, and a verification gate, name targets to fit the
-project. Never define a cleanup target that can reach `data/raw/`.
+Beyond `help`, `setup`, `test`, and a verification gate, name targets to fit the project. Never
+define a cleanup target that can reach `data/raw/`.
 
-Make may use phony high-level targets without pretending to offer file-level
-incrementality. Add real file dependencies only when they are reliable.
+Make may use phony high-level targets without pretending to offer file-level incrementality. Add
+real file dependencies only when they are reliable.
 
 ## Configuration and secrets
 
-Read `references/configuration.md` before creating YAML, `config.py`, `paths.py`, CLI
-overrides, or configuration provenance. TOML remains the source of truth for packaging
-and tool configuration. Create mandatory `config/datasets.yaml` and
-`config/analysis.yaml`.
+Read `references/configuration.md` before creating YAML, `config.py`, `paths.py`, CLI overrides, or
+configuration provenance. TOML remains the source of truth for packaging and tool configuration.
+Create mandatory `config/datasets.yaml` and `config/analysis.yaml`.
 
-Put every stable scientific or result-affecting value explicitly in
-`config/analysis.yaml`.
-`config.py` validates strict typed schemas and contains no project values or hidden
-result-affecting defaults. `paths.py` derives internal paths and reads permitted
-machine-specific roots from environment variables.
+Put every stable scientific or result-affecting value explicitly in `config/analysis.yaml`.
+`config.py` validates strict typed schemas and contains no project values or hidden result-affecting
+defaults. `paths.py` derives internal paths and reads permitted machine-specific roots from
+environment variables.
 
-Create `.env.example` only when the project consumes environment variables. It lists
-variable names with safe descriptions or placeholders and never contains real values.
-The real `.env` is gitignored.
+Create `.env.example` only when the project consumes environment variables. It lists variable names
+with safe descriptions or placeholders and never contains real values. The real `.env` is
+gitignored.
 
 ## Containers
 
-Put language- or purpose-specific containers under `docker/<language-or-tool>/`. For R:
-pin the base image by immutable digest when feasible, constrain packages with
-`renv.lock`, document CRAN/Bioconductor and system-library limitations, expose build
-and execution through Make and a checked-in wrapper, and mount only required
-directories. Use `testthat` for reusable R logic, run via `make test-r`. Pin `logger`
-in `renv.lock` — it is the R counterpart to `loguru`, and R stages log through it
-under the same contract:
+Put language- or purpose-specific containers under `docker/<language-or-tool>/`. For R: pin the base
+image by immutable digest when feasible, constrain packages with `renv.lock`, document
+CRAN/Bioconductor and system-library limitations, expose build and execution through Make and a
+checked-in wrapper, and mount only required directories. Use `testthat` for reusable R logic, run
+via `make test-r`. Pin `logger` in `renv.lock` — it is the R counterpart to `loguru`, and R stages
+log through it under the same contract:
 
 ```r
 log_appender(appender_tee(file.path(logs_dir, "03_fit.log")))
@@ -187,26 +181,25 @@ log_threshold(INFO)
 log_info("fitted {n} models on {nrow(df)} rows", n = length(fits))
 ```
 
-`appender_tee()` writes to console and file at once, matching the two-sink Python
-setup. Keep the R logging surface this small; anything more elaborate belongs in
-Python.
+`appender_tee()` writes to console and file at once, matching the two-sink Python setup. Keep the R
+logging surface this small; anything more elaborate belongs in Python.
 
-Do not create a dedicated R package by default. R code stays minimal and may live in
-its numbered `scripts/` stage.
+Do not create a dedicated R package by default. R code stays minimal and may live in its numbered
+`scripts/` stage.
 
 ## Code-simplifier profile
 
-Copy the canonical `agents/code-simplifier.md` profile into the new repository as part
-of the approved scaffold. Then, only when the user selected one, run the separate host
-adapter documented in `references/prerequisites.md`; the adapter installs the host's
-supported independent-agent integration without changing portable core vendoring.
+Copy the canonical `agents/code-simplifier.md` profile into the new repository as part of the
+approved scaffold. Then, only when the user selected one, run the separate host adapter documented
+in `references/prerequisites.md`; the adapter installs the host's supported independent-agent
+integration without changing portable core vendoring.
 
 ## README
 
-Keep it concise: research question and one-paragraph scope, compact repository map,
-project prerequisites including the selected Python minor, uv, and Make; the three
-required agent skills with a link to the canonical prerequisite contract at
+Keep it concise: research question and one-paragraph scope, compact repository map, project
+prerequisites including the selected Python minor, uv, and Make; the three required agent skills
+with a link to the canonical prerequisite contract at
 <https://github.com/lucascamillomd/research-repo-standard/blob/main/references/prerequisites.md>;
-shortest project setup and reproduction commands, expected results, external data and
-tool limitations, the reproducibility classification, and links to `docs/`. Distinguish
-agent-host prerequisites from project tools and packages installed by `make setup`.
+shortest project setup and reproduction commands, expected results, external data and tool
+limitations, the reproducibility classification, and links to `docs/`. Distinguish agent-host
+prerequisites from project tools and packages installed by `make setup`.

@@ -2,9 +2,8 @@
 
 # Reference: scientific analysis contract
 
-`AGENTS.md` owns the normative portable policy.
-This reference is its procedural expansion for planning, executing, and reporting
-confirmatory analyses.
+`AGENTS.md` owns the normative portable policy. This reference is its procedural expansion for
+planning, executing, and reporting confirmatory analyses.
 
 ## Analysis plan
 
@@ -27,14 +26,13 @@ Sensitivity and subgroup analyses:
 Expected tables and figures:
 ```
 
-Every stable value that operationalizes this plan has an explicit field in
-`config/analysis.yaml`; prose does not substitute for executable configuration. The
-loader rejects missing or unknown scientific fields, and runs do not replace them
-through environment variables or Python defaults.
+Every stable value that operationalizes this plan has an explicit field in `config/analysis.yaml`;
+prose does not substitute for executable configuration. The loader rejects missing or unknown
+scientific fields, and runs do not replace them through environment variables or Python defaults.
 
-Label every analysis exploratory or confirmatory. An exploratory result must not
-silently become confirmatory. Record post hoc changes and their rationale in
-`docs/lab_notebook.md` *before* presenting them as part of the final workflow.
+Label every analysis exploratory or confirmatory. An exploratory result must not silently become
+confirmatory. Record post hoc changes and their rationale in `docs/lab_notebook.md` _before_
+presenting them as part of the final workflow.
 
 ## Statistical reporting
 
@@ -51,59 +49,54 @@ Every inferential result reports, as applicable:
 
 P-values alone are insufficient.
 
-Report missingness before exclusions or imputation. No silent complete-case filtering.
-Inclusion and exclusion criteria are testable code, with an attrition table or flow
-record when appropriate.
+Report missingness before exclusions or imputation. No silent complete-case filtering. Inclusion and
+exclusion criteria are testable code, with an attrition table or flow record when appropriate.
 
 ## Predictive analyses
 
-Define train, validation, and test roles explicitly. Test that preprocessing,
-normalization, imputation, feature selection, and tuning use only permitted training
-data — leakage is a code-level bug with a scientific consequence, so it deserves a
-test rather than a comment.
+Define train, validation, and test roles explicitly. Test that preprocessing, normalization,
+imputation, feature selection, and tuning use only permitted training data — leakage is a code-level
+bug with a scientific consequence, so it deserves a test rather than a comment.
 
 ## Determinism
 
-Prefer deterministic algorithms when scientifically equivalent. When randomness is
-necessary, declare `random_seed: 42` explicitly in `config/analysis.yaml`, pass it
-through the validated typed configuration, and propagate it to every stochastic
-component. Do not repeat `42` as a module-level Python setting.
+Prefer deterministic algorithms when scientifically equivalent. When randomness is necessary,
+declare `random_seed: 42` explicitly in `config/analysis.yaml`, pass it through the validated typed
+configuration, and propagate it to every stochastic component. Do not repeat `42` as a module-level
+Python setting.
 
-Do not claim complete determinism when GPU kernels, parallel algorithms, external
-APIs, or upstream software remain nondeterministic. Name the boundary instead.
+Do not claim complete determinism when GPU kernels, parallel algorithms, external APIs, or upstream
+software remain nondeterministic. Name the boundary instead.
 
 ## Independent critique
 
-Obtain an independent critique when defining or changing any of: an estimand, a
-study design, a statistical method or model choice, inclusion or exclusion rules, a
-missing-data policy, a causal interpretation, or the scope of a claim. Obtain it
-before deciding or implementing work that depends on the judgment. One critique
-covers one design or coherent batch of decisions — do not open a separate critique
-per individual judgment, and during bootstrap the single design-stage critique is
-that batch. The critique may run concurrently with work that does not depend on the
-judgment under review; only dependent work waits for its findings.
+Obtain an independent critique when defining or changing any of: an estimand, a study design, a
+statistical method or model choice, inclusion or exclusion rules, a missing-data policy, a causal
+interpretation, or the scope of a claim. Obtain it before deciding or implementing work that depends
+on the judgment. One critique covers one design or coherent batch of decisions — do not open a
+separate critique per individual judgment, and during bootstrap the single design-stage critique is
+that batch. The critique may run concurrently with work that does not depend on the judgment under
+review; only dependent work waits for its findings.
 
 An independent review agent, separate from the implementing agent, applies
-`scientific-critical-thinking` (KDense
-`k-dense-ai/scientific-agent-skills`) to the proposed approach and the relevant
-repository context, and returns findings **without implementing the task**. The
-skill's availability and obtaining the independent critique when triggered are
-mandatory; the conclusions are advisory. Findings may be rejected based on evidence,
-the task scope, or the user's instructions, but the critique may not be skipped. A
-working agent's self-critique is not a substitute.
+`scientific-critical-thinking` (KDense `k-dense-ai/scientific-agent-skills`) to the proposed
+approach and the relevant repository context, and returns findings **without implementing the
+task**. The skill's availability and obtaining the independent critique when triggered are
+mandatory; the conclusions are advisory. Findings may be rejected based on evidence, the task scope,
+or the user's instructions, but the critique may not be skipped. A working agent's self-critique is
+not a substitute.
 
-Routine documentation, formatting, plumbing, and faithful implementation work do not
-require a critique unless they introduce scientific judgment.
-`scientific-critical-thinking` is a hard prerequisite scoped to critique-triggering
-work. If the skill is missing, cannot be resolved, or cannot be invoked, stop the
-work that meets a critique trigger and report the exact blocker; file-changing work
-outside the critique triggers may continue. If the skill resolves but an independent review agent is unavailable
-when scientific judgment is required, stop before deciding or implementing the
-dependent judgment and report the exact blocker. Only work that depends on that
+Routine documentation, formatting, plumbing, and faithful implementation work do not require a
+critique unless they introduce scientific judgment. `scientific-critical-thinking` is a hard
+prerequisite scoped to critique-triggering work. If the skill is missing, cannot be resolved, or
+cannot be invoked, stop the work that meets a critique trigger and report the exact blocker;
+file-changing work outside the critique triggers may continue. If the skill resolves but an
+independent review agent is unavailable when scientific judgment is required, stop before deciding
+or implementing the dependent judgment and report the exact blocker. Only work that depends on that
 judgment is blocked; unrelated work may continue.
 
-A skill is guidance, not evidence. Validate code and results against primary
-documentation, known examples, scientific invariants, and the study design.
+A skill is guidance, not evidence. Validate code and results against primary documentation, known
+examples, scientific invariants, and the study design.
 
 ## Related workflow skills
 

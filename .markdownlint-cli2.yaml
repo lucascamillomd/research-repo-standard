@@ -1,5 +1,8 @@
 config:
   default: true
+  MD010:
+    ignore_code_languages:
+      - make
   MD013: false
   MD033: false
 globs:

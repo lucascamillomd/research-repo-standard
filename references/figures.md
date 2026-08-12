@@ -2,15 +2,14 @@
 
 # Reference: plot and figure contract
 
-`AGENTS.md` owns the normative portable figure policy; this reference is its procedural
-expansion and the sole owner of detailed atomic asset naming, export paths, assembly
-conventions, the contract template, and the QA checklist. Read it before planning a
-figure, writing plotting code, modifying figure outputs, and performing QA.
+`AGENTS.md` owns the normative portable figure policy; this reference is its procedural expansion
+and the sole owner of detailed atomic asset naming, export paths, assembly conventions, the contract
+template, and the QA checklist. Read it before planning a figure, writing plotting code, modifying
+figure outputs, and performing QA.
 
 ## Scope
 
-Every plot — exploratory, diagnostic, analytical, supplementary, or manuscript-bound —
-must:
+Every plot — exploratory, diagnostic, analytical, supplementary, or manuscript-bound — must:
 
 1. use the `nature-figure` skill
 2. use Python exclusively for plotting, previewing, exporting, and visual QA
@@ -19,23 +18,21 @@ must:
 5. have traceable source data
 6. pass the complete export and QA contract
 
-Exploratory and diagnostic plots are not exempt. Their scientific role may be
-"diagnostic" or "exploratory," but they still require the contract, exports, source
-data, and QA.
+Exploratory and diagnostic plots are not exempt. Their scientific role may be "diagnostic" or
+"exploratory," but they still require the contract, exports, source data, and QA.
 
-Passing bootstrap discovery does not replace task-time invocation of `nature-figure`
-for each plotting task. Before writing plotting code, that invocation must succeed. If
-`nature-figure` is missing or its task-time invocation fails, stop all plotting and
-figure-related file-changing work and report the exact blocker; work that does not
-touch figures may continue.
+Passing bootstrap discovery does not replace task-time invocation of `nature-figure` for each
+plotting task. Before writing plotting code, that invocation must succeed. If `nature-figure` is
+missing or its task-time invocation fails, stop all plotting and figure-related file-changing work
+and report the exact blocker; work that does not touch figures may continue.
 
-Never use R or another language to render a preview, fallback, assembly, or substitute
-plot. If Python or a required Python plotting dependency is unavailable, stop the
-plotting task before writing plotting code or rendering and report the exact blocker.
+Never use R or another language to render a preview, fallback, assembly, or substitute plot. If
+Python or a required Python plotting dependency is unavailable, stop the plotting task before
+writing plotting code or rendering and report the exact blocker.
 
-Matplotlib and Seaborn are the default stack. A specialized Python library may be used
-only when scientifically necessary and when it meets the same editable-export and QA
-requirements. Interactive-first output is never the final manuscript artifact.
+Matplotlib and Seaborn are the default stack. A specialized Python library may be used only when
+scientifically necessary and when it meets the same editable-export and QA requirements.
+Interactive-first output is never the final manuscript artifact.
 
 ## Pre-plot contract
 
@@ -58,25 +55,24 @@ Reviewer risk:
 Required export formats:
 ```
 
-The core conclusion is one sentence with a verb. Every panel provides a unique piece of
-evidence — remove or merge a panel when hiding it would not weaken the argument.
-Classify the figure as a quantitative grid, schematic-led composite, image plate plus
-quantification, or asymmetric mixed-modality figure.
+The core conclusion is one sentence with a verb. Every panel provides a unique piece of evidence —
+remove or merge a panel when hiding it would not weaken the argument. Classify the figure as a
+quantitative grid, schematic-led composite, image plate plus quantification, or asymmetric
+mixed-modality figure.
 
-The panel map identifies atomic panels by their semantic asset names. It may record
-provisional manuscript letters separately, but those letters never become part of the
-atomic asset names or renders.
+The panel map identifies atomic panels by their semantic asset names. It may record provisional
+manuscript letters separately, but those letters never become part of the atomic asset names or
+renders.
 
 ## Atomic panels and source data
 
-Publication figures use identifiers such as `main_figure_1` and
-`extended_data_figure_1`; their atomic assets use the corresponding deterministic
-semantic stems `mf1_{short_descriptive_name}` and `edf1_{short_descriptive_name}`.
-Each panel has an explicit function or specification, is independently reproducible,
-reads a declared validated input, omits manuscript panel letters from both filename
-and rendered plot, exposes the statistics shown, maps to a source-data file, and
-exports without depending on a previously mutated plotting session. Use the same
-atomic stem for SVG, PDF, TIFF, PNG, and the panel's source-data file.
+Publication figures use identifiers such as `main_figure_1` and `extended_data_figure_1`; their
+atomic assets use the corresponding deterministic semantic stems `mf1_{short_descriptive_name}` and
+`edf1_{short_descriptive_name}`. Each panel has an explicit function or specification, is
+independently reproducible, reads a declared validated input, omits manuscript panel letters from
+both filename and rendered plot, exposes the statistics shown, maps to a source-data file, and
+exports without depending on a previously mutated plotting session. Use the same atomic stem for
+SVG, PDF, TIFF, PNG, and the panel's source-data file.
 
 ```text
 results/
@@ -92,38 +88,35 @@ results/
 
 Source data is tidy, documented, and sufficient to recreate the quantitative panel.
 
-Assembly, when required, comes after all atomic panel exporters in Stage 07. It
-consumes existing panels and never redraws them or changes their scientific encoding.
-Panel letters are applied only at assembly and must not rename or alter the underlying
-assets.
+Assembly, when required, comes after all atomic panel exporters in Stage 07. It consumes existing
+panels and never redraws them or changes their scientific encoding. Panel letters are applied only
+at assembly and must not rename or alter the underlying assets.
 
 ## Exports
 
-Editable SVG, editable PDF, 600 dpi TIFF, PNG preview. Each format in its own
-lowercase extension-named directory:
-`results/figures/<figure_id>/<format>/<asset>.<format>`. Never place exported files
-directly in `results/figures/<figure_id>/`. Journal-specific requirements may add
+Editable SVG, editable PDF, 600 dpi TIFF, PNG preview. Each format in its own lowercase
+extension-named directory: `results/figures/<figure_id>/<format>/<asset>.<format>`. Never place
+exported files directly in `results/figures/<figure_id>/`. Journal-specific requirements may add
 delivery formats but do not remove the editable working exports.
 
 ## Shared style
 
 Centralize palettes, typography, dimensions, and export defaults in
-`src/<package_name>/figures/common/style.py`; export and validation contracts in the
-same `common/` package.
+`src/<package_name>/figures/common/style.py`; export and validation contracts in the same `common/`
+package.
 
-Use a consistent sans-serif stack led by Arial or Helvetica; editable text in SVG and
-PDF; restrained, semantically consistent color families; a non-color encoding wherever
-red/green confusion is possible; no rainbow color maps; direct labels or one shared
-legend; text readable at final output size; minimal non-data ink; and panel hierarchy
-that reflects evidence hierarchy.
+Use a consistent sans-serif stack led by Arial or Helvetica; editable text in SVG and PDF;
+restrained, semantically consistent color families; a non-color encoding wherever red/green
+confusion is possible; no rainbow color maps; direct labels or one shared legend; text readable at
+final output size; minimal non-data ink; and panel hierarchy that reflects evidence hierarchy.
 
-The same condition, method, or cohort keeps the same encoding across panels and
-figures unless the contract documents a compelling exception.
+The same condition, method, or cohort keeps the same encoding across panels and figures unless the
+contract documents a compelling exception.
 
 ## QA checklist
 
-Inspect the rendered outputs — open the SVG and PDF. A successful `savefig` call is
-not evidence of a correct export.
+Inspect the rendered outputs — open the SVG and PDF. A successful `savefig` call is not evidence of
+a correct export.
 
 - the one-sentence conclusion and panel evidence map still hold
 - final physical dimensions are correct
@@ -136,8 +129,7 @@ not evidence of a correct export.
 - axes that invite comparison use defensible scales
 - red/green is not the only distinction
 - grayscale interpretation remains possible where needed
-- `n`, replicate definitions, center, spread, tests, corrections, and comparisons are
-  documented
+- `n`, replicate definitions, center, spread, tests, corrections, and comparisons are documented
 - source-data files reproduce all quantitative marks
 - raster resolution is sufficient
 - image panels have calibrated scale bars where applicable

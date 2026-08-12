@@ -34,7 +34,7 @@ for relative_file in "${frontmatter_files[@]}"; do
 
   for key in "${required_keys[@]}"; do
     if [[ "$key" == standard_version ]]; then
-      key_count="$(sed -n '1,5p' "$file" | grep -Ec "${key}:" || true)"
+      key_count="$(grep -Ec "${key}:" "$file" || true)"
     else
       key_count="$(grep -Ec "^${key}:" <<< "$frontmatter" || true)"
     fi
@@ -70,7 +70,8 @@ done < <(git -C "$ROOT" ls-files -z)
 
 for relative_file in "${text_files[@]}"; do
   file="$ROOT/$relative_file"
-  if [[ "$relative_file" != Makefile ]] && grep -n $'\t' "$file" > /dev/null; then
+  if [[ "$relative_file" != Makefile && "$relative_file" != *.md ]] &&
+    grep -n $'\t' "$file" > /dev/null; then
     fail "tracked text file contains tabs: $relative_file"
   fi
   if grep -nE '[[:blank:]]+$' "$file" > /dev/null; then
