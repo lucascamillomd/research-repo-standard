@@ -90,13 +90,17 @@ else
   fail "lab notebook owns consequential decision records"
 fi
 
-# --- 8. workflow routes figure work through the figure reference ---
-if grep -qs 'references/figures\.md' "$ROOT/SKILL.md" &&
-  grep -qis 'before.*plot' "$ROOT/SKILL.md" &&
-  tr '\n' ' ' < "$ROOT/SKILL.md" | grep -qis 'again before figure QA\|again before performing QA'; then
-  pass "SKILL.md routes figure work and QA to the figure reference"
+# --- 8. workflow routes every figure trigger through the figure reference ---
+figure_route="$(tr '\n' ' ' < "$ROOT/SKILL.md")"
+if grep -Fqs "| \`references/figures.md\`       | before figure planning, plotting-code work, modifying figure outputs, and again before figure QA" \
+  "$ROOT/SKILL.md" &&
+  grep -Fqs "Read \`references/figures.md\`, then invoke \`nature-figure\` before" "$ROOT/SKILL.md" &&
+  grep -Fqs 'figure planning, plotting-code work, or output modification; consult the reference again before' \
+    "$ROOT/SKILL.md" &&
+  grep -Fqs 'performing QA.' <<< "$figure_route"; then
+  pass "SKILL.md routes every figure trigger and QA to the figure reference"
 else
-  fail "SKILL.md must load the figure reference before plotting and again before QA"
+  fail "SKILL.md must load the figure reference before planning, plotting, output changes, and QA"
 fi
 
 # --- 9. bootstrap delegates host prerequisites to their owner ---
@@ -132,13 +136,13 @@ else
   fail "figure reference must own detailed naming, shared stems, export paths, and panel lettering"
 fi
 
-figure_duplicates="$({
+figure_duplicates="$(
   grep -HnE 'mf[0-9]+_|edf[0-9]+_|short_descriptive_name|hazard_ratio_distribution' \
     "$ROOT/AGENTS.md" "$ROOT/SKILL.md" "$ROOT/README.md" "$ROOT/agents/code-simplifier.md" \
     "$ROOT/references/analysis.md" "$ROOT/references/bootstrap.md" \
     "$ROOT/references/configuration.md" "$ROOT/references/data.md" \
     "$ROOT/references/prerequisites.md" 2> /dev/null || true
-})"
+)"
 if [[ -z "$figure_duplicates" ]]; then
   pass "detailed figure asset grammar occurs only in the figure reference"
 else
