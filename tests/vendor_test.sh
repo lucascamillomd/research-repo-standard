@@ -91,7 +91,14 @@ else
     fail "removed --check interface is rejected"
 fi
 
-# --- 5. every standard file carries a version stamp in its first 5 lines ---
+# --- 5. staging happens inside the target for same-filesystem replacement ---
+if grep -Fq 'mktemp -d "$TARGET/.vendor.XXXXXX"' "$ROOT/vendor.sh"; then
+    pass "vendor stages beside the destination"
+else
+    fail "vendor stages beside the destination"
+fi
+
+# --- 6. every standard file carries a version stamp in its first 5 lines ---
 stamp_ok=1
 for f in "$ROOT"/AGENTS.md "$ROOT"/SKILL.md "$ROOT"/README.md "$ROOT"/references/*.md "$ROOT"/agents/*.md; do
     if ! head -5 "$f" | grep -q 'standard_version:'; then

@@ -79,7 +79,9 @@ fi
 verify_source
 verify_target "$TARGET"
 
-work="$(mktemp -d)"
+# Stage beside the destination so the final rename stays on one filesystem and
+# cannot degrade into an interruptible cross-filesystem copy.
+work="$(mktemp -d "$TARGET/.vendor.XXXXXX")"
 trap 'rm -rf "$work"' EXIT
 
 build_vendored "$work/AGENTS.md" "$TARGET"
