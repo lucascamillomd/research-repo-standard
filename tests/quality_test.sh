@@ -3,6 +3,7 @@
 set -u
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT" || exit 1
 FAILS=0
 pass() { printf 'ok: %s\n' "$*"; }
 fail() {
@@ -12,68 +13,36 @@ fail() {
 
 frontmatter_files=(SKILL.md agents/code-simplifier.md)
 required_keys=(name description standard_version)
+markdownlint="$ROOT/node_modules/.bin/markdownlint-cli2"
 
-markdown_tabs_are_valid() {
-  awk '
-    function strip_indent(line, spaces) {
-      match(line, /^ */)
-      spaces = RLENGTH
-      if (spaces <= 3) return substr(line, spaces + 1)
-      return line
-    }
-    function fence_length(line, marker, count) {
-      marker = substr(line, 1, 1)
-      if (marker != "`" && marker != "~") return 0
-      for (count = 1; substr(line, count + 1, 1) == marker; count++);
-      return count
-    }
-    {
-      line = strip_indent($0)
-      fence_size = fence_length(line)
-      marker = substr(line, 1, 1)
-      rest = substr(line, fence_size + 1)
-
-      if (in_fence) {
-        if (marker == fence_marker && fence_size >= opening_length && rest ~ /^[[:space:]]*$/) {
-          if (index($0, "\t")) exit 1
-          in_fence = ""
-          next
-        }
-        if (!make_fence && index($0, "\t")) exit 1
-        next
-      }
-
-      opens_fence = fence_size >= 3 && !(marker == "`" && index(rest, "`"))
-      if (opens_fence) {
-        if (index($0, "\t")) exit 1
-        in_fence = 1
-        fence_marker = marker
-        opening_length = fence_size
-        make_fence = rest ~ /^[[:space:]]*make[[:space:]]*$/
-        next
-      }
-
-      if (index($0, "\t")) exit 1
-    }
-  ' "$@"
-}
-
-if printf "   \`\`\`\`make\n\trecipe\n   \`\`\`\`\n" | markdown_tabs_are_valid; then
-  pass "Markdown tabs are allowed in indented long make fences"
-else
-  fail "Markdown tabs are allowed in indented long make fences"
+if [[ ! -x "$markdownlint" ]]; then
+  if ! command -v mise > /dev/null 2>&1; then
+    echo "tests/quality_test.sh: mise is required to install pinned quality dependencies" >&2
+    exit 1
+  fi
+  mise exec -- npm ci > /dev/null
 fi
 
-if printf "~~~text\n\`\`\`make\n\trecipe\n\`\`\`\n~~~\n" | markdown_tabs_are_valid; then
+lint_markdown_stdin() {
+  mise exec -- "$markdownlint" --no-globs - > /dev/null 2>&1
+}
+
+if printf '# Test\n\n   %smake title=x\n\trecipe\n   %s\n' '````' '````' | lint_markdown_stdin; then
+  pass "Markdown tabs are allowed in parsed make fences"
+else
+  fail "Markdown tabs are allowed in parsed make fences"
+fi
+
+if printf '# Test\n\n~~~text\n%smake\n\trecipe\n%s\n~~~\n' '```' '```' | lint_markdown_stdin; then
   fail "make-looking content inside a non-make fence must not allow tabs"
 else
   pass "make-looking content inside a non-make fence does not allow tabs"
 fi
 
-if printf '~~~make\n```make\n\trecipe\n~~~\n' | markdown_tabs_are_valid; then
-  pass "different-marker content does not change an active make fence"
+if printf '# Test\n\n<script>\n%smake\n\trecipe\n%s\n</script>\n' '```' '```' | lint_markdown_stdin; then
+  fail "make-looking content inside raw HTML must not allow tabs"
 else
-  fail "different-marker content does not change an active make fence"
+  pass "make-looking content inside raw HTML does not allow tabs"
 fi
 
 for relative_file in "${frontmatter_files[@]}"; do
@@ -145,8 +114,8 @@ while IFS= read -r -d '' relative_file; do
   fi
 
   if [[ "$relative_file" == *.md ]]; then
-    if ! markdown_tabs_are_valid "$file"; then
-      fail "tracked Markdown contains tabs outside make fences: $relative_file"
+    if ! mise exec -- "$markdownlint" --no-globs "$relative_file" > /dev/null 2>&1; then
+      fail "tracked Markdown violates the pinned lint contract: $relative_file"
     fi
   elif [[ "$relative_file" != Makefile ]] && grep -q $'\t' "$file"; then
     fail "tracked text file contains tabs: $relative_file"

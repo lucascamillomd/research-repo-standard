@@ -20,6 +20,13 @@ case "${1:-}" in
     mise exec -- shfmt -d -i 2 -ci -sr "${shell_files[@]}"
     bash -n "${shell_files[@]}"
     ;;
+  test)
+    mise exec -- npm ci
+    bash tests/vendor_test.sh
+    bash tests/adapter_test.sh
+    bash tests/consistency_test.sh
+    bash tests/quality_test.sh
+    ;;
   check)
     bash "$0" lint
     bash tests/vendor_test.sh
@@ -29,7 +36,7 @@ case "${1:-}" in
     git diff --check
     ;;
   *)
-    echo "usage: tools/quality.sh {format|lint|check}" >&2
+    echo "usage: tools/quality.sh {format|lint|test|check}" >&2
     exit 2
     ;;
 esac
