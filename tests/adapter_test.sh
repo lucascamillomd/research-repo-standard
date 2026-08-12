@@ -44,6 +44,7 @@ if [[ -f "$codex_profile" ]] \
     && grep -Eq '^[[:space:]]*description[[:space:]]*=' "$codex_profile" \
     && grep -Eq '^[[:space:]]*developer_instructions[[:space:]]*=' "$codex_profile" \
     && grep -q 'agents/code-simplifier\.md' "$codex_profile" \
+    && [[ -f "$target/agents/code-simplifier.md" ]] \
     && [[ ! -e "$target/CODEX.md" ]] \
     && ! grep -Eq '^[[:space:]]*(model|model_reasoning_effort)[[:space:]]*=' "$codex_profile"; then
     pass "Codex adapter installs provider-neutral simplifier profile"

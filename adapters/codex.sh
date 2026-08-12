@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 usage() {
     echo "usage: $(basename "$0") <target-repo>" >&2
     exit 2
@@ -18,10 +20,11 @@ if [[ ! -f "$TARGET/AGENTS.md" ]]; then
     exit 1
 fi
 
-mkdir -p "$TARGET/.codex/agents"
+mkdir -p "$TARGET/.codex/agents" "$TARGET/agents"
+cp "$SRC/agents/code-simplifier.md" "$TARGET/agents/code-simplifier.md"
 cat > "$TARGET/.codex/agents/code-simplifier.toml" <<'EOF'
 name = "code-simplifier"
-description = "Simplifies recently modified code while preserving behavior and repository policy."
-developer_instructions = "Read and apply agents/code-simplifier.md before reviewing recently modified code. Preserve behavior, follow the effective AGENTS.md policy, run relevant tests, and report significant refinements."
+description = "Simplifies recently modified code while preserving exact behavior."
+developer_instructions = "Read and apply agents/code-simplifier.md before reviewing changed code. Preserve behavior exactly, follow AGENTS.md, edit only within the delegated scope, and rerun covering tests after any edit."
 EOF
-printf 'installed Codex adapter -> %s\n' "$TARGET"
+printf 'installed Codex custom agent -> %s\n' "$TARGET/.codex/agents/code-simplifier.toml"

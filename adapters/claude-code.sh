@@ -21,7 +21,17 @@ if [[ ! -f "$TARGET/AGENTS.md" ]]; then
 fi
 
 mkdir -p "$TARGET/.claude/agents"
-sed '/^model:/d' "$SRC/agents/code-simplifier.md" \
-    > "$TARGET/.claude/agents/code-simplifier.md"
+{
+    cat <<'EOF'
+---
+name: code-simplifier
+description: Simplifies and refines code for clarity, consistency, and maintainability while preserving all functionality. Focuses on recently modified code unless instructed otherwise.
+---
+EOF
+    awk '
+        delimiters < 2 && /^---$/ { delimiters++; next }
+        delimiters >= 2 { print }
+    ' "$SRC/agents/code-simplifier.md"
+} > "$TARGET/.claude/agents/code-simplifier.md"
 ln -sfn AGENTS.md "$TARGET/CLAUDE.md"
 printf 'installed Claude Code adapter -> %s\n' "$TARGET"
