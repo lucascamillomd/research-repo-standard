@@ -16,8 +16,6 @@ trap 'rm -rf "$tmp"' EXIT
 target="$tmp/target"
 mkdir "$target"
 "$ROOT/vendor.sh" "$target" > /dev/null
-rm -f "$target/CLAUDE.md"
-
 "$ROOT/adapters/claude-code.sh" "$target" > /dev/null
 if [[ "$(readlink "$target/CLAUDE.md" 2> /dev/null || true)" == "AGENTS.md" ]]; then
   pass "Claude adapter creates relative policy alias"

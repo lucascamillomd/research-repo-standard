@@ -21,7 +21,7 @@ case "${1:-}" in
     bash -n "${shell_files[@]}"
     ;;
   check)
-    "$0" lint
+    bash "$0" lint
     bash tests/vendor_test.sh
     bash tests/adapter_test.sh
     bash tests/consistency_test.sh

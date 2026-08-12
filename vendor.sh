@@ -89,14 +89,12 @@ build_vendored "$work/AGENTS.md" "$TARGET"
 # Move into place only after the whole file is built, so a failure partway
 # through cannot leave a half-written standard behind. The target is a git
 # repository; git is the backup, so no .bak file is written.
-had_section=0
-[[ -s "$work/section" ]] && had_section=1
 mv "$work/AGENTS.md" "$TARGET/AGENTS.md"
 
 version="$(sed -n '1s/.*standard_version: \([0-9.]*\).*/\1/p' "$SRC/AGENTS.md")"
 echo "vendored standard_version: $version -> $TARGET"
 
-if ((had_section)); then
+if [[ -s "$work/section" ]]; then
   echo "preserved the existing '## This repository' section"
 else
   echo "next: fill in the '## This repository' section of $TARGET/AGENTS.md"

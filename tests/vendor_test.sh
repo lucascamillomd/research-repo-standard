@@ -48,11 +48,10 @@ grep -vx '## Using this standard' "$ROOT/AGENTS.md" > "$bad/AGENTS.md"
 t3="$tmp/badtarget"
 mkdir "$t3"
 echo "sentinel" > "$t3/AGENTS.md"
-err3="$("$bad/vendor.sh" "$t3" 2>&1 > /dev/null)" && t3_ok=0 || t3_ok=$?
-if [[ "$t3_ok" -ne 0 ]]; then
-  pass "corrupted source aborts"
-else
+if err3="$("$bad/vendor.sh" "$t3" 2>&1 > /dev/null)"; then
   fail "corrupted source must abort"
+else
+  pass "corrupted source aborts"
 fi
 if echo "$err3" | grep -q "must contain '## This repository' followed by '## Using this standard'"; then
   pass "corrupted source prints diagnostic"
@@ -69,11 +68,10 @@ fi
 t4="$tmp/badtarget2"
 mkdir "$t4"
 printf '## This repository\n\nSome content.\n' > "$t4/AGENTS.md"
-err4="$("$ROOT/vendor.sh" "$t4" 2>&1 > /dev/null)" && t4_ok=0 || t4_ok=$?
-if [[ "$t4_ok" -ne 0 ]]; then
-  pass "malformed target aborts"
-else
+if err4="$("$ROOT/vendor.sh" "$t4" 2>&1 > /dev/null)"; then
   fail "malformed target must abort"
+else
+  pass "malformed target aborts"
 fi
 if echo "$err4" | grep -q "## Using this standard"; then
   pass "malformed target prints diagnostic"
@@ -103,10 +101,8 @@ mkdir "$tmp/bin"
 cat > "$tmp/bin/mv" << 'EOF'
 #!/usr/bin/env bash
 set -e
-args=("$@")
-count=${#args[@]}
-source=${args[$((count - 2))]}
-destination=${args[$((count - 1))]}
+source=$1
+destination=$2
 source_dir="$(cd "$(dirname "$source")" && pwd -P)"
 destination_dir="$(cd "$(dirname "$destination")" && pwd -P)"
 probe="$destination_dir/.vendor-same-filesystem-probe"
