@@ -92,11 +92,28 @@ else
 fi
 
 # --- 5. staging happens inside the target for same-filesystem replacement ---
-if grep -Fq 'mktemp -d "$TARGET/.vendor.XXXXXX"' "$ROOT/vendor.sh"; then
-    pass "vendor stages beside the destination"
-else
-    fail "vendor stages beside the destination"
-fi
+real_mv="$(command -v mv)"
+mkdir "$tmp/bin"
+cat > "$tmp/bin/mv" <<'EOF'
+#!/usr/bin/env bash
+set -e
+args=("$@")
+count=${#args[@]}
+printf '%s\n%s\n' "${args[$((count - 2))]}" "${args[$((count - 1))]}" > "$MV_LOG"
+exec "$REAL_MV" "$@"
+EOF
+chmod +x "$tmp/bin/mv"
+t5="$tmp/staging-target"; mkdir "$t5"
+MV_LOG="$tmp/mv.log" REAL_MV="$real_mv" PATH="$tmp/bin:$PATH" \
+    "$ROOT/vendor.sh" "$t5" >/dev/null
+{
+    IFS= read -r staged
+    IFS= read -r destination
+} < "$tmp/mv.log"
+case "$staged:$destination" in
+    "$t5"/*:"$t5/AGENTS.md") pass "vendor stages beside the destination" ;;
+    *) fail "vendor stages beside the destination" ;;
+esac
 
 # --- 6. every standard file carries a version stamp in its first 5 lines ---
 stamp_ok=1
