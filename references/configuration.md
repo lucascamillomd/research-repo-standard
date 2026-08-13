@@ -21,6 +21,9 @@ Classify each stable researcher-editable value in this order:
 
 `analysis.yaml` owns settings and `datasets.yaml` is governed by the data contract.
 
+When randomness is used, declare `random_seed: 42` explicitly. Do not invent a seed field for a
+fully deterministic workflow.
+
 Python version, packaging metadata, tool configuration, and locked dependencies keep their existing
 sources of truth in `.python-version`, `pyproject.toml`, and `uv.lock`. Do not duplicate them in
 analysis YAML. Do not create a catch-all `project.yaml` or `settings.yaml`.

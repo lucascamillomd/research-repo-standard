@@ -187,6 +187,14 @@ else
   fail "simplifier profile must delegate configuration and test-naming grammar to repository authorities"
 fi
 
+# --- 14. deterministic workflows do not acquire unused seed settings ---
+if tr '\n' ' ' < "$ROOT/references/configuration.md" |
+  grep -Fqs 'Do not invent a seed field for a fully deterministic workflow.'; then
+  pass "configuration forbids unused deterministic-workflow seed fields"
+else
+  fail "configuration must forbid unused deterministic-workflow seed fields"
+fi
+
 # --- final ---
 if ((FAILS > 0)); then
   echo "$FAILS test(s) failed"
