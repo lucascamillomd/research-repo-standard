@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.11 -->
+<!-- standard_version: 2026.08.13 -->
 
 # Reference: agent-host prerequisites
 
@@ -123,10 +123,12 @@ command, run only the adapter the user selected:
 ./adapters/codex.sh <target-repo>
 ```
 
-The Claude Code adapter creates the documented policy alias and installs the simplifier profile at
-`.claude/agents/code-simplifier.md`. The Codex adapter installs `.codex/agents/code-simplifier.toml`
-plus the canonical `agents/code-simplifier.md`; it creates no `CODEX.md`. Adapter files are
-generated project integration, while the skills above are global host setup.
+Both adapters install the canonical `agents/code-simplifier.md`, then add their host-specific
+wrapper: the Claude Code adapter creates the documented policy alias and
+`.claude/agents/code-simplifier.md`; the Codex adapter installs
+`.codex/agents/code-simplifier.toml`. Customized generated profiles cause the adapter to refuse
+rather than overwrite them. Adapter files are generated project integration, while the skills above
+are global host setup.
 
 ## Delegated-agent verification
 
