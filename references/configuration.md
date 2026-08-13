@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.05 -->
+<!-- standard_version: 2026.08.13 -->
 
 # Reference: configuration ownership contract
 
@@ -14,23 +14,12 @@ Classify each stable researcher-editable value in this order:
 2. If it is secret or machine-specific, supply it through an environment variable.
 3. If it is derived from repository structure or another setting, compute it in `paths.py` or
    `config.py`; do not duplicate it in YAML.
-4. If changing it inherently changes the implementation, keep it as a named Python constant.
+4. If it is an implementation choice rather than a researcher-editable scientific or operational
+   setting, keep it as a named Python constant.
 
 ## Configuration files
 
-```text
-config/
-├── datasets.yaml              # mandatory provenance and legal-use registry
-└── analysis.yaml              # mandatory scientific and result-affecting settings
-```
-
-`datasets.yaml` remains governed by the separate data contract; its presence here shows the complete
-configuration directory rather than extending this settings contract to dataset provenance.
-
-`analysis.yaml` is present in every new repository and owns seeds, thresholds, inclusion rules,
-transformations, model parameters, and every other stable value that can affect results. When
-randomness is used, declare `random_seed: 42` explicitly. Do not invent a seed field for a fully
-deterministic workflow.
+`analysis.yaml` owns settings and `datasets.yaml` is governed by the data contract.
 
 Python version, packaging metadata, tool configuration, and locked dependencies keep their existing
 sources of truth in `.python-version`, `pyproject.toml`, and `uv.lock`. Do not duplicate them in
@@ -67,21 +56,8 @@ record the effective machine boundary without recording secret values.
 
 ## Provenance
 
-Each major build records:
-
-- the hash of every loaded YAML file;
-- validated effective scientific and runtime values;
-- every CLI override and its source;
-- commit, input, environment, container, output, and checksum identities required by the repository
-  standard;
-- secret inputs only by variable name and redacted presence, never by value;
-- the seed when randomness is used;
-- worker, parallelism, and accelerator boundaries when relevant; and
-- declared nondeterministic and manual boundaries.
-
-A successful run with an unrecorded result-affecting override is a provenance failure. When legal or
-data-use restrictions prohibit recording an input identifier, record a permitted stable registry
-alias and the restriction, never the barred value.
+Record every result-affecting override and its source. Reject an override that cannot be recorded.
+The complete manifest inventory is defined by `AGENTS.md`.
 
 ## Established repositories
 
@@ -98,13 +74,6 @@ migration when editing the function or entry point that reads a module-level pro
 
 ## Tests
 
-Configuration tests cover both valid loading and deliberate failure. Test rejection of unknown and
-missing fields, invalid types and cross-field combinations, duplicate ownership, versioned secrets,
-YAML redirection of canonical paths, and hidden result-affecting Python fallbacks. A scientific
-field omitted from YAML must fail rather than acquire a non-null Python default.
-
-Test that stage entry points load once, pass immutable typed configuration explicitly, and propagate
-`random_seed: 42` to every stochastic component when randomness is used. Test that result-affecting
-CLI overrides pass the shared validator and that the verification gate fails when an override is
-absent from provenance. Test containment and raw-data protections independently of successful
-configuration parsing.
+Configuration tests reject versioned secrets and YAML redirection of canonical paths. When
+stochastic processing is used, they verify propagation of `random_seed: 42` to every stochastic
+component. They also fail verification when an override is absent from provenance.

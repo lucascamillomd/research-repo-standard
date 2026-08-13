@@ -1,21 +1,9 @@
-<!-- standard_version: 2026.07.25 -->
+<!-- standard_version: 2026.08.13 -->
 
 # Reference: data contract
 
 `AGENTS.md` owns the normative portable policy. This reference is its procedural expansion for
 registering datasets, defining schemas, and writing validation.
-
-## Directory semantics
-
-- `data/raw/<dataset_id>/` — immutable source material in its received form
-- `data/interim/<dataset_id>/` — incomplete or intermediate transformations not yet approved as
-  analysis-ready
-- `data/processed/<dataset_id>/` — validated, analysis-ready data with a defined row grain and
-  schema
-- `data/external/<resource_id>/` — reference databases, ontologies, model assets, or other resources
-  that are not study observations
-
-Pipeline code never modifies a file beneath `data/raw/`.
 
 ## Registry
 
@@ -27,7 +15,8 @@ Fields that usually carry that weight:
 
 - stable identifier and human-readable title
 - citation or accession
-- expected local location
+- registry identifier and received-form description; internal `data/raw/...` paths stay in
+  `paths.py`
 - acquisition method and the script responsible
 - source version or retrieval date
 - expected files and row grain
@@ -59,20 +48,10 @@ Validate before analysis, not after. Check:
 - ordering invariants, when order matters
 - known cross-field constraints
 
-Turn inclusion and exclusion criteria into testable code, and produce an attrition table or flow
-record when appropriate. Report missingness before exclusions or imputation.
+`AGENTS.md` floor items 4–5 apply to validation and attrition.
 
 ## Data dictionary
 
 Record units, semantics, coding, provenance, and missing-value meanings in a machine-readable schema
 or dictionary linked from the corresponding `config/datasets.yaml` entry. Terse column names are not
 documentation.
-
-## Fixtures
-
-Prefer small deterministic fixtures that exercise the behaviour under test. Synthetic and real-data
-fixtures are both acceptable; choose whichever gives the clearest, most representative test without
-making the repository unnecessarily large.
-
-Tests requiring real data belong in the full verification path, not public CI. CI fixtures are
-already in the repository or generated during the run.

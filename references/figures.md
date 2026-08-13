@@ -1,38 +1,11 @@
-<!-- standard_version: 2026.08.11 -->
+<!-- standard_version: 2026.08.13 -->
 
 # Reference: plot and figure contract
 
-`AGENTS.md` owns the normative portable figure policy; this reference is its procedural expansion
-and the sole owner of detailed atomic asset naming, export paths, assembly conventions, the contract
-template, and the QA checklist. Read it before planning a figure, writing plotting code, modifying
-figure outputs, and performing QA.
-
-## Scope
-
-Every plot — exploratory, diagnostic, analytical, supplementary, or manuscript-bound — must:
-
-1. use the `nature-figure` skill
-2. use Python exclusively for plotting, previewing, exporting, and visual QA
-3. define the complete figure contract before plotting
-4. be implemented through importable functions under `src/<package_name>/figures/`
-5. have traceable source data
-6. pass the complete export and QA contract
-
-Exploratory and diagnostic plots are not exempt. Their scientific role may be "diagnostic" or
-"exploratory," but they still require the contract, exports, source data, and QA.
-
-Passing bootstrap discovery does not replace task-time invocation of `nature-figure` for each
-plotting task. Before writing plotting code, that invocation must succeed. If `nature-figure` is
-missing or its task-time invocation fails, stop all plotting and figure-related file-changing work
-and report the exact blocker; work that does not touch figures may continue.
-
-Never use R or another language to render a preview, fallback, assembly, or substitute plot. If
-Python or a required Python plotting dependency is unavailable, stop the plotting task before
-writing plotting code or rendering and report the exact blocker.
-
-Matplotlib and Seaborn are the default stack. A specialized Python library may be used only when
-scientifically necessary and when it meets the same editable-export and QA requirements.
-Interactive-first output is never the final manuscript artifact.
+`AGENTS.md` supplies normative figure requirements; this reference is the procedural expansion and
+sole owner of detailed atomic asset naming, export paths, assembly conventions, the contract
+template, and the QA checklist. Read this reference before: planning a figure; writing plotting
+code; modifying figure outputs; performing QA.
 
 ## Pre-plot contract
 
@@ -105,10 +78,10 @@ Centralize palettes, typography, dimensions, and export defaults in
 `src/<package_name>/figures/common/style.py`; export and validation contracts in the same `common/`
 package.
 
-Use a consistent sans-serif stack led by Arial or Helvetica; editable text in SVG and PDF;
-restrained, semantically consistent color families; a non-color encoding wherever red/green
-confusion is possible; no rainbow color maps; direct labels or one shared legend; text readable at
-final output size; minimal non-data ink; and panel hierarchy that reflects evidence hierarchy.
+Use a consistent sans-serif with editable text in SVG and PDF; restrained, semantically consistent
+color families; a non-color encoding wherever red/green confusion is possible; no rainbow color
+maps; direct labels or one shared legend; text readable at final output size; minimal non-data ink;
+and panel hierarchy that reflects evidence hierarchy.
 
 The same condition, method, or cohort keeps the same encoding across panels and figures unless the
 contract documents a compelling exception.

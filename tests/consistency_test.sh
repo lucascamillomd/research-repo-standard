@@ -102,17 +102,18 @@ else
   fail "lab notebook owns consequential decision records"
 fi
 
-# --- 8. workflow routes every figure trigger through the figure reference ---
-figure_route="$(tr '\n' ' ' < "$ROOT/SKILL.md")"
-if grep -Fqs "| \`references/figures.md\`       | before figure planning, plotting-code work, modifying figure outputs, and again before figure QA" \
-  "$ROOT/SKILL.md" &&
-  grep -Fqs "Read \`references/figures.md\`, then invoke \`nature-figure\` before" "$ROOT/SKILL.md" &&
-  grep -Fqs 'figure planning, plotting-code work, or output modification; consult the reference again before' \
-    "$ROOT/SKILL.md" &&
-  grep -Fqs 'performing QA.' <<< "$figure_route"; then
-  pass "SKILL.md routes every figure trigger and QA to the figure reference"
-else
-  fail "SKILL.md must load the figure reference before planning, plotting, output changes, and QA"
+# --- 8. policy routing and figure procedure use the same triggers ---
+figure_trigger_ok=1
+for file in "$ROOT/AGENTS.md" "$ROOT/references/figures.md"; do
+  for trigger in 'planning a figure' 'writing plotting code' 'modifying figure outputs' 'performing QA'; do
+    if ! grep -Fq "$trigger" "$file"; then
+      fail "missing figure trigger in ${file#"$ROOT"/}: $trigger"
+      figure_trigger_ok=0
+    fi
+  done
+done
+if ((figure_trigger_ok)); then
+  pass "figure procedure triggers stay aligned"
 fi
 
 # --- 9. bootstrap delegates host prerequisites to their owner ---
