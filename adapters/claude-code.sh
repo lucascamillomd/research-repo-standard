@@ -49,6 +49,20 @@ check_expected_file() {
   fi
 }
 
+inode_of() {
+  LC_ALL=C ls -di "$1" | awk '{ print $1 }'
+}
+
+remove_if_owned() {
+  destination=$1
+  expected_inode=$2
+  if [[ -n "$expected_inode" ]] &&
+    { [[ -e "$destination" ]] || [[ -L "$destination" ]]; } &&
+    [[ "$(inode_of "$destination")" == "$expected_inode" ]]; then
+    rm -f "$destination"
+  fi
+}
+
 check_policy_alias() {
   if [[ -L "$policy_alias" ]]; then
     if [[ "$(readlink "$policy_alias")" != "AGENTS.md" ]]; then
@@ -100,9 +114,11 @@ check_policy_alias
 
 canonical_stage=""
 host_stage=""
-created_alias=0
-created_canonical=0
-created_host=0
+alias_staging_directory=""
+alias_stage=""
+canonical_inode=""
+host_inode=""
+alias_inode=""
 created_agents_directory=0
 created_claude_directory=0
 created_claude_agents_directory=0
@@ -112,12 +128,16 @@ cleanup() {
   status=$?
   trap - EXIT HUP INT TERM
   set +e
+  if ((transaction_complete == 0)); then
+    remove_if_owned "$host_profile" "$host_inode"
+    remove_if_owned "$canonical_destination" "$canonical_inode"
+    remove_if_owned "$policy_alias" "$alias_inode"
+  fi
   [[ -n "$canonical_stage" ]] && rm -f "$canonical_stage"
   [[ -n "$host_stage" ]] && rm -f "$host_stage"
+  [[ -n "$alias_stage" ]] && rm -f "$alias_stage"
+  [[ -n "$alias_staging_directory" ]] && rmdir "$alias_staging_directory" 2> /dev/null
   if ((transaction_complete == 0)); then
-    ((created_host)) && rm -f "$host_profile"
-    ((created_canonical)) && rm -f "$canonical_destination"
-    ((created_alias)) && rm -f "$policy_alias"
     ((created_claude_agents_directory)) && rmdir "$claude_agents_directory" 2> /dev/null
     ((created_claude_directory)) && rmdir "$claude_directory" 2> /dev/null
     ((created_agents_directory)) && rmdir "$agents_directory" 2> /dev/null
@@ -164,6 +184,10 @@ host_stage="$(mktemp "$claude_agents_directory/.code-simplifier.md.stage.XXXXXX"
 } > "$host_stage"
 chmod 0644 "$host_stage"
 
+alias_staging_directory="$(mktemp -d "$TARGET/.CLAUDE.md.stage.XXXXXX")"
+alias_stage="$alias_staging_directory/CLAUDE.md"
+ln -s AGENTS.md "$alias_stage"
+
 check_policy_alias
 check_expected_file "$canonical_stage" "$canonical_destination"
 check_expected_file "$host_stage" "$host_profile"
@@ -171,26 +195,26 @@ verify_physical_parent "$agents_directory"
 verify_physical_parent "$claude_directory"
 verify_physical_parent "$claude_agents_directory"
 
-check_policy_alias
-if [[ ! -e "$policy_alias" && ! -L "$policy_alias" ]]; then
-  ln -s AGENTS.md "$policy_alias"
-  created_alias=1
-fi
 check_expected_file "$canonical_stage" "$canonical_destination"
 if [[ ! -e "$canonical_destination" && ! -L "$canonical_destination" ]]; then
+  canonical_inode="$(inode_of "$canonical_stage")"
   if ! mv "$canonical_stage" "$canonical_destination"; then
     fail "failed to publish canonical simplifier profile"
   fi
-  canonical_stage=""
-  created_canonical=1
 fi
 check_expected_file "$host_stage" "$host_profile"
 if [[ ! -e "$host_profile" && ! -L "$host_profile" ]]; then
+  host_inode="$(inode_of "$host_stage")"
   if ! mv "$host_stage" "$host_profile"; then
     fail "failed to publish Claude simplifier profile"
   fi
-  host_stage=""
-  created_host=1
+fi
+check_policy_alias
+if [[ ! -e "$policy_alias" && ! -L "$policy_alias" ]]; then
+  alias_inode="$(inode_of "$alias_stage")"
+  if ! mv "$alias_stage" "$policy_alias"; then
+    fail "failed to publish Claude policy alias"
+  fi
 fi
 transaction_complete=1
 printf 'installed Claude Code adapter -> %s\n' "$TARGET"

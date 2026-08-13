@@ -49,6 +49,20 @@ check_expected_file() {
   fi
 }
 
+inode_of() {
+  LC_ALL=C ls -di "$1" | awk '{ print $1 }'
+}
+
+remove_if_owned() {
+  destination=$1
+  expected_inode=$2
+  if [[ -n "$expected_inode" ]] &&
+    { [[ -e "$destination" ]] || [[ -L "$destination" ]]; } &&
+    [[ "$(inode_of "$destination")" == "$expected_inode" ]]; then
+    rm -f "$destination"
+  fi
+}
+
 [[ $# -eq 1 ]] || usage
 requested_target=$1
 
@@ -92,8 +106,8 @@ check_output_parent "$codex_agents_directory"
 
 canonical_stage=""
 host_stage=""
-created_canonical=0
-created_host=0
+canonical_inode=""
+host_inode=""
 created_agents_directory=0
 created_codex_directory=0
 created_codex_agents_directory=0
@@ -103,11 +117,13 @@ cleanup() {
   status=$?
   trap - EXIT HUP INT TERM
   set +e
+  if ((transaction_complete == 0)); then
+    remove_if_owned "$host_profile" "$host_inode"
+    remove_if_owned "$canonical_destination" "$canonical_inode"
+  fi
   [[ -n "$canonical_stage" ]] && rm -f "$canonical_stage"
   [[ -n "$host_stage" ]] && rm -f "$host_stage"
   if ((transaction_complete == 0)); then
-    ((created_host)) && rm -f "$host_profile"
-    ((created_canonical)) && rm -f "$canonical_destination"
     ((created_codex_agents_directory)) && rmdir "$codex_agents_directory" 2> /dev/null
     ((created_codex_directory)) && rmdir "$codex_directory" 2> /dev/null
     ((created_agents_directory)) && rmdir "$agents_directory" 2> /dev/null
@@ -160,19 +176,17 @@ verify_physical_parent "$codex_agents_directory"
 
 check_expected_file "$canonical_stage" "$canonical_destination"
 if [[ ! -e "$canonical_destination" && ! -L "$canonical_destination" ]]; then
+  canonical_inode="$(inode_of "$canonical_stage")"
   if ! mv "$canonical_stage" "$canonical_destination"; then
     fail "failed to publish canonical simplifier profile"
   fi
-  canonical_stage=""
-  created_canonical=1
 fi
 check_expected_file "$host_stage" "$host_profile"
 if [[ ! -e "$host_profile" && ! -L "$host_profile" ]]; then
+  host_inode="$(inode_of "$host_stage")"
   if ! mv "$host_stage" "$host_profile"; then
     fail "failed to publish Codex simplifier profile"
   fi
-  host_stage=""
-  created_host=1
 fi
 transaction_complete=1
 printf 'installed Codex custom agent -> %s\n' "$host_profile"

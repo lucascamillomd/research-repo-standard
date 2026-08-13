@@ -11,6 +11,7 @@ fail() {
 }
 
 tmp="$(mktemp -d)"
+tmp="$(cd "$tmp" && pwd -P)"
 trap 'rm -rf "$tmp"' EXIT
 
 canonical_name="$(awk '$1 == "name:" { print $2; exit }' "$ROOT/agents/code-simplifier.md")"
@@ -391,55 +392,162 @@ else
   fail "Codex adapter cleans a partial staging copy"
 fi
 
-# Failure on the second atomic publish must roll back the first publish and Claude alias.
+# A post-effect failure or signal must roll back every publish owned by the invocation.
 real_mv="$(command -v mv)"
-second_mv_bin="$tmp/second-mv-bin"
-mkdir "$second_mv_bin"
-cat > "$second_mv_bin/mv" << 'EOF'
+post_effect_mv_bin="$tmp/post-effect-mv-bin"
+mkdir "$post_effect_mv_bin"
+cat > "$post_effect_mv_bin/mv" << 'EOF'
 #!/usr/bin/env bash
 set -eu
 count=0
-if [[ -f "$MV_COUNT_FILE" ]]; then
-  count="$(cat "$MV_COUNT_FILE")"
-fi
+[[ ! -f "$MV_COUNT_FILE" ]] || count="$(cat "$MV_COUNT_FILE")"
 count=$((count + 1))
 printf '%s\n' "$count" > "$MV_COUNT_FILE"
-if [[ "$count" -eq 2 ]]; then
+source_inode="$(LC_ALL=C ls -di "$1" | awk '{ print $1 }')"
+if ! "$REAL_MV" "$@"; then
+  printf 'real-mv-failed count=%s\n' "$count" > "$MV_EFFECT_MARKER"
   exit 1
 fi
-exec "$REAL_MV" "$@"
+if [[ "$count" -eq "$FAIL_ON_COUNT" ]]; then
+  destination_inode="$(LC_ALL=C ls -di "$2" | awk '{ print $1 }')"
+  if [[ "$2" != "$EXPECTED_DESTINATION" || "$destination_inode" != "$source_inode" ]]; then
+    printf 'unexpected-effect count=%s source_inode=%s destination_inode=%s destination=%s\n' \
+      "$count" "$source_inode" "$destination_inode" "$2" > "$MV_EFFECT_MARKER"
+    exit 1
+  fi
+  if [[ "$FAULT_MODE" == "signal" ]]; then
+    if [[ "$PPID" != "$EXPECTED_ADAPTER_PID" ]]; then
+      printf 'unexpected-parent count=%s expected=%s actual=%s\n' \
+        "$count" "$EXPECTED_ADAPTER_PID" "$PPID" > "$MV_EFFECT_MARKER"
+      exit 1
+    fi
+    printf 'post-effect signal count=%s inode=%s\n' "$count" "$destination_inode" > "$MV_EFFECT_MARKER"
+    if ! kill -TERM "$PPID"; then
+      printf 'signal-delivery-failed count=%s pid=%s\n' "$count" "$PPID" > "$MV_EFFECT_MARKER"
+      exit 1
+    fi
+    exit 0
+  fi
+  printf 'post-effect count=%s inode=%s\n' "$count" "$destination_inode" > "$MV_EFFECT_MARKER"
+  exit 1
+fi
 EOF
-chmod +x "$second_mv_bin/mv"
+chmod +x "$post_effect_mv_bin/mv"
 
-claude_mv_failure="$tmp/claude-mv-failure"
-mkdir "$claude_mv_failure"
-cp "$target/AGENTS.md" "$claude_mv_failure/AGENTS.md"
-claude_mv_count="$tmp/claude-mv-count"
-if MV_COUNT_FILE="$claude_mv_count" REAL_MV="$real_mv" PATH="$second_mv_bin:$PATH" \
-  "$ROOT/adapters/claude-code.sh" "$claude_mv_failure" > /dev/null 2>&1; then
-  fail "Claude adapter aborts when the second publish fails"
-elif [[ ! -e "$claude_mv_failure/CLAUDE.md" && ! -L "$claude_mv_failure/CLAUDE.md" ]] &&
-  [[ ! -e "$claude_mv_failure/agents/code-simplifier.md" && ! -L "$claude_mv_failure/agents/code-simplifier.md" ]] &&
-  [[ ! -e "$claude_mv_failure/.claude/agents/code-simplifier.md" && ! -L "$claude_mv_failure/.claude/agents/code-simplifier.md" ]] &&
-  [[ -z "$(find "$claude_mv_failure" -name '*.stage.*' -print -quit)" ]]; then
-  pass "Claude adapter rolls back a failed publish transaction"
+claude_effect_failure="$tmp/claude effect failure"
+mkdir "$claude_effect_failure"
+cp "$target/AGENTS.md" "$claude_effect_failure/AGENTS.md"
+claude_effect_policy_before="$(cksum "$claude_effect_failure/AGENTS.md")"
+claude_effect_policy_inode="$(LC_ALL=C ls -di "$claude_effect_failure/AGENTS.md" | awk '{ print $1 }')"
+claude_effect_count="$tmp/claude-effect-count"
+claude_effect_marker="$tmp/claude-effect-marker"
+claude_effect_status=0
+MV_COUNT_FILE="$claude_effect_count" MV_EFFECT_MARKER="$claude_effect_marker" \
+  EXPECTED_DESTINATION="$claude_effect_failure/CLAUDE.md" FAIL_ON_COUNT=3 FAULT_MODE=fail \
+  REAL_MV="$real_mv" PATH="$post_effect_mv_bin:$PATH" \
+  bash -c 'export EXPECTED_ADAPTER_PID=$$; exec "$@"' _ \
+    "$ROOT/adapters/claude-code.sh" "$claude_effect_failure" > /dev/null 2>&1 ||
+  claude_effect_status=$?
+if [[ "$claude_effect_status" -ne 0 ]] &&
+  [[ -f "$claude_effect_count" ]] && [[ "$(cat "$claude_effect_count")" == "3" ]] &&
+  [[ -f "$claude_effect_marker" ]] &&
+  grep -Eq '^post-effect count=3 inode=[0-9]+$' "$claude_effect_marker" &&
+  [[ "$(cksum "$claude_effect_failure/AGENTS.md")" == "$claude_effect_policy_before" ]] &&
+  [[ "$(LC_ALL=C ls -di "$claude_effect_failure/AGENTS.md" | awk '{ print $1 }')" == "$claude_effect_policy_inode" ]] &&
+  [[ ! -e "$claude_effect_failure/CLAUDE.md" && ! -L "$claude_effect_failure/CLAUDE.md" ]] &&
+  [[ ! -e "$claude_effect_failure/agents/code-simplifier.md" && ! -L "$claude_effect_failure/agents/code-simplifier.md" ]] &&
+  [[ ! -e "$claude_effect_failure/.claude/agents/code-simplifier.md" && ! -L "$claude_effect_failure/.claude/agents/code-simplifier.md" ]] &&
+  [[ -z "$(find "$claude_effect_failure" -name '*.stage.*' -print -quit)" ]] &&
+  [[ -z "$(find "$claude_effect_failure" -mindepth 1 ! -path "$claude_effect_failure/AGENTS.md" -print -quit)" ]]; then
+  pass "Claude adapter rolls back a post-effect publish failure"
 else
-  fail "Claude adapter rolls back a failed publish transaction"
+  fail "Claude adapter rolls back a post-effect publish failure"
 fi
 
-codex_mv_failure="$tmp/codex-mv-failure"
-mkdir "$codex_mv_failure"
-cp "$target/AGENTS.md" "$codex_mv_failure/AGENTS.md"
-codex_mv_count="$tmp/codex-mv-count"
-if MV_COUNT_FILE="$codex_mv_count" REAL_MV="$real_mv" PATH="$second_mv_bin:$PATH" \
-  "$ROOT/adapters/codex.sh" "$codex_mv_failure" > /dev/null 2>&1; then
-  fail "Codex adapter aborts when the second publish fails"
-elif [[ ! -e "$codex_mv_failure/agents/code-simplifier.md" && ! -L "$codex_mv_failure/agents/code-simplifier.md" ]] &&
-  [[ ! -e "$codex_mv_failure/.codex/agents/code-simplifier.toml" && ! -L "$codex_mv_failure/.codex/agents/code-simplifier.toml" ]] &&
-  [[ -z "$(find "$codex_mv_failure" -name '*.stage.*' -print -quit)" ]]; then
-  pass "Codex adapter rolls back a failed publish transaction"
+codex_effect_failure="$tmp/codex effect failure"
+mkdir "$codex_effect_failure"
+cp "$target/AGENTS.md" "$codex_effect_failure/AGENTS.md"
+codex_effect_policy_before="$(cksum "$codex_effect_failure/AGENTS.md")"
+codex_effect_policy_inode="$(LC_ALL=C ls -di "$codex_effect_failure/AGENTS.md" | awk '{ print $1 }')"
+codex_effect_count="$tmp/codex-effect-count"
+codex_effect_marker="$tmp/codex-effect-marker"
+codex_effect_status=0
+MV_COUNT_FILE="$codex_effect_count" MV_EFFECT_MARKER="$codex_effect_marker" \
+  EXPECTED_DESTINATION="$codex_effect_failure/.codex/agents/code-simplifier.toml" \
+  FAIL_ON_COUNT=2 FAULT_MODE=fail REAL_MV="$real_mv" PATH="$post_effect_mv_bin:$PATH" \
+  bash -c 'export EXPECTED_ADAPTER_PID=$$; exec "$@"' _ \
+    "$ROOT/adapters/codex.sh" "$codex_effect_failure" > /dev/null 2>&1 || codex_effect_status=$?
+if [[ "$codex_effect_status" -ne 0 ]] &&
+  [[ -f "$codex_effect_count" ]] && [[ "$(cat "$codex_effect_count")" == "2" ]] &&
+  [[ -f "$codex_effect_marker" ]] &&
+  grep -Eq '^post-effect count=2 inode=[0-9]+$' "$codex_effect_marker" &&
+  [[ "$(cksum "$codex_effect_failure/AGENTS.md")" == "$codex_effect_policy_before" ]] &&
+  [[ "$(LC_ALL=C ls -di "$codex_effect_failure/AGENTS.md" | awk '{ print $1 }')" == "$codex_effect_policy_inode" ]] &&
+  [[ ! -e "$codex_effect_failure/agents/code-simplifier.md" && ! -L "$codex_effect_failure/agents/code-simplifier.md" ]] &&
+  [[ ! -e "$codex_effect_failure/.codex/agents/code-simplifier.toml" && ! -L "$codex_effect_failure/.codex/agents/code-simplifier.toml" ]] &&
+  [[ -z "$(find "$codex_effect_failure" -name '*.stage.*' -print -quit)" ]] &&
+  [[ -z "$(find "$codex_effect_failure" -mindepth 1 ! -path "$codex_effect_failure/AGENTS.md" -print -quit)" ]]; then
+  pass "Codex adapter rolls back a post-effect publish failure"
 else
-  fail "Codex adapter rolls back a failed publish transaction"
+  fail "Codex adapter rolls back a post-effect publish failure"
+fi
+
+claude_signal_failure="$tmp/claude signal failure"
+mkdir "$claude_signal_failure"
+cp "$target/AGENTS.md" "$claude_signal_failure/AGENTS.md"
+claude_signal_policy_before="$(cksum "$claude_signal_failure/AGENTS.md")"
+claude_signal_policy_inode="$(LC_ALL=C ls -di "$claude_signal_failure/AGENTS.md" | awk '{ print $1 }')"
+claude_signal_count="$tmp/claude-signal-count"
+claude_signal_marker="$tmp/claude-signal-marker"
+claude_signal_status=0
+MV_COUNT_FILE="$claude_signal_count" MV_EFFECT_MARKER="$claude_signal_marker" \
+  EXPECTED_DESTINATION="$claude_signal_failure/CLAUDE.md" FAIL_ON_COUNT=3 FAULT_MODE=signal \
+  REAL_MV="$real_mv" PATH="$post_effect_mv_bin:$PATH" \
+  bash -c 'export EXPECTED_ADAPTER_PID=$$; exec "$@"' _ \
+    "$ROOT/adapters/claude-code.sh" "$claude_signal_failure" > /dev/null 2>&1 ||
+  claude_signal_status=$?
+if [[ "$claude_signal_status" -ne 0 ]] &&
+  [[ -f "$claude_signal_count" ]] && [[ "$(cat "$claude_signal_count")" == "3" ]] &&
+  [[ -f "$claude_signal_marker" ]] &&
+  grep -Eq '^post-effect signal count=3 inode=[0-9]+$' "$claude_signal_marker" &&
+  [[ "$(cksum "$claude_signal_failure/AGENTS.md")" == "$claude_signal_policy_before" ]] &&
+  [[ "$(LC_ALL=C ls -di "$claude_signal_failure/AGENTS.md" | awk '{ print $1 }')" == "$claude_signal_policy_inode" ]] &&
+  [[ ! -e "$claude_signal_failure/CLAUDE.md" && ! -L "$claude_signal_failure/CLAUDE.md" ]] &&
+  [[ ! -e "$claude_signal_failure/agents/code-simplifier.md" && ! -L "$claude_signal_failure/agents/code-simplifier.md" ]] &&
+  [[ ! -e "$claude_signal_failure/.claude/agents/code-simplifier.md" && ! -L "$claude_signal_failure/.claude/agents/code-simplifier.md" ]] &&
+  [[ -z "$(find "$claude_signal_failure" -name '*.stage.*' -print -quit)" ]] &&
+  [[ -z "$(find "$claude_signal_failure" -mindepth 1 ! -path "$claude_signal_failure/AGENTS.md" -print -quit)" ]]; then
+  pass "Claude adapter rolls back after a post-effect TERM"
+else
+  fail "Claude adapter rolls back after a post-effect TERM"
+fi
+
+codex_signal_failure="$tmp/codex signal failure"
+mkdir "$codex_signal_failure"
+cp "$target/AGENTS.md" "$codex_signal_failure/AGENTS.md"
+codex_signal_policy_before="$(cksum "$codex_signal_failure/AGENTS.md")"
+codex_signal_policy_inode="$(LC_ALL=C ls -di "$codex_signal_failure/AGENTS.md" | awk '{ print $1 }')"
+codex_signal_count="$tmp/codex-signal-count"
+codex_signal_marker="$tmp/codex-signal-marker"
+codex_signal_status=0
+MV_COUNT_FILE="$codex_signal_count" MV_EFFECT_MARKER="$codex_signal_marker" \
+  EXPECTED_DESTINATION="$codex_signal_failure/.codex/agents/code-simplifier.toml" \
+  FAIL_ON_COUNT=2 FAULT_MODE=signal REAL_MV="$real_mv" PATH="$post_effect_mv_bin:$PATH" \
+  bash -c 'export EXPECTED_ADAPTER_PID=$$; exec "$@"' _ \
+    "$ROOT/adapters/codex.sh" "$codex_signal_failure" > /dev/null 2>&1 || codex_signal_status=$?
+if [[ "$codex_signal_status" -ne 0 ]] &&
+  [[ -f "$codex_signal_count" ]] && [[ "$(cat "$codex_signal_count")" == "2" ]] &&
+  [[ -f "$codex_signal_marker" ]] &&
+  grep -Eq '^post-effect signal count=2 inode=[0-9]+$' "$codex_signal_marker" &&
+  [[ "$(cksum "$codex_signal_failure/AGENTS.md")" == "$codex_signal_policy_before" ]] &&
+  [[ "$(LC_ALL=C ls -di "$codex_signal_failure/AGENTS.md" | awk '{ print $1 }')" == "$codex_signal_policy_inode" ]] &&
+  [[ ! -e "$codex_signal_failure/agents/code-simplifier.md" && ! -L "$codex_signal_failure/agents/code-simplifier.md" ]] &&
+  [[ ! -e "$codex_signal_failure/.codex/agents/code-simplifier.toml" && ! -L "$codex_signal_failure/.codex/agents/code-simplifier.toml" ]] &&
+  [[ -z "$(find "$codex_signal_failure" -name '*.stage.*' -print -quit)" ]] &&
+  [[ -z "$(find "$codex_signal_failure" -mindepth 1 ! -path "$codex_signal_failure/AGENTS.md" -print -quit)" ]]; then
+  pass "Codex adapter rolls back after a post-effect TERM"
+else
+  fail "Codex adapter rolls back after a post-effect TERM"
 fi
 
 # Rollback removes only outputs created by that invocation.
