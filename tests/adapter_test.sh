@@ -791,7 +791,7 @@ claude_effect_failure="$tmp/claude effect failure"
 mkdir "$claude_effect_failure"
 cp "$target/AGENTS.md" "$claude_effect_failure/AGENTS.md"
 claude_effect_policy_before="$(cksum "$claude_effect_failure/AGENTS.md")"
-claude_effect_policy_inode="$(LC_ALL=C ls -di "$claude_effect_failure/AGENTS.md" | awk '{ print $1 }')"
+claude_effect_policy_inode="$(inode_of "$claude_effect_failure/AGENTS.md")"
 claude_effect_count="$tmp/claude-effect-count"
 claude_effect_marker="$tmp/claude-effect-marker"
 claude_effect_status=0
@@ -806,7 +806,7 @@ if [[ "$claude_effect_status" -ne 0 ]] &&
   [[ -f "$claude_effect_marker" ]] &&
   grep -Eq '^post-effect count=3 inode=[0-9]+$' "$claude_effect_marker" &&
   [[ "$(cksum "$claude_effect_failure/AGENTS.md")" == "$claude_effect_policy_before" ]] &&
-  [[ "$(LC_ALL=C ls -di "$claude_effect_failure/AGENTS.md" | awk '{ print $1 }')" == "$claude_effect_policy_inode" ]] &&
+  [[ "$(inode_of "$claude_effect_failure/AGENTS.md")" == "$claude_effect_policy_inode" ]] &&
   [[ ! -e "$claude_effect_failure/CLAUDE.md" && ! -L "$claude_effect_failure/CLAUDE.md" ]] &&
   [[ ! -e "$claude_effect_failure/agents/code-simplifier.md" && ! -L "$claude_effect_failure/agents/code-simplifier.md" ]] &&
   [[ ! -e "$claude_effect_failure/.claude/agents/code-simplifier.md" && ! -L "$claude_effect_failure/.claude/agents/code-simplifier.md" ]] &&
@@ -821,7 +821,7 @@ codex_effect_failure="$tmp/codex effect failure"
 mkdir "$codex_effect_failure"
 cp "$target/AGENTS.md" "$codex_effect_failure/AGENTS.md"
 codex_effect_policy_before="$(cksum "$codex_effect_failure/AGENTS.md")"
-codex_effect_policy_inode="$(LC_ALL=C ls -di "$codex_effect_failure/AGENTS.md" | awk '{ print $1 }')"
+codex_effect_policy_inode="$(inode_of "$codex_effect_failure/AGENTS.md")"
 codex_effect_count="$tmp/codex-effect-count"
 codex_effect_marker="$tmp/codex-effect-marker"
 codex_effect_status=0
@@ -835,7 +835,7 @@ if [[ "$codex_effect_status" -ne 0 ]] &&
   [[ -f "$codex_effect_marker" ]] &&
   grep -Eq '^post-effect count=2 inode=[0-9]+$' "$codex_effect_marker" &&
   [[ "$(cksum "$codex_effect_failure/AGENTS.md")" == "$codex_effect_policy_before" ]] &&
-  [[ "$(LC_ALL=C ls -di "$codex_effect_failure/AGENTS.md" | awk '{ print $1 }')" == "$codex_effect_policy_inode" ]] &&
+  [[ "$(inode_of "$codex_effect_failure/AGENTS.md")" == "$codex_effect_policy_inode" ]] &&
   [[ ! -e "$codex_effect_failure/agents/code-simplifier.md" && ! -L "$codex_effect_failure/agents/code-simplifier.md" ]] &&
   [[ ! -e "$codex_effect_failure/.codex/agents/code-simplifier.toml" && ! -L "$codex_effect_failure/.codex/agents/code-simplifier.toml" ]] &&
   [[ -z "$(find "$codex_effect_failure" -name '*.stage.*' -print -quit)" ]] &&
@@ -849,7 +849,7 @@ claude_signal_failure="$tmp/claude signal failure"
 mkdir "$claude_signal_failure"
 cp "$target/AGENTS.md" "$claude_signal_failure/AGENTS.md"
 claude_signal_policy_before="$(cksum "$claude_signal_failure/AGENTS.md")"
-claude_signal_policy_inode="$(LC_ALL=C ls -di "$claude_signal_failure/AGENTS.md" | awk '{ print $1 }')"
+claude_signal_policy_inode="$(inode_of "$claude_signal_failure/AGENTS.md")"
 claude_signal_count="$tmp/claude-signal-count"
 claude_signal_marker="$tmp/claude-signal-marker"
 claude_signal_status=0
@@ -864,7 +864,7 @@ if [[ "$claude_signal_status" -ne 0 ]] &&
   [[ -f "$claude_signal_marker" ]] &&
   grep -Eq '^post-effect signal count=3 inode=[0-9]+$' "$claude_signal_marker" &&
   [[ "$(cksum "$claude_signal_failure/AGENTS.md")" == "$claude_signal_policy_before" ]] &&
-  [[ "$(LC_ALL=C ls -di "$claude_signal_failure/AGENTS.md" | awk '{ print $1 }')" == "$claude_signal_policy_inode" ]] &&
+  [[ "$(inode_of "$claude_signal_failure/AGENTS.md")" == "$claude_signal_policy_inode" ]] &&
   [[ ! -e "$claude_signal_failure/CLAUDE.md" && ! -L "$claude_signal_failure/CLAUDE.md" ]] &&
   [[ ! -e "$claude_signal_failure/agents/code-simplifier.md" && ! -L "$claude_signal_failure/agents/code-simplifier.md" ]] &&
   [[ ! -e "$claude_signal_failure/.claude/agents/code-simplifier.md" && ! -L "$claude_signal_failure/.claude/agents/code-simplifier.md" ]] &&
@@ -879,7 +879,7 @@ codex_signal_failure="$tmp/codex signal failure"
 mkdir "$codex_signal_failure"
 cp "$target/AGENTS.md" "$codex_signal_failure/AGENTS.md"
 codex_signal_policy_before="$(cksum "$codex_signal_failure/AGENTS.md")"
-codex_signal_policy_inode="$(LC_ALL=C ls -di "$codex_signal_failure/AGENTS.md" | awk '{ print $1 }')"
+codex_signal_policy_inode="$(inode_of "$codex_signal_failure/AGENTS.md")"
 codex_signal_count="$tmp/codex-signal-count"
 codex_signal_marker="$tmp/codex-signal-marker"
 codex_signal_status=0
@@ -893,7 +893,7 @@ if [[ "$codex_signal_status" -ne 0 ]] &&
   [[ -f "$codex_signal_marker" ]] &&
   grep -Eq '^post-effect signal count=2 inode=[0-9]+$' "$codex_signal_marker" &&
   [[ "$(cksum "$codex_signal_failure/AGENTS.md")" == "$codex_signal_policy_before" ]] &&
-  [[ "$(LC_ALL=C ls -di "$codex_signal_failure/AGENTS.md" | awk '{ print $1 }')" == "$codex_signal_policy_inode" ]] &&
+  [[ "$(inode_of "$codex_signal_failure/AGENTS.md")" == "$codex_signal_policy_inode" ]] &&
   [[ ! -e "$codex_signal_failure/agents/code-simplifier.md" && ! -L "$codex_signal_failure/agents/code-simplifier.md" ]] &&
   [[ ! -e "$codex_signal_failure/.codex/agents/code-simplifier.toml" && ! -L "$codex_signal_failure/.codex/agents/code-simplifier.toml" ]] &&
   [[ -z "$(find "$codex_signal_failure" -name '*.stage.*' -print -quit)" ]] &&
@@ -918,13 +918,13 @@ cp "$target/AGENTS.md" "$claude_existing/AGENTS.md"
 cp "$ROOT/agents/code-simplifier.md" "$claude_existing/agents/code-simplifier.md"
 ln -s AGENTS.md "$claude_existing/CLAUDE.md"
 claude_existing_before="$(cksum "$claude_existing/agents/code-simplifier.md")"
-claude_existing_inode="$(LC_ALL=C ls -di "$claude_existing/agents/code-simplifier.md" | awk '{ print $1 }')"
-claude_existing_alias_inode="$(LC_ALL=C ls -di "$claude_existing/CLAUDE.md" | awk '{ print $1 }')"
+claude_existing_inode="$(inode_of "$claude_existing/agents/code-simplifier.md")"
+claude_existing_alias_inode="$(inode_of "$claude_existing/CLAUDE.md")"
 if PATH="$first_mv_bin:$PATH" "$ROOT/adapters/claude-code.sh" "$claude_existing" > /dev/null 2>&1; then
   fail "Claude adapter reports a host publish failure with pre-existing outputs"
 elif [[ "$(cksum "$claude_existing/agents/code-simplifier.md")" == "$claude_existing_before" ]] &&
-  [[ "$(LC_ALL=C ls -di "$claude_existing/agents/code-simplifier.md" | awk '{ print $1 }')" == "$claude_existing_inode" ]] &&
-  [[ "$(LC_ALL=C ls -di "$claude_existing/CLAUDE.md" | awk '{ print $1 }')" == "$claude_existing_alias_inode" ]] &&
+  [[ "$(inode_of "$claude_existing/agents/code-simplifier.md")" == "$claude_existing_inode" ]] &&
+  [[ "$(inode_of "$claude_existing/CLAUDE.md")" == "$claude_existing_alias_inode" ]] &&
   [[ "$(readlink "$claude_existing/CLAUDE.md")" == "AGENTS.md" ]] &&
   [[ ! -e "$claude_existing/.claude" && ! -L "$claude_existing/.claude" ]] &&
   [[ -z "$(find "$claude_existing" -name '*.stage.*' -print -quit)" ]] &&
@@ -939,11 +939,11 @@ mkdir -p "$codex_existing/agents"
 cp "$target/AGENTS.md" "$codex_existing/AGENTS.md"
 cp "$ROOT/agents/code-simplifier.md" "$codex_existing/agents/code-simplifier.md"
 codex_existing_before="$(cksum "$codex_existing/agents/code-simplifier.md")"
-codex_existing_inode="$(LC_ALL=C ls -di "$codex_existing/agents/code-simplifier.md" | awk '{ print $1 }')"
+codex_existing_inode="$(inode_of "$codex_existing/agents/code-simplifier.md")"
 if PATH="$first_mv_bin:$PATH" "$ROOT/adapters/codex.sh" "$codex_existing" > /dev/null 2>&1; then
   fail "Codex adapter reports a TOML publish failure with a pre-existing output"
 elif [[ "$(cksum "$codex_existing/agents/code-simplifier.md")" == "$codex_existing_before" ]] &&
-  [[ "$(LC_ALL=C ls -di "$codex_existing/agents/code-simplifier.md" | awk '{ print $1 }')" == "$codex_existing_inode" ]] &&
+  [[ "$(inode_of "$codex_existing/agents/code-simplifier.md")" == "$codex_existing_inode" ]] &&
   [[ ! -e "$codex_existing/.codex" && ! -L "$codex_existing/.codex" ]] &&
   [[ -z "$(find "$codex_existing" -name '*.stage.*' -print -quit)" ]] &&
   [[ ! -e "$codex_existing/.research-repo-standard-adapter.lock" && ! -L "$codex_existing/.research-repo-standard-adapter.lock" ]]; then
