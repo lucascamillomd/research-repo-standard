@@ -72,8 +72,7 @@ canonical_description="$(awk '
     capture { exit }
     END { print text }
 ' "$canonical_profile")"
-canonical_standard_version="$(awk '$1 == "standard_version:" { print $2; exit }' "$canonical_profile")"
-if [[ -z "$canonical_name" || -z "$canonical_description" || -z "$canonical_standard_version" ]]; then
+if [[ -z "$canonical_name" || -z "$canonical_description" ]]; then
   fail "canonical simplifier metadata is incomplete"
 fi
 

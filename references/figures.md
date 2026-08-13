@@ -1,5 +1,3 @@
-<!-- standard_version: 2026.08.13 -->
-
 # Reference: plot and figure contract
 
 `AGENTS.md` supplies normative figure requirements; this reference is the procedural expansion and

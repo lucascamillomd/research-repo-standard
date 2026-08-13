@@ -1,4 +1,3 @@
-<!-- standard_version: 2026.08.13 -->
 <!-- Source: https://github.com/lucascamillomd/research-repo-standard -->
 
 # Reproducible Research Repository Standard

@@ -141,18 +141,6 @@ else
   pass "failed final replacement preserves target and cleans staging"
 fi
 
-# --- 7. every standard file carries a version stamp near its opening metadata ---
-stamp_ok=1
-for f in "$ROOT"/AGENTS.md "$ROOT"/SKILL.md "$ROOT"/README.md "$ROOT"/references/*.md "$ROOT"/agents/*.md; do
-  if ! awk 'NR <= 12 && /standard_version:/ { found=1 } END { exit !found }' "$f"; then
-    fail "missing standard_version stamp: ${f#"$ROOT"/}"
-    stamp_ok=0
-  fi
-done
-if ((stamp_ok)); then
-  pass "version stamps present"
-fi
-
 # --- final ---
 if ((FAILS > 0)); then
   echo "$FAILS test(s) failed"

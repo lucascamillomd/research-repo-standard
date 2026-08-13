@@ -1,5 +1,3 @@
-<!-- standard_version: 2026.08.13 -->
-
 # Reference: scientific analysis contract
 
 `AGENTS.md` owns the normative portable policy. This reference is its procedural expansion for

@@ -1,5 +1,3 @@
-<!-- standard_version: 2026.08.13 -->
-
 # Reference: agent-host prerequisites
 
 This is the authoritative host procedure for resolving and, when a required capability is missing,

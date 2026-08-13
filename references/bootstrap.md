@@ -1,5 +1,3 @@
-<!-- standard_version: 2026.08.13 -->
-
 # Bootstrap: tool configuration
 
 Concrete tool configuration — uv, Ruff, ty, pre-commit, CI guards, Makefile skeleton — to write when

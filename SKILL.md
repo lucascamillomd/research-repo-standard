@@ -8,8 +8,6 @@ description:
   general-purpose software projects or scratch analyses that will not support a scientific claim.
 ---
 
-<!-- standard_version: 2026.08.13 -->
-
 # Research repository standard
 
 This standard is for repositories whose purpose is to support a scientific claim — an analysis,

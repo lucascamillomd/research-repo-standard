@@ -1,5 +1,3 @@
-<!-- standard_version: 2026.08.13 -->
-
 # research-repo-standard
 
 An operating standard for reproducible repositories that support a scientific analysis, study, or
