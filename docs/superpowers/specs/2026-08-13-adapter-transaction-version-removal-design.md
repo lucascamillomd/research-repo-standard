@@ -18,12 +18,15 @@ regular files, and refuse to replace customized files. Claude's exact `CLAUDE.md
 policy alias remains the sole permitted generated symlink destination.
 
 Before creating any output parent or staging any artifact, both adapters acquire the same
-target-local adapter lock. The portable lock is an atomically created symlink whose target records
-the owning PID and adapter name. A live or unverifiable owner is preserved and reported as
-contention. A lock carrying a verifiably dead PID may be reclaimed only after its owner token is
-re-read unchanged. Success, ordinary failure, and trapped signals release a lock only when its
-current owner token still matches the invocation. This serializes cooperating Claude and Codex
-installations without blindly deleting an unknown or live lock.
+target-local adapter lock by atomically creating the exact lock directory with `mkdir`. Only the
+invocation that successfully creates that directory writes its strict PID, exact adapter name, and
+nonce token to the owner file inside. It treats the lock as owned only after an exact reread. A live
+owner is reported as contention. Every dead-PID, ambiguous-liveness, malformed, missing, non-directory,
+or symlink lock state is preserved and reported for manual intervention; locks are never
+automatically reclaimed. Success, ordinary failure, and trapped signals release a lock only when
+the invocation marked it owned and its owner file still contains the exact unique token. A created
+but not owned lock directory may be removed only with `rmdir` while empty. This serializes
+cooperating Claude and Codex installations without traversing or deleting pre-existing lock paths.
 
 Every new output is staged beside its destination. Before publication, the adapter records the
 staged artifact's filesystem inode and arms rollback. It then publishes by same-filesystem atomic
@@ -66,11 +69,14 @@ parent-symlink, leaf-symlink, paths-with-spaces, customized-file, exact-rerun, a
 coverage.
 
 Add focused serialization cases proving that a Claude and Codex invocation contend on the same lock
-while one is live, that the contender exits nonzero without removing the owner's lock, that a
-verifiably stale lock can be reclaimed, and that an unverifiable lock is preserved. Assert lock
-release after success, ordinary error, and trapped `TERM`. Pre-existing declared-output rollback
-tests record inode identity as well as checksums or symlink targets and verify complete stage and
-invocation-created-directory cleanup.
+while one is live and that the contender exits nonzero without removing the owner's lock. Exercise
+regular-file, ordinary-directory, valid-owner, malformed/missing-owner, dangling-symlink,
+directory-symlink, and external-directory-symlink lock paths; all must be preserved without output
+mutation or writes through existing paths. Reject every non-exact token grammar, and prove nonzero
+owner-liveness checks, same-PID never-owned cleanup, and simultaneous stale contenders preserve the
+lock for manual intervention. Prove unique nonces and release after success, ordinary error, and
+trapped `TERM`. Pre-existing declared-output rollback tests record inode identity as well as
+checksums or symlink targets and verify complete stage and invocation-created-directory cleanup.
 
 ## Version-metadata removal
 

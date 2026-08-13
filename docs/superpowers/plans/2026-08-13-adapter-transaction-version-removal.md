@@ -14,7 +14,7 @@
 - Preserve all other approved policy, ownership, adapter, reference, and test behavior.
 - Rollback may remove a destination only when the invocation-owned inode is visible when cleanup verifies that destination. Do not claim atomic protection from adversarial out-of-band replacement between inode check and unlink.
 - Preserve every pre-existing output and every destination whose inode does not match at cleanup verification.
-- Both adapters acquire the same target-local owner-token lock before output-parent creation or staging. Preserve and report live or unverifiable locks; reclaim only a verifiably stale token; release only a lock whose current token belongs to the invocation.
+- Both adapters acquire the same exact target-local lock directory with atomic `mkdir` before output-parent creation or staging. Only the creator writes and verifies the strict PID, exact adapter name, and nonce owner file. Never reclaim an existing lock automatically. Preserve every live, dead-PID, ambiguous-liveness, malformed, missing, non-directory, or symlink lock for manual intervention; release only a lock explicitly owned by this invocation whose exact owner token still matches.
 - Reject symlinked output parents and generated-profile leaf symlinks; permit only the exact Claude policy alias `CLAUDE.md -> AGENTS.md`.
 - Stage each output on its destination filesystem and publish it by same-filesystem atomic rename.
 - Arm rollback before the first publish and disarm it only after all declared outputs publish successfully.
@@ -122,9 +122,11 @@ git commit -m "docs: remove per-file version metadata"
 
 - [ ] **Step 0: Serialize cooperating adapter installations**
 
-Use the same target-local lock path in both adapters. Acquire it atomically before output-parent creation or staging. Record the owner as a portable PID-and-adapter token. A live or unverifiable token fails with a clear contention diagnostic and remains untouched. A verifiably dead PID token may be removed only after re-reading the same token. Cleanup on success, ordinary error, or trapped signal removes the lock only when its current token still equals this invocation's token.
+Use the same target-local lock path in both adapters and acquire its exact directory with `mkdir` before output-parent creation or staging. Only after `mkdir` succeeds, write an owner file containing a strict invocation-unique token with PID, exact adapter name, and nonce. Set ownership only after an exact reread. Track the invocation-created empty directory separately so owner-write failure permits only `rmdir` when it remains empty.
 
-Add focused tests that hold one adapter after lock acquisition, run the other against the same target, require a contention marker/diagnostic and nonzero status, and prove that the contender did not remove the live owner's lock. Cover stale-token recovery, unverifiable-token preservation, and lock release on success, error, and trapped `TERM`.
+If `mkdir` fails, inspect without mutation and never create a file inside that path. Report exact valid live owners as contention. Preserve dead-PID or ambiguous liveness, malformed or missing owners, ordinary directories, regular files, and every symlink form for manual intervention. Cleanup on success, ordinary error, or trapped signal acts only when ownership was established, rereads the exact token before removing the owner file, and uses `rmdir` for the lock directory. A missing or changed owner is preserved.
+
+Add focused tests that hold one adapter after acquisition, run the other against the same target, require a contention diagnostic and nonzero status, and prove the contender did not remove the live owner's lock. Cover strict token grammar and nonce uniqueness; dead-PID/nonzero liveness; regular-file, directory, owner-file, and symlink path shapes; same-PID never-owned cleanup; simultaneous stale contenders; and lock release on success, error, and trapped `TERM`.
 
 - [ ] **Step 1: Add effect-then-fail and trapped-signal tests**
 
