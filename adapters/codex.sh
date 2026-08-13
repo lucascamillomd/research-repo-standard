@@ -3,6 +3,7 @@ set -euo pipefail
 
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 script_name="$(basename "$0")"
+adapter_id=codex.sh
 
 fail() {
   printf '%s: %s\n' "$script_name" "$1" >&2
@@ -15,7 +16,7 @@ usage() {
 }
 
 check_output_parent() {
-  directory=$1
+  local directory=$1
   if [[ -L "$directory" ]]; then
     fail "refusing symlinked output parent ${directory#"$TARGET"/}"
   fi
@@ -25,7 +26,8 @@ check_output_parent() {
 }
 
 verify_physical_parent() {
-  directory=$1
+  local directory=$1
+  local physical_directory
   physical_directory="$(cd "$directory" && pwd -P)" ||
     fail "cannot resolve output parent ${directory#"$TARGET"/}"
   case "$physical_directory" in
@@ -38,8 +40,8 @@ verify_physical_parent() {
 }
 
 check_expected_file() {
-  expected_file=$1
-  destination_file=$2
+  local expected_file=$1
+  local destination_file=$2
   if [[ -L "$destination_file" ]]; then
     fail "refusing to replace customized ${destination_file#"$TARGET"/}: generated profile is a symlink"
   fi
@@ -49,81 +51,460 @@ check_expected_file() {
   fi
 }
 
+path_is_absent() {
+  [[ ! -e "$1" && ! -L "$1" ]]
+}
+
 inode_of() {
   LC_ALL=C ls -di "$1" | awk '{ print $1 }'
 }
 
-remove_if_owned() {
-  destination=$1
-  expected_inode=$2
-  if [[ -n "$expected_inode" ]] &&
-    { [[ -e "$destination" ]] || [[ -L "$destination" ]]; } &&
-    [[ "$(inode_of "$destination")" == "$expected_inode" ]]; then
-    rm -f "$destination"
-  fi
-}
-
-read_adapter_lock_owner() {
-  local owner_byte_count
-  lock_owner_value=""
-  if [[ ! -f "$adapter_lock_owner" || -L "$adapter_lock_owner" ]] ||
-    ! IFS= read -r lock_owner_value < "$adapter_lock_owner"; then
+read_exact_token_file() {
+  local path=$1
+  local byte_count
+  exact_token_value=""
+  if [[ ! -f "$path" || -L "$path" ]] ||
+    ! IFS= read -r exact_token_value < "$path"; then
     return 1
   fi
-  owner_byte_count="$(LC_ALL=C wc -c < "$adapter_lock_owner" | tr -d '[:space:]')" || return 1
-  [[ "$owner_byte_count" =~ ^[0-9]+$ ]] || return 1
-  ((owner_byte_count == ${#lock_owner_value} + 1))
+  byte_count=""
+  if byte_count="$(LC_ALL=C wc -c < "$path" | tr -d '[:space:]')"; then
+    :
+  else
+    # Filesystem evidence, not an injected post-effect command status, decides
+    # whether a creation transition owns this exact token file.
+    :
+  fi
+  [[ "$byte_count" =~ ^[0-9]+$ ]] || return 1
+  ((byte_count == ${#exact_token_value} + 1))
 }
 
-release_adapter_lock() {
-  if ((lock_owned)) && [[ -d "$adapter_lock" && ! -L "$adapter_lock" ]] &&
-    read_adapter_lock_owner && [[ "$lock_owner_value" == "$lock_token" ]]; then
-    rm -f "$adapter_lock_owner"
-    rmdir "$adapter_lock" 2> /dev/null
-  fi
+token_is_valid() {
+  [[ "$1" =~ ^([1-9][0-9]*):(claude-code\.sh|codex\.sh):[0-9]+-[0-9]+-[0-9]+$ ]]
 }
 
 handle_signal() {
-  if ((acquisition_transition)); then
-    pending_signal_status=$1
+  local status=$1
+  if ((creation_transition)); then
+    if ((pending_signal_status == 0)); then
+      pending_signal_status=$status
+    fi
     return
   fi
-  exit "$1"
+  exit "$status"
+}
+
+finish_creation_transition() {
+  local signal_status
+  creation_transition=0
+  signal_status=$pending_signal_status
+  if ((signal_status)); then
+    exit "$signal_status"
+  fi
+}
+
+create_owned_directory() {
+  local path=$1
+  local inode_variable=$2
+  local command_status=0
+  local observed_inode=""
+  path_is_absent "$path" || return 1
+  creation_transition=1
+  if mkdir "$path" 2> /dev/null; then
+    command_status=0
+  else
+    command_status=$?
+  fi
+  if [[ -d "$path" && ! -L "$path" ]]; then
+    observed_inode="$(inode_of "$path" 2> /dev/null)" || observed_inode=""
+  fi
+  if [[ -n "$observed_inode" ]]; then
+    printf -v "$inode_variable" '%s' "$observed_inode"
+  fi
+  finish_creation_transition
+  ((command_status == 0)) && [[ -n "$observed_inode" ]]
+}
+
+create_claim_file() {
+  local command_status=0
+  local observed_inode=""
+  local observed_value=""
+  path_is_absent "$claim_file" || return 1
+  creation_transition=1
+  set -C
+  if printf '%s\n' "$lock_token" > "$claim_file"; then
+    command_status=0
+  else
+    command_status=$?
+  fi
+  set +C
+  if read_exact_token_file "$claim_file"; then
+    observed_value=$exact_token_value
+    observed_inode="$(inode_of "$claim_file" 2> /dev/null)" || observed_inode=""
+  fi
+  if [[ -n "$observed_inode" && "$observed_value" == "$lock_token" ]]; then
+    claim_file_inode=$observed_inode
+  fi
+  finish_creation_transition
+  ((command_status == 0)) && [[ -n "$claim_file_inode" ]]
+}
+
+link_claim_to() {
+  local destination=$1
+  local inode_variable=$2
+  local command_status=0
+  local observed_inode=""
+  path_is_absent "$destination" || return 1
+  creation_transition=1
+  if link "$claim_file" "$destination" 2> /dev/null; then
+    command_status=0
+  else
+    command_status=$?
+  fi
+  if read_exact_token_file "$destination"; then
+    observed_inode="$(inode_of "$destination" 2> /dev/null)" || observed_inode=""
+    if [[ "$observed_inode" != "$claim_file_inode" || "$exact_token_value" != "$lock_token" ]]; then
+      observed_inode=""
+    fi
+  fi
+  if [[ -n "$observed_inode" ]]; then
+    printf -v "$inode_variable" '%s' "$observed_inode"
+  fi
+  finish_creation_transition
+  ((command_status == 0)) && [[ -n "$observed_inode" ]]
+}
+
+inspect_existing_lock() {
+  local existing_token
+  local existing_pid
+  if [[ -L "$adapter_lock" || ! -d "$adapter_lock" ]] ||
+    ! read_exact_token_file "$adapter_lock_owner"; then
+    fail "adapter lock requires manual intervention"
+  fi
+  existing_token=$exact_token_value
+  if ! token_is_valid "$existing_token"; then
+    fail "adapter lock requires manual intervention"
+  fi
+  existing_pid=${BASH_REMATCH[1]}
+  if kill -0 "$existing_pid" 2> /dev/null; then
+    fail "adapter installation already in progress: $existing_token"
+  fi
+  fail "adapter lock requires manual intervention"
+}
+
+inspect_existing_guard() {
+  local existing_token
+  local existing_pid
+  if ! read_exact_token_file "$adapter_guard"; then
+    fail "adapter acquisition guard requires manual intervention"
+  fi
+  existing_token=$exact_token_value
+  if ! token_is_valid "$existing_token"; then
+    fail "adapter acquisition guard requires manual intervention"
+  fi
+  existing_pid=${BASH_REMATCH[1]}
+  if kill -0 "$existing_pid" 2> /dev/null; then
+    fail "adapter installation already in progress: $existing_token"
+  fi
+  fail "adapter acquisition guard requires manual intervention"
+}
+
+verify_owned_regular() {
+  local path=$1
+  local expected_inode=$2
+  local expected_value=$3
+  local current_inode
+  read_exact_token_file "$path" || return 1
+  [[ "$exact_token_value" == "$expected_value" ]] || return 1
+  current_inode="$(inode_of "$path" 2> /dev/null)" || return 1
+  [[ "$current_inode" == "$expected_inode" ]]
+}
+
+verify_owned_directory() {
+  local path=$1
+  local expected_inode=$2
+  local current_inode
+  [[ -d "$path" && ! -L "$path" ]] || return 1
+  current_inode="$(inode_of "$path" 2> /dev/null)" || return 1
+  [[ "$current_inode" == "$expected_inode" ]]
 }
 
 acquire_adapter_lock() {
-  lock_mkdir_succeeded=0
-  acquisition_transition=1
-  if mkdir "$adapter_lock" 2> /dev/null; then
-    lock_mkdir_succeeded=1
-    created_lock_directory=1
+  if ! path_is_absent "$claim_directory"; then
+    fail "adapter acquisition claim requires manual intervention"
   fi
-  acquisition_transition=0
-  if ((pending_signal_status)); then
-    exit "$pending_signal_status"
+  if ! create_owned_directory "$claim_directory" claim_directory_inode; then
+    fail "failed to create exclusive adapter claim"
   fi
-  if ((lock_mkdir_succeeded == 0)); then
-    if [[ -L "$adapter_lock" || ! -d "$adapter_lock" ]] ||
-      ! read_adapter_lock_owner; then
-      fail "adapter lock requires manual intervention"
+  if ! create_claim_file; then
+    fail "failed to create adapter claim owner"
+  fi
+
+  if ! path_is_absent "$adapter_guard"; then
+    if ! path_is_absent "$adapter_lock"; then
+      inspect_existing_lock
     fi
-    existing_lock_token="$lock_owner_value"
-    if [[ ! "$existing_lock_token" =~ ^([1-9][0-9]*):(claude-code\.sh|codex\.sh):[0-9]+-[0-9]+-[0-9]+$ ]]; then
-      fail "adapter lock requires manual intervention"
+    inspect_existing_guard
+  fi
+  if ! link_claim_to "$adapter_guard" adapter_guard_inode; then
+    if [[ -n "$adapter_guard_inode" ]]; then
+      fail "failed to finalize adapter acquisition guard"
     fi
-    existing_lock_pid="${BASH_REMATCH[1]}"
-    if kill -0 "$existing_lock_pid" 2> /dev/null; then
-      fail "adapter installation already in progress: $existing_lock_token"
+    if ! path_is_absent "$adapter_guard"; then
+      if ! path_is_absent "$adapter_lock"; then
+        inspect_existing_lock
+      fi
+      inspect_existing_guard
     fi
-    fail "adapter lock requires manual intervention"
+    fail "adapter hard-link operation is unsupported"
   fi
-  if ! printf '%s\n' "$lock_token" > "$adapter_lock_owner"; then
-    fail "failed to write adapter lock owner"
+
+  if ! path_is_absent "$adapter_lock"; then
+    inspect_existing_lock
   fi
-  if ! read_adapter_lock_owner || [[ "$lock_owner_value" != "$lock_token" ]]; then
-    fail "failed to verify adapter lock owner"
+  if ! create_owned_directory "$adapter_lock" adapter_lock_inode; then
+    fail "failed to create adapter lock"
   fi
-  lock_owned=1
+  if ! link_claim_to "$adapter_lock_owner" adapter_lock_owner_inode; then
+    if [[ -n "$adapter_lock_owner_inode" ]]; then
+      fail "failed to finalize adapter lock owner"
+    fi
+    fail "adapter hard-link operation is unsupported"
+  fi
+  if ! verify_owned_directory "$adapter_lock" "$adapter_lock_inode" ||
+    ! verify_owned_regular "$adapter_guard" "$adapter_guard_inode" "$lock_token" ||
+    ! verify_owned_regular "$claim_file" "$claim_file_inode" "$lock_token" ||
+    ! verify_owned_regular "$adapter_lock_owner" "$adapter_lock_owner_inode" "$lock_token"; then
+    fail "failed to verify adapter lock ownership"
+  fi
+}
+
+mark_cleanup_error() {
+  cleanup_failed=1
+  printf '%s: cleanup incomplete: %s\n' "$script_name" "$1" >&2
+}
+
+remove_owned_artifact() {
+  local path=$1
+  local expected_inode=$2
+  local label=$3
+  local current_inode
+  [[ -n "$expected_inode" ]] || return 0
+  path_is_absent "$path" && return 0
+  current_inode="$(inode_of "$path" 2> /dev/null)" || return 0
+  [[ "$current_inode" == "$expected_inode" ]] || return 0
+  rm "$path" 2> /dev/null
+  path_is_absent "$path" && return 0
+  current_inode="$(inode_of "$path" 2> /dev/null)" || return 0
+  [[ "$current_inode" != "$expected_inode" ]] && return 0
+  mark_cleanup_error "unable to remove $label: $path"
+  return 1
+}
+
+remove_owned_parent() {
+  local path=$1
+  local expected_inode=$2
+  local current_inode
+  [[ -n "$expected_inode" ]] || return 0
+  path_is_absent "$path" && return 0
+  verify_owned_directory "$path" "$expected_inode" || return 0
+  rmdir "$path" 2> /dev/null
+  path_is_absent "$path" && return 0
+  current_inode="$(inode_of "$path" 2> /dev/null)" || return 0
+  [[ "$current_inode" != "$expected_inode" ]] && return 0
+  if [[ -n "$(find "$path" -mindepth 1 -print -quit 2> /dev/null)" ]]; then
+    return 0
+  fi
+  mark_cleanup_error "unable to remove output parent: $path"
+  return 1
+}
+
+remove_claim_without_guard() {
+  local current_inode
+  if [[ -n "$claim_file_inode" ]] && ! path_is_absent "$claim_file"; then
+    current_inode="$(inode_of "$claim_file" 2> /dev/null)" || current_inode=""
+    if [[ "$current_inode" == "$claim_file_inode" ]]; then
+      rm "$claim_file" 2> /dev/null
+      if ! path_is_absent "$claim_file" &&
+        [[ "$(inode_of "$claim_file" 2> /dev/null)" == "$claim_file_inode" ]]; then
+        mark_cleanup_error "unable to remove adapter claim owner: $claim_file"
+        return 1
+      fi
+    fi
+  fi
+  if [[ -n "$claim_directory_inode" ]] && verify_owned_directory "$claim_directory" "$claim_directory_inode"; then
+    rmdir "$claim_directory" 2> /dev/null
+    if verify_owned_directory "$claim_directory" "$claim_directory_inode"; then
+      mark_cleanup_error "unable to remove adapter claim directory: $claim_directory"
+      return 1
+    fi
+  fi
+  return 0
+}
+
+restore_lock_owner() {
+  local restored_inode=""
+  if path_is_absent "$adapter_lock_owner"; then
+    link "$adapter_guard" "$adapter_lock_owner" 2> /dev/null || true
+  fi
+  if read_exact_token_file "$adapter_lock_owner"; then
+    restored_inode="$(inode_of "$adapter_lock_owner" 2> /dev/null)" || restored_inode=""
+  fi
+  if [[ "$restored_inode" == "$adapter_guard_inode" && "$exact_token_value" == "$lock_token" ]]; then
+    adapter_lock_owner_inode=$restored_inode
+    return 0
+  fi
+  mark_cleanup_error "unable to restore adapter lock owner: $adapter_lock_owner"
+  return 1
+}
+
+release_partial_serialization() {
+  if [[ -n "$adapter_lock_inode" ]] && verify_owned_directory "$adapter_lock" "$adapter_lock_inode"; then
+    if [[ -n "$(find "$adapter_lock" -mindepth 1 -print -quit 2> /dev/null)" ]]; then
+      mark_cleanup_error "adapter lock state changed; retained adapter lock for manual intervention"
+      return 1
+    fi
+    rmdir "$adapter_lock" 2> /dev/null
+    if verify_owned_directory "$adapter_lock" "$adapter_lock_inode"; then
+      mark_cleanup_error "unable to remove adapter lock-directory: $adapter_lock"
+      return 1
+    fi
+  elif [[ -n "$adapter_lock_inode" ]] && ! path_is_absent "$adapter_lock"; then
+    mark_cleanup_error "adapter lock state changed; retained adapter lock for manual intervention"
+    return 1
+  fi
+  remove_claim_without_guard || return 1
+  if verify_owned_regular "$adapter_guard" "$adapter_guard_inode" "$lock_token"; then
+    rm "$adapter_guard" 2> /dev/null
+    if verify_owned_regular "$adapter_guard" "$adapter_guard_inode" "$lock_token"; then
+      mark_cleanup_error "unable to remove adapter acquisition guard: $adapter_guard"
+      return 1
+    fi
+  else
+    mark_cleanup_error "adapter acquisition guard changed; retained for manual intervention"
+    return 1
+  fi
+  return 0
+}
+
+release_owned_serialization() {
+  if ! verify_owned_directory "$adapter_lock" "$adapter_lock_inode"; then
+    mark_cleanup_error "adapter lock state changed; retained adapter lock for manual intervention"
+    return 1
+  fi
+  if ! verify_owned_regular "$adapter_lock_owner" "$adapter_lock_owner_inode" "$lock_token"; then
+    mark_cleanup_error "adapter lock owner changed; retained adapter lock for manual intervention"
+    return 1
+  fi
+  if ! verify_owned_regular "$adapter_guard" "$adapter_guard_inode" "$lock_token"; then
+    mark_cleanup_error "adapter acquisition guard changed; retained for manual intervention"
+    return 1
+  fi
+  if ! verify_owned_directory "$claim_directory" "$claim_directory_inode" ||
+    ! verify_owned_regular "$claim_file" "$claim_file_inode" "$lock_token"; then
+    mark_cleanup_error "adapter claim changed; retained adapter lock for manual intervention"
+    return 1
+  fi
+
+  rm "$adapter_lock_owner" 2> /dev/null
+  if verify_owned_regular "$adapter_lock_owner" "$adapter_lock_owner_inode" "$lock_token"; then
+    mark_cleanup_error "unable to remove adapter lock-owner: $adapter_lock_owner"
+    return 1
+  fi
+  if ! path_is_absent "$adapter_lock_owner"; then
+    mark_cleanup_error "adapter lock owner changed during removal; retained for manual intervention"
+    return 1
+  fi
+
+  rmdir "$adapter_lock" 2> /dev/null
+  if verify_owned_directory "$adapter_lock" "$adapter_lock_inode"; then
+    mark_cleanup_error "unable to remove adapter lock-directory: $adapter_lock"
+    restore_lock_owner || true
+    return 1
+  fi
+  if ! path_is_absent "$adapter_lock"; then
+    mark_cleanup_error "adapter lock changed during removal; retained for manual intervention"
+    return 1
+  fi
+
+  rm "$claim_file" 2> /dev/null
+  if verify_owned_regular "$claim_file" "$claim_file_inode" "$lock_token"; then
+    mark_cleanup_error "unable to remove adapter claim owner: $claim_file"
+    return 1
+  fi
+  if ! path_is_absent "$claim_file"; then
+    mark_cleanup_error "adapter claim owner changed during removal; retained for manual intervention"
+    return 1
+  fi
+  rmdir "$claim_directory" 2> /dev/null
+  if verify_owned_directory "$claim_directory" "$claim_directory_inode"; then
+    mark_cleanup_error "unable to remove adapter claim directory: $claim_directory"
+    return 1
+  fi
+  if ! path_is_absent "$claim_directory"; then
+    mark_cleanup_error "adapter claim directory changed during removal; retained for manual intervention"
+    return 1
+  fi
+
+  rm "$adapter_guard" 2> /dev/null
+  if verify_owned_regular "$adapter_guard" "$adapter_guard_inode" "$lock_token"; then
+    mark_cleanup_error "unable to remove adapter acquisition guard: $adapter_guard"
+    return 1
+  fi
+  if ! path_is_absent "$adapter_guard"; then
+    mark_cleanup_error "adapter acquisition guard changed during removal; retained for manual intervention"
+    return 1
+  fi
+  return 0
+}
+
+release_serialization() {
+  if [[ -z "$adapter_guard_inode" ]]; then
+    remove_claim_without_guard
+    return
+  fi
+  if [[ -n "$adapter_lock_owner_inode" ]]; then
+    release_owned_serialization
+  else
+    release_partial_serialization
+  fi
+}
+
+cleanup() {
+  local status=$?
+  trap - EXIT
+  trap '' HUP INT TERM
+  set +e
+  cleanup_failed=0
+
+  if ((transaction_complete == 0)); then
+    remove_owned_artifact "$host_profile" "$host_inode" "owned output" || true
+    remove_owned_artifact "$canonical_destination" "$canonical_inode" "owned output" || true
+  fi
+  remove_owned_artifact "$canonical_stage" "$canonical_stage_inode" "stage" || true
+  remove_owned_artifact "$host_stage" "$host_stage_inode" "stage" || true
+  if ((transaction_complete == 0)); then
+    remove_owned_parent "$codex_agents_directory" "$codex_agents_directory_inode" || true
+    remove_owned_parent "$codex_directory" "$codex_directory_inode" || true
+    remove_owned_parent "$agents_directory" "$agents_directory_inode" || true
+  fi
+
+  if ((cleanup_failed == 0)); then
+    release_serialization || true
+  fi
+  if ((cleanup_failed)); then
+    if [[ -n "$adapter_guard_inode" ]] &&
+      verify_owned_regular "$adapter_guard" "$adapter_guard_inode" "$lock_token"; then
+      printf '%s: cleanup incomplete: retained adapter lock for manual intervention: %s\n' \
+        "$script_name" "$adapter_lock" >&2
+    fi
+    if ((status == 0)); then
+      status=1
+    fi
+  elif ((status == 0)); then
+    printf '%s\n' "$success_message"
+  fi
+  exit "$status"
 }
 
 [[ $# -eq 1 ]] || usage
@@ -164,8 +545,11 @@ canonical_destination="$agents_directory/code-simplifier.md"
 host_profile="$codex_agents_directory/code-simplifier.toml"
 adapter_lock="$TARGET/.research-repo-standard-adapter.lock"
 adapter_lock_owner="$adapter_lock/owner"
+adapter_guard="$TARGET/.research-repo-standard-adapter.guard"
 lock_nonce="$(date +%s)-$RANDOM-$RANDOM"
-lock_token="$$:$script_name:$lock_nonce"
+lock_token="$$:$adapter_id:$lock_nonce"
+claim_directory="$TARGET/.research-repo-standard-adapter.claim.$$-$lock_nonce"
+claim_file="$claim_directory/owner"
 
 check_output_parent "$agents_directory"
 check_output_parent "$codex_directory"
@@ -173,62 +557,52 @@ check_output_parent "$codex_agents_directory"
 
 canonical_stage=""
 host_stage=""
+canonical_stage_inode=""
+host_stage_inode=""
 canonical_inode=""
 host_inode=""
-acquisition_transition=0
+agents_directory_inode=""
+codex_directory_inode=""
+codex_agents_directory_inode=""
+claim_directory_inode=""
+claim_file_inode=""
+adapter_guard_inode=""
+adapter_lock_inode=""
+adapter_lock_owner_inode=""
+exact_token_value=""
+creation_transition=0
 pending_signal_status=0
-created_lock_directory=0
-lock_owned=0
-created_agents_directory=0
-created_codex_directory=0
-created_codex_agents_directory=0
+cleanup_failed=0
 transaction_complete=0
+success_message="installed Codex custom agent -> $host_profile"
 
-cleanup() {
-  status=$?
-  trap - EXIT HUP INT TERM
-  set +e
-  if ((transaction_complete == 0)); then
-    remove_if_owned "$host_profile" "$host_inode"
-    remove_if_owned "$canonical_destination" "$canonical_inode"
-  fi
-  [[ -n "$canonical_stage" ]] && rm -f "$canonical_stage"
-  [[ -n "$host_stage" ]] && rm -f "$host_stage"
-  if ((transaction_complete == 0)); then
-    ((created_codex_agents_directory)) && rmdir "$codex_agents_directory" 2> /dev/null
-    ((created_codex_directory)) && rmdir "$codex_directory" 2> /dev/null
-    ((created_agents_directory)) && rmdir "$agents_directory" 2> /dev/null
-  fi
-  release_adapter_lock
-  if ((created_lock_directory)) && ((lock_owned == 0)); then
-    rmdir "$adapter_lock" 2> /dev/null
-  fi
-  exit "$status"
-}
 trap cleanup EXIT
-trap 'handle_signal 1' HUP INT TERM
+trap 'handle_signal 129' HUP
+trap 'handle_signal 130' INT
+trap 'handle_signal 143' TERM
 
 acquire_adapter_lock
 
 if [[ ! -d "$agents_directory" ]]; then
-  mkdir "$agents_directory"
-  created_agents_directory=1
+  create_owned_directory "$agents_directory" agents_directory_inode ||
+    fail "failed to create output parent agents"
 fi
 verify_physical_parent "$agents_directory"
 
 if [[ ! -d "$codex_directory" ]]; then
-  mkdir "$codex_directory"
-  created_codex_directory=1
+  create_owned_directory "$codex_directory" codex_directory_inode ||
+    fail "failed to create output parent .codex"
 fi
 verify_physical_parent "$codex_directory"
 check_output_parent "$codex_agents_directory"
 if [[ ! -d "$codex_agents_directory" ]]; then
-  mkdir "$codex_agents_directory"
-  created_codex_agents_directory=1
+  create_owned_directory "$codex_agents_directory" codex_agents_directory_inode ||
+    fail "failed to create output parent .codex/agents"
 fi
 verify_physical_parent "$codex_agents_directory"
 
 canonical_stage="$(mktemp "$agents_directory/.code-simplifier.md.stage.XXXXXX")"
+canonical_stage_inode="$(inode_of "$canonical_stage")"
 if ! cp "$canonical_profile" "$canonical_stage"; then
   fail "failed to stage canonical simplifier profile"
 fi
@@ -238,6 +612,7 @@ fi
 chmod 0644 "$canonical_stage"
 
 host_stage="$(mktemp "$codex_agents_directory/.code-simplifier.toml.stage.XXXXXX")"
+host_stage_inode="$(inode_of "$host_stage")"
 {
   printf 'name = "%s"\n' "$escaped_name"
   printf 'description = "%s"\n' "$escaped_description"
@@ -252,18 +627,17 @@ verify_physical_parent "$codex_directory"
 verify_physical_parent "$codex_agents_directory"
 
 check_expected_file "$canonical_stage" "$canonical_destination"
-if [[ ! -e "$canonical_destination" && ! -L "$canonical_destination" ]]; then
-  canonical_inode="$(inode_of "$canonical_stage")"
+if path_is_absent "$canonical_destination"; then
+  canonical_inode=$canonical_stage_inode
   if ! mv "$canonical_stage" "$canonical_destination"; then
     fail "failed to publish canonical simplifier profile"
   fi
 fi
 check_expected_file "$host_stage" "$host_profile"
-if [[ ! -e "$host_profile" && ! -L "$host_profile" ]]; then
-  host_inode="$(inode_of "$host_stage")"
+if path_is_absent "$host_profile"; then
+  host_inode=$host_stage_inode
   if ! mv "$host_stage" "$host_profile"; then
     fail "failed to publish Codex simplifier profile"
   fi
 fi
 transaction_complete=1
-printf 'installed Codex custom agent -> %s\n' "$host_profile"

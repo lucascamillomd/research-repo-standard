@@ -91,8 +91,7 @@ build_vendored "$work/AGENTS.md" "$TARGET"
 # repository; git is the backup, so no .bak file is written.
 mv "$work/AGENTS.md" "$TARGET/AGENTS.md"
 
-version="$(sed -n '1s/.*standard_version: \([0-9.]*\).*/\1/p' "$SRC/AGENTS.md")"
-echo "vendored standard_version: $version -> $TARGET"
+echo "vendored AGENTS.md -> $TARGET"
 
 if [[ -s "$work/section" ]]; then
   echo "preserved the existing '## This repository' section"
