@@ -14,10 +14,10 @@ The standard has two modes:
 - **Governance:** an existing repository vendors `AGENTS.md`, the portable governed policy applied
   by supported agent hosts.
 
-Core vendoring copies only `AGENTS.md`. Optional, user-selected adapters install host integration
-separately, and bootstrap may seed the canonical simplifier profile for an adapter without making it
-part of portable vendoring. Supporting detail remains in this source repository and is loaded
-through the skill when needed.
+`vendor.sh` writes only `AGENTS.md`. After vendoring, the selected adapter installs the canonical
+simplifier profile and host-specific integration. `SKILL.md` steps 7–8 own core vendoring and
+optional adapter integration. `references/prerequisites.md` owns host skill installation and
+verification only.
 
 ## Repository structure
 
@@ -50,8 +50,8 @@ This is not the generated-repository workflow interface.
 ~/research-repo-standard/vendor.sh /path/to/repo
 ```
 
-Then complete the `## This repository` section in the vendored `AGENTS.md`. If the user selected a
-supported host adapter, install it separately as documented in `references/prerequisites.md`.
+Then follow `SKILL.md` steps 7–8 to complete the vendored `AGENTS.md` repository section and install
+the selected adapter, if any.
 
 `make test` runs the source-repository vendor, adapter, and consistency checks. `make format` wraps
 the skill Markdown files.

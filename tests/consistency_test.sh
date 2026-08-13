@@ -145,14 +145,32 @@ else
   fail "bootstrap answers and placeholders are explicit"
 fi
 
-# --- 11. portable policy does not prescribe a specific host integration ---
+# --- 11. README routes simplifier and adapter ownership correctly ---
+readme_text="$(tr '\n' ' ' < "$ROOT/README.md")"
+if grep -Eqs 'selected adapter[^.]*canonical simplifier' <<< "$readme_text" &&
+  ! grep -Eqs 'bootstrap[^.]*seed[^.]*simplifier' <<< "$readme_text"; then
+  pass "README assigns simplifier installation to the selected adapter"
+else
+  fail "README must assign simplifier installation only to the selected adapter"
+fi
+
+if grep -Fqs '`SKILL.md` steps 7–8' "$ROOT/README.md" &&
+  grep -Fqs '`references/prerequisites.md`' "$ROOT/README.md" &&
+  grep -Eqs 'host skill[^.]*install[^.]*verif' <<< "$readme_text" &&
+  ! grep -Eqs 'adapter[^.]*references/prerequisites' <<< "$readme_text"; then
+  pass "README routes vendor integration to SKILL.md and host skills to prerequisites"
+else
+  fail "README must route vendor integration to SKILL.md and host skills to prerequisites"
+fi
+
+# --- 12. portable policy does not prescribe a specific host integration ---
 if ! grep -Eq 'CLAUDE\.md.*symlink|\.claude/agents' "$ROOT/AGENTS.md"; then
   pass "AGENTS.md is host neutral"
 else
   fail "AGENTS.md is host neutral"
 fi
 
-# --- 12. detailed figure naming has one canonical owner ---
+# --- 13. detailed figure naming has one canonical owner ---
 figure_owner="$ROOT/references/figures.md"
 if grep -Fqs 'mf1_{short_descriptive_name}' "$figure_owner" &&
   grep -Fqs 'edf1_{short_descriptive_name}' "$figure_owner" &&
@@ -191,7 +209,7 @@ else
   fail "AGENTS.md must keep general publication identifiers"
 fi
 
-# --- 13. domain references declare the policy/procedure boundary ---
+# --- 14. domain references declare the policy/procedure boundary ---
 for reference in configuration data analysis; do
   if grep -Fqs "\`AGENTS.md\` owns the normative portable policy" "$ROOT/references/$reference.md" &&
     grep -Fqs 'procedural expansion' "$ROOT/references/$reference.md"; then
@@ -201,7 +219,7 @@ for reference in configuration data analysis; do
   fi
 done
 
-# --- 14. simplifier profile delegates naming and configuration policy ---
+# --- 15. simplifier profile delegates naming and configuration policy ---
 if ! grep -Eq 'config/analysis\.yaml|random_seed:|test_[a-z]|datasets\.yaml' \
   "$ROOT/agents/code-simplifier.md"; then
   pass "simplifier profile contains no independent configuration or test-naming grammar"
@@ -209,7 +227,7 @@ else
   fail "simplifier profile must delegate configuration and test-naming grammar to repository authorities"
 fi
 
-# --- 15. deterministic workflows do not acquire unused seed settings ---
+# --- 16. deterministic workflows do not acquire unused seed settings ---
 if tr '\n' ' ' < "$ROOT/references/configuration.md" |
   grep -Fqs 'Do not invent a seed field for a fully deterministic workflow.'; then
   pass "configuration forbids unused deterministic-workflow seed fields"
