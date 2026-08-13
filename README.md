@@ -50,4 +50,5 @@ vendor.sh                  copies only AGENTS.md into a target repository
 Then complete the `## This repository` section in the vendored `AGENTS.md`. If the user selected a
 supported host adapter, install it separately as documented in `references/prerequisites.md`.
 
-`make test` runs the source-repository vendor, adapter, and consistency checks.
+`make test` runs the source-repository vendor, adapter, and consistency checks. `make format` wraps
+the skill Markdown files.
