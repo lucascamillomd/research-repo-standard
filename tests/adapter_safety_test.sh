@@ -17,6 +17,11 @@ run_case() {
   shift
   if "$@"; then pass "$case_name"; else fail "$case_name"; fi
 }
+failure_exit_status() {
+  failure_count=$1
+  ((failure_count > 255)) && failure_count=255
+  printf '%s\n' "$failure_count"
+}
 inode_of() { LC_ALL=C ls -di "$1" | awk '{ print $1 }'; }
 path_exists() { [[ -e "$1" || -L "$1" ]]; }
 
@@ -420,8 +425,13 @@ for host in claude-code codex; do
     run_cleanup_fault_case "$host-cleanup-after-replace" "$adapter" after replace 1 "$host"
 done
 
+run_case 'failure count is used as the suite exit status' \
+  test "$(failure_exit_status 7)" -eq 7
+run_case 'failure count is capped at the maximum shell exit status' \
+  test "$(failure_exit_status 300)" -eq 255
+
 if ((FAILS > 0)); then
   printf '%s test(s) failed\n' "$FAILS"
-  exit 1
+  exit "$(failure_exit_status "$FAILS")"
 fi
 printf 'all adapter safety tests passed\n'

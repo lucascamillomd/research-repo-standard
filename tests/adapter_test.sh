@@ -299,6 +299,118 @@ cross_host_concurrency_is_independent() {
 }
 run_case 'cross-host concurrent installs proceed independently' cross_host_concurrency_is_independent
 
+wait_for_file() {
+  wait_path=$1
+  wait_attempts=0
+  while [[ ! -f "$wait_path" && "$wait_attempts" -lt 500 ]]; do
+    /bin/sleep 0.01
+    wait_attempts=$((wait_attempts + 1))
+  done
+  [[ -f "$wait_path" ]]
+}
+
+coordinated_cross_host_transition_is_independent() {
+  held_host=$1
+  other_host=codex
+  [[ "$held_host" == codex ]] && other_host=claude-code
+  fixture="$test_root/coordinated-$held_host"
+  hold_bin="$fixture/hold-bin"
+  marker="$fixture/hold.marker"
+  count_file="$fixture/hold.count"
+  release="$fixture/release"
+  other_done="$fixture/other.done"
+  held_destination="$(destination_for "$held_host" "$fixture")"
+  other_destination="$(destination_for "$other_host" "$fixture")"
+  mkdir -p "$hold_bin"
+  cat > "$hold_bin/ln" <<'DOUBLE'
+#!/usr/bin/env bash
+set -u
+if [[ "$#" -ne 2 || "$2" != "${RRS_HOLD_DESTINATION:?}" ]]; then
+  exec /bin/ln "$@"
+fi
+count=1
+[[ -f "$RRS_HOLD_COUNT" ]] && count=$(($(cat "$RRS_HOLD_COUNT") + 1))
+printf '%s\n' "$count" > "$RRS_HOLD_COUNT"
+source_inode="$(LC_ALL=C ls -di "$1" | awk '{ print $1 }')"
+{
+  printf 'operation=ln\ncount=%s\npid=%s\nppid=%s\nsource=%s\ndestination=%s\n' \
+    "$count" "$$" "${RRS_ADAPTER_PID:?}" "$1" "$2"
+  printf 'source_inode=%s\nstate=held\n' "$source_inode"
+} > "$RRS_HOLD_MARKER"
+attempts=0
+while [[ ! -f "$RRS_HOLD_RELEASE" && "$attempts" -lt 1000 ]]; do
+  /bin/sleep 0.01
+  attempts=$((attempts + 1))
+done
+[[ -f "$RRS_HOLD_RELEASE" ]] || exit 88
+/bin/ln "$1" "$2" || exit 89
+{
+  printf 'release_inode=%s\n' "$(LC_ALL=C ls -di "$RRS_HOLD_RELEASE" | awk '{ print $1 }')"
+  printf 'effect_inode=%s\nstate=released\nreturn_status=0\n' \
+    "$(LC_ALL=C ls -di "$2" | awk '{ print $1 }')"
+} >> "$RRS_HOLD_MARKER"
+DOUBLE
+  chmod +x "$hold_bin/ln"
+
+  PATH="$hold_bin:$PATH" RRS_HOLD_DESTINATION="$held_destination" \
+    RRS_HOLD_MARKER="$marker" RRS_HOLD_COUNT="$count_file" RRS_HOLD_RELEASE="$release" \
+    "$(adapter_for "$held_host")" "$fixture" >"$fixture.held.output" 2>&1 &
+  held_pid=$!
+  marker_seen=0
+  wait_for_file "$marker" && marker_seen=1
+
+  (
+    set +e
+    "$(adapter_for "$other_host")" "$fixture" >"$fixture.other.output" 2>&1
+    other_status=$?
+    printf '%s\n' "$other_status" > "$other_done"
+    exit "$other_status"
+  ) &
+  other_pid=$!
+  completed_before_release=0
+  wait_for_file "$other_done" && completed_before_release=1
+  held_alive_before_release=0
+  kill -0 "$held_pid" 2>/dev/null && held_alive_before_release=1
+  release_absent_before_completion=0
+  [[ ! -e "$release" && ! -L "$release" ]] && release_absent_before_completion=1
+
+  printf 'release\n' > "$release"
+  wait "$held_pid"; held_status=$?
+  wait "$other_pid"; other_wait_status=$?
+
+  [[ "$marker_seen" -eq 1 ]] &&
+    grep -Fqx 'operation=ln' "$marker" &&
+    grep -Fqx 'count=1' "$marker" &&
+    grep -Fqx "ppid=$held_pid" "$marker" &&
+    grep -Eq '^pid=[1-9][0-9]*$' "$marker" &&
+    [[ "$(awk -F= '$1 == "destination" { print $2; exit }' "$marker")" == \
+      "$held_destination" ]] &&
+    held_source="$(awk -F= '$1 == "source" { print $2; exit }' "$marker")" &&
+    [[ "${held_source%/*}" == "${held_destination%/*}" ]] &&
+    [[ "${held_source##*/}" == .research-code-simplifier.stage.* ]] &&
+    grep -Fqx 'state=held' "$marker" &&
+    grep -Fqx 'state=released' "$marker" &&
+    grep -Fqx 'return_status=0' "$marker" &&
+    [[ "$completed_before_release" -eq 1 ]] &&
+    [[ "$release_absent_before_completion" -eq 1 ]] &&
+    [[ "$held_alive_before_release" -eq 1 ]] &&
+    [[ "$(cat "$other_done")" -eq 0 ]] &&
+    [[ "$held_status" -eq 0 && "$other_wait_status" -eq 0 ]] &&
+    [[ "$(awk -F= '$1 == "source_inode" { print $2; exit }' "$marker")" == \
+      "$(awk -F= '$1 == "effect_inode" { print $2; exit }' "$marker")" ]] &&
+    [[ "$(awk -F= '$1 == "effect_inode" { print $2; exit }' "$marker")" == \
+      "$(inode_of "$held_destination")" ]] &&
+    [[ "$(awk -F= '$1 == "release_inode" { print $2; exit }' "$marker")" == \
+      "$(inode_of "$release")" ]] &&
+    assert_rendered_profile "$held_host" "$held_destination" &&
+    assert_rendered_profile "$other_host" "$other_destination" &&
+    assert_no_transaction_artifacts "$fixture"
+}
+for held_host in claude-code codex; do
+  run_case "$held_host transition does not serialize the other host" \
+    coordinated_cross_host_transition_is_independent "$held_host"
+done
+
 if ((FAILS > 0)); then
   printf '%s test(s) failed\n' "$FAILS"
   exit 1
