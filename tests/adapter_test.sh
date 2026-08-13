@@ -226,6 +226,87 @@ else
   fail "Adapter releases the second owned lock"
 fi
 
+# A signal after the exact mkdir effect must wait for creation bookkeeping.
+real_mkdir="$(command -v mkdir)"
+term_mkdir_bin="$tmp/term-mkdir-bin"
+mkdir "$term_mkdir_bin"
+cat > "$term_mkdir_bin/mkdir" << 'EOF'
+#!/usr/bin/env bash
+set -eu
+if ! "$REAL_MKDIR" "$@"; then
+  printf 'real-mkdir-failed\n' > "$MKDIR_EFFECT_MARKER"
+  exit 1
+fi
+lock_inode="$(LC_ALL=C ls -di "$1" | awk '{ print $1 }')"
+if [[ "$1" != "$EXPECTED_LOCK" || "$PPID" != "$EXPECTED_ADAPTER_PID" ]]; then
+  printf 'unexpected-effect\ninode=%s\npath=%s\nppid=%s\n' \
+    "$lock_inode" "$1" "$PPID" > "$MKDIR_EFFECT_MARKER"
+  exit 1
+fi
+printf 'post-effect mkdir\ninode=%s\npath=%s\nppid=%s\n' \
+  "$lock_inode" "$1" "$PPID" > "$MKDIR_EFFECT_MARKER"
+if ! kill -TERM "$PPID"; then
+  printf 'signal-delivery-failed\npid=%s\n' "$PPID" > "$MKDIR_EFFECT_MARKER"
+  exit 1
+fi
+exit 0
+EOF
+chmod +x "$term_mkdir_bin/mkdir"
+
+run_term_after_lock_mkdir() {
+  adapter=$1
+  adapter_name=$2
+  fixture="$tmp/term-after-lock-mkdir-$adapter_name"
+  marker="$tmp/term-after-lock-mkdir-$adapter_name.marker"
+  output="$tmp/term-after-lock-mkdir-$adapter_name.out"
+  adapter_pid_file="$tmp/term-after-lock-mkdir-$adapter_name.pid"
+  adapter_status_file="$tmp/term-after-lock-mkdir-$adapter_name.status"
+  expected_lock="$fixture/.research-repo-standard-adapter.lock"
+  mkdir "$fixture"
+  cp "$target/AGENTS.md" "$fixture/AGENTS.md"
+
+  (
+    child_status=0
+    REAL_MKDIR="$real_mkdir" MKDIR_EFFECT_MARKER="$marker" EXPECTED_LOCK="$expected_lock" \
+      ADAPTER_PID_FILE="$adapter_pid_file" PATH="$term_mkdir_bin:$PATH" \
+      bash -c 'printf "%s\n" "$$" > "$ADAPTER_PID_FILE"; export EXPECTED_ADAPTER_PID=$$; exec "$@"' \
+        _ "$adapter" "$fixture" > "$output" 2>&1 || child_status=$?
+    printf '%s\n' "$child_status" > "$adapter_status_file"
+  ) &
+  runner_pid=$!
+  adapter_finished=0
+  for ((attempt = 0; attempt < 500; attempt++)); do
+    if [[ -f "$adapter_status_file" ]]; then
+      adapter_finished=1
+      break
+    fi
+    sleep 0.01
+  done
+  adapter_pid="$(cat "$adapter_pid_file" 2> /dev/null || true)"
+  if ((adapter_finished)); then
+    wait "$runner_pid"
+    adapter_status="$(cat "$adapter_status_file")"
+  else
+    [[ -z "$adapter_pid" ]] || kill -KILL "$adapter_pid" 2> /dev/null || true
+    kill -KILL "$runner_pid" 2> /dev/null || true
+    wait "$runner_pid" 2> /dev/null || true
+    adapter_status=124
+  fi
+
+  if ((adapter_finished)) && [[ "$adapter_status" -ne 0 ]] &&
+    [[ -f "$marker" ]] && grep -Fqx 'post-effect mkdir' "$marker" &&
+    grep -Eq '^inode=[0-9]+$' "$marker" && grep -Fqx "path=$expected_lock" "$marker" &&
+    grep -Eq "^ppid=$adapter_pid$" "$marker" &&
+    [[ -z "$(find "$fixture" -mindepth 1 ! -path "$fixture/AGENTS.md" -print -quit)" ]]; then
+    pass "$adapter_name adapter cleans a TERM-interrupted lock mkdir"
+  else
+    fail "$adapter_name adapter cleans a TERM-interrupted lock mkdir"
+  fi
+}
+
+run_term_after_lock_mkdir "$ROOT/adapters/claude-code.sh" Claude
+run_term_after_lock_mkdir "$ROOT/adapters/codex.sh" Codex
+
 assert_lock_refused_without_output() {
   fixture=$1
   expected_diagnostic=$2
@@ -272,10 +353,19 @@ else
 fi
 
 missing_owner_target="$tmp/missing-owner-target"
-mkdir -p "$missing_owner_target/.research-repo-standard-adapter.lock"
+missing_owner_lock="$missing_owner_target/.research-repo-standard-adapter.lock"
+mkdir -p "$missing_owner_lock"
 cp "$target/AGENTS.md" "$missing_owner_target/AGENTS.md"
+missing_owner_inode="$(inode_of "$missing_owner_lock")"
 assert_lock_refused_without_output "$missing_owner_target" 'adapter lock requires manual intervention' \
   "Adapter preserves a missing-owner lock directory"
+if [[ -d "$missing_owner_lock" && ! -L "$missing_owner_lock" ]] &&
+  [[ "$(inode_of "$missing_owner_lock")" == "$missing_owner_inode" ]] &&
+  [[ -z "$(find "$missing_owner_lock" -mindepth 1 -print -quit)" ]]; then
+  pass "Missing-owner lock retains exact empty directory identity"
+else
+  fail "Missing-owner lock retains exact empty directory identity"
+fi
 
 for token_case in numeric-only empty-adapter arbitrary-adapter extra-suffix; do
   malformed_target="$tmp/malformed-$token_case-target"

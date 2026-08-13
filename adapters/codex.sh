@@ -72,8 +72,26 @@ release_adapter_lock() {
   fi
 }
 
+handle_signal() {
+  if ((acquisition_transition)); then
+    pending_signal_status=$1
+    return
+  fi
+  exit "$1"
+}
+
 acquire_adapter_lock() {
-  if ! mkdir "$adapter_lock" 2> /dev/null; then
+  lock_mkdir_succeeded=0
+  acquisition_transition=1
+  if mkdir "$adapter_lock" 2> /dev/null; then
+    lock_mkdir_succeeded=1
+    created_lock_directory=1
+  fi
+  acquisition_transition=0
+  if ((pending_signal_status)); then
+    exit "$pending_signal_status"
+  fi
+  if ((lock_mkdir_succeeded == 0)); then
     if [[ -L "$adapter_lock" || ! -d "$adapter_lock" ]] ||
       [[ ! -f "$adapter_lock_owner" || -L "$adapter_lock_owner" ]]; then
       fail "adapter lock requires manual intervention"
@@ -88,7 +106,6 @@ acquire_adapter_lock() {
     fi
     fail "adapter lock requires manual intervention"
   fi
-  created_lock_directory=1
   if ! printf '%s\n' "$lock_token" > "$adapter_lock_owner"; then
     fail "failed to write adapter lock owner"
   fi
@@ -148,6 +165,8 @@ canonical_stage=""
 host_stage=""
 canonical_inode=""
 host_inode=""
+acquisition_transition=0
+pending_signal_status=0
 created_lock_directory=0
 lock_owned=0
 created_agents_directory=0
@@ -177,7 +196,7 @@ cleanup() {
   exit "$status"
 }
 trap cleanup EXIT
-trap 'exit 1' HUP INT TERM
+trap 'handle_signal 1' HUP INT TERM
 
 acquire_adapter_lock
 
