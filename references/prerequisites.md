@@ -2,16 +2,16 @@
 
 # Reference: agent-host prerequisites
 
-This is the authoritative host-integration procedure for installing or resolving the standard, its
-required skills, and delegated-agent profiles. Apply it before bootstrap and whenever a governed
-repository reports a missing host capability. These are global agent-environment dependencies, not
-generated project packages or data.
+This is the authoritative host procedure for resolving and, when a required capability is missing,
+installing this standard and its required skills. Apply it for bootstrap preflight or recovery from
+a missing host capability. These are global agent-environment dependencies, not generated project
+packages or data.
 
 ## Hard gate
 
-All three skills must be installed and discoverable before the bootstrap interview — bootstrap
-actively uses each one. In an established governed repository the requirement is scoped to the work
-that depends on each skill:
+All three skills must resolve by exact name before the bootstrap interview because bootstrap uses
+each one. In an established governed repository the requirement is scoped to the work that depends
+on each skill:
 
 | Skill                          | Authoritative source                                    | Required before                                                              |
 | ------------------------------ | ------------------------------------------------------- | ---------------------------------------------------------------------------- |
@@ -23,11 +23,6 @@ A missing skill blocks exactly the work that depends on it and nothing else. If 
 expands to meet a trigger it did not start with, stop at that point and verify the newly required
 skill before continuing.
 
-This standard was last validated against Superpowers v6.1.1, `k-dense-ai/scientific-agent-skills`
-commit `757b63b` (2026-07-24), and `Yuan1z0825/nature-skills` commit `db69e11` (2026-08-03). Newer
-upstream releases are expected to work, but review their changes before relying on behavior that
-differs from these versions.
-
 Executing an already approved workflow solely to regenerate declared outputs is not a new
 modification. Changes to code, configuration, or contracts are modifications.
 
@@ -37,15 +32,8 @@ resolve the skill. Successful invocation during the required workflow is the fun
 verification.
 
 Do not install these skills silently or modify global agent configuration without the user's
-authorization. If a skill is missing, stop before repository mutations.
-
-The Agent Skills commands below require Node.js 18 or later with npm/`npx` available. This is
-agent-host tooling and is not installed by project uv or Make.
-
-The examples below resolve current upstream releases. After installation, bootstrap must record each
-installed plugin or skill version or source revision, together with the Agent Skills installer
-version, in `docs/lab_notebook.md` once the scaffold exists. Review upgrades before changing that
-record.
+authorization. If a skill is missing, stop before repository mutations. Do not substitute another
+workflow for a missing required skill.
 
 ## Resolve this standard
 
@@ -62,29 +50,12 @@ relative `CLAUDE.md -> AGENTS.md` alias; where symlinks are unavailable, use the
 `CLAUDE.md` file containing `@AGENTS.md` instead. Official discovery documentation:
 <https://code.claude.com/docs/en/skills> and <https://code.claude.com/docs/en/memory>.
 
-## Codex installation
+## Install Superpowers for Codex
 
 Install Superpowers from the Codex plugin marketplace: open **Plugins** in the Codex app, or
 `/plugins` in Codex CLI, search for **Superpowers**, and install it.
 
-Install the two scientific skills globally with the open Agent Skills installer:
-
-```bash
-npx skills add K-Dense-AI/scientific-agent-skills --global --agent codex --skill scientific-critical-thinking --yes --copy
-npx skills add Yuan1z0825/nature-skills --global --agent codex --skill nature-figure --yes --copy
-```
-
-Verify the two scientific skills with:
-
-```bash
-npx skills list --global --agent codex --json
-```
-
-Verify Superpowers through the Codex plugin resolver or listing. At planning time, confirm the
-companion `superpowers:writing-plans` skill resolves from that installation; it is used after design
-approval rather than treated as a fourth bootstrap hard gate.
-
-## Claude Code installation
+## Install Superpowers for Claude Code
 
 Install Superpowers from Anthropic's official plugin marketplace:
 
@@ -92,57 +63,28 @@ Install Superpowers from Anthropic's official plugin marketplace:
 /plugin install superpowers@claude-plugins-official
 ```
 
-Install the two scientific skills globally:
+At planning time, confirm the companion `superpowers:writing-plans` skill resolves from the selected
+Superpowers installation. It is used after design approval and is not a fourth bootstrap hard gate.
+
+## Install the scientific skills
+
+Node.js 18 or later with npm/`npx` is required only when running the Agent Skills installer commands
+below. It is agent-host tooling and is not installed by project uv or Make. Set `agent_host` to the
+current agent host:
 
 ```bash
-npx skills add K-Dense-AI/scientific-agent-skills --global --agent claude-code --skill scientific-critical-thinking --yes --copy
-npx skills add Yuan1z0825/nature-skills --global --agent claude-code --skill nature-figure --yes --copy
+agent_host=codex  # use claude-code when that is the selected host
+npx skills add K-Dense-AI/scientific-agent-skills --global --agent $agent_host --skill scientific-critical-thinking --yes --copy
+npx skills add Yuan1z0825/nature-skills --global --agent $agent_host --skill nature-figure --yes --copy
+npx skills list --global --agent $agent_host --json
 ```
 
-Verify the two scientific skills with:
-
-```bash
-npx skills list --global --agent claude-code --json
-```
-
-Verify Superpowers through the Claude Code plugin resolver or listing. At planning time, confirm the
-companion `superpowers:writing-plans` skill resolves from that installation; it is used after design
-approval rather than treated as a fourth bootstrap hard gate.
+Verify Superpowers through the selected host's plugin resolver or listing. Confirm the two
+scientific skill names in the Agent Skills listing and through the host-native resolver. Review
+third-party skill contents and provenance before installation.
 
 For other agent hosts, follow the installation instructions in each authoritative source and install
-only the required skill folders. Review third-party skill contents and provenance before
-installation.
-
-## Install the selected project host adapter
-
-Core vendoring is always separate: `./vendor.sh <target-repo>` writes only `AGENTS.md`. After that
-command, run only the adapter the user selected:
-
-```bash
-./adapters/claude-code.sh <target-repo>
-./adapters/codex.sh <target-repo>
-```
-
-Both adapters install the canonical `agents/code-simplifier.md`, then add their host-specific
-wrapper: the Claude Code adapter creates the documented policy alias and
-`.claude/agents/code-simplifier.md`; the Codex adapter installs
-`.codex/agents/code-simplifier.toml`. Customized generated profiles cause the adapter to refuse
-rather than overwrite them. Adapter files are generated project integration, while the skills above
-are global host setup.
-
-## Delegated-agent verification
-
-A delegated agent does not inherit previously invoked skill content merely because the parent used
-it. In Claude Code, preload the needed skill in the custom-agent `skills` field or require the
-worker to invoke an available skill explicitly; creating the first `.claude/agents/` or skill
-directory during a session may require restart. In Codex, a spawned run rebuilds the effective
-`AGENTS.md` chain from its working directory and inherits parent agent configuration unless the
-custom TOML overrides it; the installed simplifier wrapper explicitly routes to
-`agents/code-simplifier.md`.
-
-Functionally smoke-test delegated propagation by launching an independent review agent in the target
-repository and requiring it to name the applicable `AGENTS.md` policy, resolve or read its assigned
-skill/profile, and return findings without implementation. A file existing on disk is not enough.
+only the required skill folders.
 
 ## Verify and resume
 

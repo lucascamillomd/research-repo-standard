@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.10 -->
+<!-- standard_version: 2026.08.13 -->
 
 # Bootstrap: tool configuration
 
@@ -8,9 +8,11 @@ written, those files are the source of truth** — read `pyproject.toml`, not th
 
 ## Agent-host prerequisites
 
-Complete the host-specific discovery, installation, delegated-agent verification, and recovery
-procedure in `references/prerequisites.md` before the bootstrap interview. Agent-host prerequisites
-remain separate from the generated repository's `make setup`.
+Before the interview, use the host-native resolver to confirm the three exact required skill names.
+This preflight is name-resolution only. Use the installation or recovery procedure in
+`references/prerequisites.md` only if a name is missing, and never install silently or substitute a
+different workflow. Agent-host prerequisites remain separate from the generated repository's
+`make setup`.
 
 ## Environment
 
@@ -40,7 +42,7 @@ PEP 517 backend.
 
 ```toml
 [dependency-groups]
-dev = ["coverage", "pre-commit", "pytest", "ruff", "ty"]
+dev = ["pre-commit", "pytest", "ruff", "ty"]
 ```
 
 `loguru` is a runtime dependency, not a dev one — stage logging is part of the pipeline. Configure
@@ -65,7 +67,7 @@ rules, and avoid rules that conflict with the formatter.
 ```toml
 [tool.ruff]
 line-length = 100
-target-version = "py311"          # match .python-version
+target-version = "py3XY"          # match .python-version
 
 [tool.ruff.lint]
 # pycodestyle (E, W) + pyflakes (F) + import sorting (I) + pydocstyle (D)
@@ -87,7 +89,7 @@ the reason.
 
 ```toml
 [tool.ty.environment]
-python-version = "3.11"
+python-version = "3.XY"
 
 [tool.ty.src]
 include = ["src", "scripts", "tests"]
@@ -130,23 +132,13 @@ uv sync --locked    # lockfile vs environment
 
 help:        ## Show this help
 setup:       ## Create the locked environment and install pre-commit hooks
-format:      ## Format with Ruff
-lint:        ## Lint with Ruff
-typecheck:   ## Static type-check with ty
 test:        ## Run the Python test suite
-test-r:      ## R tests in the container (say so here when R is unused)
-analysis:    ## Primary, sensitivity, and derived tables from the checkpoint
-figures:     ## Figure source data and every declared atomic panel
-reports:     ## Machine-generated reports under results/reports/
-all:         ## Light path from the smallest distributable checkpoint
-full:        ## Longest raw-to-publication path; reports manual boundaries
-verify-ci:   ## Data-free, or approved fixtures only
-verify-full: ## Complete workflow with real data
-clean-*:     ## Remove only the named generated outputs
+verify-results: ## Verify this project's declared results using permitted inputs
 ```
 
-Beyond `help`, `setup`, `test`, and a verification gate, name targets to fit the project. Never
-define a cleanup target that can reach `data/raw/`.
+Rename the verification gate to fit the project. When relevant, add project-named targets for
+quality checks, analysis, figures, the light and full pipelines, reports, and narrowly guarded
+cleanup. Never define a cleanup target that can reach `data/raw/`.
 
 Make may use phony high-level targets without pretending to offer file-level incrementality. Add
 real file dependencies only when they are reliable.
@@ -166,10 +158,11 @@ Create `.env.example` only when the project consumes environment variables. It l
 with safe descriptions or placeholders and never contains real values. The real `.env` is
 gitignored.
 
-## Containers
+## Containers when required
 
-Put language- or purpose-specific containers under `docker/<language-or-tool>/`. For R: pin the base
-image by immutable digest when feasible, constrain packages with `renv.lock`, document
+Only add an R container and a project `test-r` target when the interview establishes that R is
+required. Put language- or purpose-specific containers under `docker/<language-or-tool>/`. For R:
+pin the base image by immutable digest when feasible, constrain packages with `renv.lock`, document
 CRAN/Bioconductor and system-library limitations, expose build and execution through Make and a
 checked-in wrapper, and mount only required directories. Use `testthat` for reusable R logic, run
 via `make test-r`. Pin `logger` in `renv.lock` — it is the R counterpart to `loguru`, and R stages
@@ -187,12 +180,11 @@ logging surface this small; anything more elaborate belongs in Python.
 Do not create a dedicated R package by default. R code stays minimal and may live in its numbered
 `scripts/` stage.
 
-## Code-simplifier profile
+## Host adapter integration
 
-Copy the canonical `agents/code-simplifier.md` profile into the new repository as part of the
-approved scaffold. Then, only when the user selected one, run the separate host adapter documented
-in `references/prerequisites.md`; the adapter installs the host's supported independent-agent
-integration without changing portable core vendoring.
+Do not copy the canonical simplifier profile during scaffolding. After core vendoring, the selected
+host adapter installs that profile and the host's supported independent-agent integration. When no
+host adapter was selected, install neither.
 
 ## README
 
@@ -201,5 +193,5 @@ prerequisites including the selected Python minor, uv, and Make; the three requi
 with a link to the canonical prerequisite contract at
 <https://github.com/lucascamillomd/research-repo-standard/blob/main/references/prerequisites.md>;
 shortest project setup and reproduction commands, expected results, external data and tool
-limitations, the reproducibility classification, and links to `docs/`. Distinguish agent-host
-prerequisites from project tools and packages installed by `make setup`.
+limitations, and links to `docs/`. Distinguish agent-host prerequisites from project tools and
+packages installed by `make setup`.

@@ -32,12 +32,19 @@ done < <(grep -rho 'research-repo-standard/blob/main/[A-Za-z0-9/._-]*' \
   sed 's|research-repo-standard/blob/main/||' | sort -u)
 ((urls_ok)) && pass "GitHub blob URLs resolve to repository files"
 
-# --- 3. host adapters are documented by the prerequisite owner ---
-if grep -qs 'adapters/claude-code\.sh' "$ROOT/references/prerequisites.md" &&
-  grep -qs 'adapters/codex\.sh' "$ROOT/references/prerequisites.md"; then
-  pass "host adapters are documented by the prerequisite owner"
+# --- 3. bootstrap owns post-vendor host adapter integration ---
+adapter_owner_ok=1
+for adapter in './adapters/claude-code.sh' './adapters/codex.sh'; do
+  grep -Fqs "$adapter" "$ROOT/SKILL.md" || adapter_owner_ok=0
+done
+if grep -Eq '^## (Install the selected project host adapter|Delegated-agent verification)' \
+  "$ROOT/references/prerequisites.md"; then
+  adapter_owner_ok=0
+fi
+if ((adapter_owner_ok)); then
+  pass "bootstrap owns post-vendor host adapter integration"
 else
-  fail "host adapters are documented by the prerequisite owner"
+  fail "bootstrap must own post-vendor host adapter integration"
 fi
 
 # --- 4. portable simplifier profile is routed from AGENTS.md ---
@@ -123,14 +130,29 @@ else
   fail "bootstrap delegates host prerequisites"
 fi
 
-# --- 10. portable policy does not prescribe a specific host integration ---
+# --- 10. bootstrap questions and examples require explicit runtime answers ---
+bootstrap_contract_ok=1
+for required in 'Python minor' 'host adapter'; do
+  grep -Fq "$required" "$ROOT/SKILL.md" || bootstrap_contract_ok=0
+done
+grep -Fq 'target-version = "py3XY"' "$ROOT/references/bootstrap.md" || bootstrap_contract_ok=0
+grep -Fq 'python-version = "3.XY"' "$ROOT/references/bootstrap.md" || bootstrap_contract_ok=0
+grep -Fq 'coverage' "$ROOT/references/bootstrap.md" && bootstrap_contract_ok=0
+grep -Eq '^test-r:' "$ROOT/references/bootstrap.md" && bootstrap_contract_ok=0
+if ((bootstrap_contract_ok)); then
+  pass "bootstrap answers and placeholders are explicit"
+else
+  fail "bootstrap answers and placeholders are explicit"
+fi
+
+# --- 11. portable policy does not prescribe a specific host integration ---
 if ! grep -Eq 'CLAUDE\.md.*symlink|\.claude/agents' "$ROOT/AGENTS.md"; then
   pass "AGENTS.md is host neutral"
 else
   fail "AGENTS.md is host neutral"
 fi
 
-# --- 11. detailed figure naming has one canonical owner ---
+# --- 12. detailed figure naming has one canonical owner ---
 figure_owner="$ROOT/references/figures.md"
 if grep -Fqs 'mf1_{short_descriptive_name}' "$figure_owner" &&
   grep -Fqs 'edf1_{short_descriptive_name}' "$figure_owner" &&
@@ -169,7 +191,7 @@ else
   fail "AGENTS.md must keep general publication identifiers"
 fi
 
-# --- 12. domain references declare the policy/procedure boundary ---
+# --- 13. domain references declare the policy/procedure boundary ---
 for reference in configuration data analysis; do
   if grep -Fqs "\`AGENTS.md\` owns the normative portable policy" "$ROOT/references/$reference.md" &&
     grep -Fqs 'procedural expansion' "$ROOT/references/$reference.md"; then
@@ -179,7 +201,7 @@ for reference in configuration data analysis; do
   fi
 done
 
-# --- 13. simplifier profile delegates naming and configuration policy ---
+# --- 14. simplifier profile delegates naming and configuration policy ---
 if ! grep -Eq 'config/analysis\.yaml|random_seed:|test_[a-z]|datasets\.yaml' \
   "$ROOT/agents/code-simplifier.md"; then
   pass "simplifier profile contains no independent configuration or test-naming grammar"
@@ -187,7 +209,7 @@ else
   fail "simplifier profile must delegate configuration and test-naming grammar to repository authorities"
 fi
 
-# --- 14. deterministic workflows do not acquire unused seed settings ---
+# --- 15. deterministic workflows do not acquire unused seed settings ---
 if tr '\n' ' ' < "$ROOT/references/configuration.md" |
   grep -Fqs 'Do not invent a seed field for a fully deterministic workflow.'; then
   pass "configuration forbids unused deterministic-workflow seed fields"

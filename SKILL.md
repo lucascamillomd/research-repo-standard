@@ -8,7 +8,7 @@ description:
   general-purpose software projects or scratch analyses that will not support a scientific claim.
 ---
 
-<!-- standard_version: 2026.08.12 -->
+<!-- standard_version: 2026.08.13 -->
 
 # Research repository standard
 
@@ -24,43 +24,28 @@ Two modes.
 **Governance** — the repository exists and vendors `AGENTS.md`, which is already in context and
 self-sufficient for the rules. Load a reference here only for detail it deliberately omits:
 
-| Reference                     | Read when                                                                                             |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `references/prerequisites.md` | before bootstrap, before a user-requested governed modification, and when a required skill is missing |
-| `references/configuration.md` | classifying settings, changing YAML, loaders, paths, overrides, or configuration provenance           |
-| `references/bootstrap.md`     | writing tool config, CI, or a Makefile that does not exist yet                                        |
-| `references/data.md`          | registering a dataset, defining a schema, writing validation                                          |
-| `references/analysis.md`      | planning or reporting a confirmatory analysis                                                         |
-| `references/figures.md`       | before figure planning, plotting-code work, modifying figure outputs, and again before figure QA      |
+| Reference                     | Read when                                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------------ |
+| `references/prerequisites.md` | bootstrap preflight or recovery from a missing required capability                               |
+| `references/configuration.md` | classifying settings, changing YAML, loaders, paths, overrides, or configuration provenance      |
+| `references/bootstrap.md`     | writing tool config, CI, or a Makefile that does not exist yet                                   |
+| `references/data.md`          | registering a dataset, defining a schema, writing validation                                     |
+| `references/analysis.md`      | planning or reporting a confirmatory analysis                                                    |
+| `references/figures.md`       | before figure planning, plotting-code work, modifying figure outputs, and again before figure QA |
 
-## Required agent skills
-
-Apply the host discovery, installation, delegated-agent verification, and recovery procedure in
-`references/prerequisites.md` once before the bootstrap interview. In a governed repository, apply
-it before work that depends on a required capability; `AGENTS.md` owns that scoping and the
-modification gates. Resume only when the host resolves the required names, and do not substitute
-another workflow for a missing capability.
-
-In governance mode, `AGENTS.md` owns the modification-gate rules — the full gate, the light path,
-and the no-gate exemptions. It is already in context in a governed repository; apply it rather than
-a restatement.
-
-During governed work, obtain the independent `scientific-critical-thinking` critique when a trigger
-in the analysis contract applies, and invoke `nature-figure` for every plot under the figure
-contract.
-
-For configuration work, `AGENTS.md` owns the ownership rules; read `references/configuration.md` for
-the full contract.
-
-Do not restate `AGENTS.md` back to the user — they already have it.
+In governance mode apply AGENTS.md. Load a reference only from the table above. Do not restate
+AGENTS.md back to the user.
 
 ## Bootstrapping sequence
 
-1. **Preflight once.** Apply `references/prerequisites.md` and confirm all three exact skill names
-   through the host-native resolver. Do not repeat this check before scaffolding unless the agent
-   session changes.
+1. **Preflight once.** Before the interview, use the host-native resolver to confirm the exact names
+   `superpowers:brainstorming`, `scientific-critical-thinking`, and `nature-figure`. This preflight
+   is name-resolution only. If a name is missing, pause and use `references/prerequisites.md` for
+   authorized installation or recovery; do not silently install or substitute a different workflow.
+   Do not repeat the check before scaffolding unless the agent session changes.
 2. **Start brainstorming.** Invoke `superpowers:brainstorming`. Explore context, ask the interview
-   questions below, and compare design approaches. Do not seek final design approval yet.
+   questions below one at a time, and compare design approaches. Do not seek final design approval
+   yet.
 3. **Critique the science.** Request an independent review agent that applies
    `scientific-critical-thinking` to the proposed question, claim, study design, estimand, and major
    validity risks without implementing. Every material finding must be incorporated or explicitly
@@ -75,29 +60,39 @@ Do not restate `AGENTS.md` back to the user — they already have it.
    and obtain approval. If the target repository is not yet initialized, initialize only its Git
    repository and create only the process-artifact path needed for the specification. This minimal
    initialization is part of the active gate, not project scaffolding; defer all other scaffold and
-   configuration work to step 7. Then write and self-review the specification, commit it, and obtain
+   configuration work to step 6. Then write and self-review the specification, commit it, and obtain
    user review.
-6. **Plan.** Invoke `superpowers:writing-plans` after the user approves the written specification.
-   This companion workflow is delivered by the required Superpowers installation; it is not a fourth
-   hard prerequisite.
-7. **Scaffold and configure.** Read `AGENTS.md` in this skill, create the approved structure, use
-   `references/bootstrap.md` for tooling, and use `references/configuration.md` when creating
-   configuration files and loaders. Agent prerequisites precede and remain separate from the
-   generated repository's `make setup` target.
-8. **Vendor and identify.** Run `./vendor.sh <target-repo>`; portable core vendoring writes only
-   `AGENTS.md`. If the user selected a supported host adapter, run it as a separate optional step.
-   Fill in the vendored `AGENTS.md` `## This repository` section, then report what was created,
-   assumptions, and unresolved boundaries.
+6. **Plan, then scaffold and configure.** Invoke `superpowers:writing-plans` after the user approves
+   the written specification. This companion workflow is delivered by the required Superpowers
+   installation; it is not a fourth hard prerequisite. Once the plan is ready, read `AGENTS.md` in
+   this skill, create the approved structure, use `references/bootstrap.md` for tooling, and use
+   `references/configuration.md` when creating configuration files and loaders. Agent prerequisites
+   precede and remain separate from the generated repository's `make setup` target.
+7. **Vendor and identify.** Run `./vendor.sh <target-repo>`; portable core vendoring writes only
+   `AGENTS.md`. Fill in the vendored `AGENTS.md` `## This repository` section.
+8. **Integrate the selected host.** Only when the user selected a host adapter, run its separate
+   post-vendor installer: `./adapters/codex.sh <target-repo>` or
+   `./adapters/claude-code.sh <target-repo>`. The selected adapter installs the canonical
+   code-simplifier profile. Then launch an independent review agent in the target repository and
+   require it to name the applicable `AGENTS.md`, resolve or read its assigned profile, and return
+   findings without implementation. When no adapter was selected, skip the installer and smoke test.
+   In either case, report what was created, assumptions, and unresolved boundaries.
 
 ## Interview
 
+Ask these questions one at a time and pursue conditional follow-ups before moving on.
+
 1. What is the primary research question and intended scientific claim?
-2. Should the license be MIT, or should the repository remain unlicensed/proprietary?
-3. What datasets are expected?
-4. Which workflow stages are needed, and which processed-data checkpoint can be shared?
-5. Are R or other non-Python tools required, and can they run in a pinned container?
-6. What are the expected tables, plots, reports, and publication targets?
-7. Which steps cannot be automated because of licensing, compute, or external environment
+2. Which currently supported Python minor should the project use?
+3. Which host adapter should be installed after vendoring: `codex`, `claude-code`, or none?
+4. Should the license be MIT, or should the repository remain unlicensed/proprietary?
+5. What datasets are expected?
+6. Which workflow stages are needed, and which processed-data checkpoint can be shared?
+7. Are R or other non-Python tools required, and can they run in a pinned container? If yes, ask
+   which runtime, version, system dependencies, and tests the container must support.
+8. What are the expected tables, plots, reports, and publication targets?
+9. Which steps cannot be automated because of licensing, compute, or external environment
    constraints?
-8. What verification can run in public CI, and what requires external inputs or tools?
-9. Which journal and publication type is this repo expected to support?
+10. What verification can run in public CI, and what requires external inputs or tools? Follow up on
+    the smallest permitted fixture or checkpoint for each external boundary.
+11. Which journal and publication type is this repo expected to support?
