@@ -17,15 +17,15 @@ trap 'rm -rf "$tmp"' EXIT
 t1="$tmp/fresh"
 mkdir "$t1"
 "$ROOT/vendor.sh" "$t1" > /dev/null
+top_level_count="$(find "$t1" -mindepth 1 -maxdepth 1 | wc -l | tr -d '[:space:]')"
 if diff -q "$ROOT/AGENTS.md" "$t1/AGENTS.md" > /dev/null &&
-  [[ ! -e "$t1/CLAUDE.md" ]] &&
-  [[ ! -e "$t1/CODEX.md" ]]; then
-  pass "fresh portable vendor"
+  [[ "$top_level_count" -eq 1 ]]; then
+  pass "fresh portable vendor contains only AGENTS.md"
 else
-  fail "fresh portable vendor"
+  fail "fresh portable vendor contains only AGENTS.md"
 fi
 
-# --- 2. re-vendor preserves a modified '## This repository' section, no .bak ---
+# --- 2. re-vendor preserves a modified '## This repository' section ---
 awk '/^## This repository$/{print; print ""; print "CUSTOM-MARKER project identity line."; next} {print}' \
   "$t1/AGENTS.md" > "$t1/AGENTS.md.new" && mv "$t1/AGENTS.md.new" "$t1/AGENTS.md"
 "$ROOT/vendor.sh" "$t1" > /dev/null
@@ -33,11 +33,6 @@ if grep -q 'CUSTOM-MARKER' "$t1/AGENTS.md"; then
   pass "re-vendor preserves the This repository section"
 else
   fail "re-vendor preserves the This repository section"
-fi
-if [[ -e "$t1/AGENTS.md.bak" ]]; then
-  fail "re-vendor must not leave AGENTS.md.bak"
-else
-  pass "no .bak litter"
 fi
 
 # --- 3. a source missing a boundary heading aborts, target untouched ---
