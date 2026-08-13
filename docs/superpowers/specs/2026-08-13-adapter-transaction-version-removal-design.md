@@ -27,6 +27,9 @@ automatically reclaimed. Success, ordinary failure, and trapped signals release 
 the invocation marked it owned and its owner file still contains the exact unique token. A created
 but not owned lock directory may be removed only with `rmdir` while empty. This serializes
 cooperating Claude and Codex installations without traversing or deleting pre-existing lock paths.
+The exact `mkdir` and its immediate success bookkeeping form one acquisition transition: a trapped
+signal arriving in that transition is recorded and handled through normal cleanup only after the
+adapter records whether its own `mkdir` created the directory. Signal deferral extends no further.
 
 Every new output is staged beside its destination. Before publication, the adapter records the
 staged artifact's filesystem inode and arms rollback. It then publishes by same-filesystem atomic
@@ -77,6 +80,10 @@ owner-liveness checks, same-PID never-owned cleanup, and simultaneous stale cont
 lock for manual intervention. Prove unique nonces and release after success, ordinary error, and
 trapped `TERM`. Pre-existing declared-output rollback tests record inode identity as well as
 checksums or symlink targets and verify complete stage and invocation-created-directory cleanup.
+Inject `TERM` after a wrapper performs the real lock-directory `mkdir` but before that wrapper
+returns, and prove both adapters record the effect, exit nonzero without hanging, and remove the
+invocation-created empty lock directory without creating outputs or stages. A missing-owner fixture
+must retain the exact pre-existing empty directory inode after refusal.
 
 ## Version-metadata removal
 

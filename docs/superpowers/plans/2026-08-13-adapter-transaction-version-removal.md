@@ -124,9 +124,21 @@ git commit -m "docs: remove per-file version metadata"
 
 Use the same target-local lock path in both adapters and acquire its exact directory with `mkdir` before output-parent creation or staging. Only after `mkdir` succeeds, write an owner file containing a strict invocation-unique token with PID, exact adapter name, and nonce. Set ownership only after an exact reread. Track the invocation-created empty directory separately so owner-write failure permits only `rmdir` when it remains empty.
 
+Treat the exact `mkdir` and only its immediate result bookkeeping as an acquisition transition.
+During that transition, a trapped signal records a pending nonzero status and returns; immediately
+after `mkdir` returns, record whether this invocation created the directory, leave the transition,
+and exit through normal cleanup if a signal is pending. Outside that narrow transition, preserve
+the normal signal-to-cleanup behavior.
+
 If `mkdir` fails, inspect without mutation and never create a file inside that path. Report exact valid live owners as contention. Preserve dead-PID or ambiguous liveness, malformed or missing owners, ordinary directories, regular files, and every symlink form for manual intervention. Cleanup on success, ordinary error, or trapped signal acts only when ownership was established, rereads the exact token before removing the owner file, and uses `rmdir` for the lock directory. A missing or changed owner is preserved.
 
 Add focused tests that hold one adapter after acquisition, run the other against the same target, require a contention diagnostic and nonzero status, and prove the contender did not remove the live owner's lock. Cover strict token grammar and nonce uniqueness; dead-PID/nonzero liveness; regular-file, directory, owner-file, and symlink path shapes; same-PID never-owned cleanup; simultaneous stale contenders; and lock release on success, error, and trapped `TERM`.
+
+Use a deterministic `mkdir` wrapper that performs the real exact-path creation, records its effect,
+sends `TERM` to the adapter before returning, and then returns success. For both adapters require the
+effect marker, nonzero status, absence of hangs, outputs, stages, and the lock directory. Record the
+inode of a pre-existing empty missing-owner lock directory and require the same empty directory inode
+after refusal.
 
 - [ ] **Step 1: Add effect-then-fail and trapped-signal tests**
 
