@@ -76,13 +76,14 @@ read_exact_token_file() {
     return 1
   fi
   token_byte_count=""
-  if token_byte_count="$(LC_ALL=C wc -c < "$token_path" | tr -d '[:space:]')"; then
+  if token_byte_count="$(LC_ALL=C wc -c < "$token_path")"; then
     :
   else
     # Filesystem evidence, not an injected post-effect command status, decides
     # whether a creation transition owns this exact token file.
     :
   fi
+  token_byte_count=${token_byte_count//[[:space:]]/}
   [[ "$token_byte_count" =~ ^[0-9]+$ ]] || return 1
   ((token_byte_count == ${#token_file_value} + 1))
 }
@@ -149,9 +150,73 @@ create_directory_transition() {
   ((creation_status == 0)) && [[ -n "$observed_inode" ]]
 }
 
+create_temporary_transition() {
+  temporary_template=$1
+  temporary_type=$2
+  path_variable=$3
+  inode_variable=$4
+  temporary_status=0
+  temporary_path=""
+  temporary_inode=""
+  temporary_prefix=${temporary_template%XXXXXX}
+  creation_transition=1
+  if [[ "$temporary_type" == directory ]]; then
+    if temporary_path="$(mktemp -d "$temporary_template")"; then
+      temporary_status=0
+    else
+      temporary_status=$?
+    fi
+  elif temporary_path="$(mktemp "$temporary_template")"; then
+    temporary_status=0
+  else
+    temporary_status=$?
+  fi
+  if [[ "$temporary_path" == "$temporary_prefix"?????? ]]; then
+    if [[ "$temporary_type" == directory && -d "$temporary_path" && ! -L "$temporary_path" ]] ||
+      [[ "$temporary_type" == file && -f "$temporary_path" && ! -L "$temporary_path" ]]; then
+      temporary_inode="$(inode_of "$temporary_path" 2> /dev/null)"
+      [[ "$temporary_inode" =~ ^[0-9]+$ ]] || temporary_inode=""
+    fi
+  fi
+  if [[ -n "$temporary_inode" ]]; then
+    printf -v "$path_variable" '%s' "$temporary_path"
+    printf -v "$inode_variable" '%s' "$temporary_inode"
+  fi
+  creation_transition=0
+  honor_pending_signal
+  ((temporary_status == 0)) && [[ -n "$temporary_inode" ]]
+}
+
+create_symlink_transition() {
+  symlink_target=$1
+  symlink_path=$2
+  inode_variable=$3
+  symlink_status=0
+  symlink_inode=""
+  path_exists "$symlink_path" && return 1
+  creation_transition=1
+  if ln -s "$symlink_target" "$symlink_path"; then
+    symlink_status=0
+  else
+    symlink_status=$?
+  fi
+  if [[ -L "$symlink_path" ]] &&
+    [[ "$(readlink "$symlink_path" 2> /dev/null)" == "$symlink_target" ]]; then
+    symlink_inode="$(inode_of "$symlink_path" 2> /dev/null)"
+    [[ "$symlink_inode" =~ ^[0-9]+$ ]] || symlink_inode=""
+  fi
+  if [[ -n "$symlink_inode" ]]; then
+    printf -v "$inode_variable" '%s' "$symlink_inode"
+  fi
+  creation_transition=0
+  honor_pending_signal
+  ((symlink_status == 0)) && [[ -n "$symlink_inode" ]]
+}
+
 create_claim_file() {
   claim_status=0
   observed_claim_inode=""
+  path_exists "$adapter_claim_file" && return 1
   creation_transition=1
   set -C
   if printf '%s\n' "$lock_token" > "$adapter_claim_file"; then
@@ -164,7 +229,7 @@ create_claim_file() {
     observed_claim_inode="$(inode_of "$adapter_claim_file" 2> /dev/null)"
     [[ "$observed_claim_inode" =~ ^[0-9]+$ ]] || observed_claim_inode=""
   fi
-  if [[ -n "$observed_claim_inode" ]]; then
+  if ((claim_status == 0)) && [[ -n "$observed_claim_inode" ]]; then
     claim_file_inode=$observed_claim_inode
   fi
   creation_transition=0
@@ -260,11 +325,11 @@ acquire_adapter_lock() {
     fail "adapter acquisition requires regular-file hard-link support"
   fi
 
-  if [[ ! -d "$adapter_lock" || -L "$adapter_lock" ]] ||
-    [[ "$(inode_of "$adapter_lock" 2> /dev/null)" != "$lock_directory_inode" ]] ||
+  if ! lock_directory_is_exact ||
     ! is_exact_token_inode "$adapter_guard" "$claim_file_inode" ||
     ! is_exact_token_inode "$adapter_lock_owner" "$claim_file_inode" ||
-    ! is_exact_token_inode "$adapter_claim_file" "$claim_file_inode"; then
+    ! is_exact_token_inode "$adapter_claim_file" "$claim_file_inode" ||
+    ! claim_directory_is_exact; then
     fail "failed to verify adapter lock ownership"
   fi
   lock_owned=1
@@ -311,6 +376,41 @@ directory_is_empty() {
   [[ -z "$(find "$1" -mindepth 1 -print -quit 2> /dev/null)" ]]
 }
 
+claim_directory_is_exact() {
+  [[ -d "$adapter_claim_directory" && ! -L "$adapter_claim_directory" ]] &&
+    [[ "$(inode_of "$adapter_claim_directory" 2> /dev/null)" == "$claim_directory_inode" ]] &&
+    [[ "$(find "$adapter_claim_directory" -mindepth 1 -maxdepth 1 -print 2> /dev/null)" == \
+      "$adapter_claim_file" ]]
+}
+
+claim_state_is_exact_for_release() {
+  if [[ -z "$claim_directory_inode" ]]; then
+    [[ -z "$claim_file_inode" ]]
+    return
+  fi
+  if [[ ! -d "$adapter_claim_directory" || -L "$adapter_claim_directory" ]] ||
+    [[ "$(inode_of "$adapter_claim_directory" 2> /dev/null)" != "$claim_directory_inode" ]]; then
+    return 1
+  fi
+  if [[ -n "$claim_file_inode" ]]; then
+    claim_directory_is_exact &&
+      is_exact_token_inode "$adapter_claim_file" "$claim_file_inode"
+  else
+    directory_is_empty "$adapter_claim_directory"
+  fi
+}
+
+lock_directory_is_exact() {
+  lock_directory_identity_is_exact &&
+    [[ "$(find "$adapter_lock" -mindepth 1 -maxdepth 1 -print 2> /dev/null)" == \
+      "$adapter_lock_owner" ]]
+}
+
+lock_directory_identity_is_exact() {
+  [[ -d "$adapter_lock" && ! -L "$adapter_lock" ]] &&
+    [[ "$(inode_of "$adapter_lock" 2> /dev/null)" == "$lock_directory_inode" ]]
+}
+
 remove_owned_directory() {
   owned_directory=$1
   expected_inode=$2
@@ -333,50 +433,133 @@ remove_owned_directory() {
   return 0
 }
 
+remove_serialization_path() {
+  serialization_path=$1
+  expected_inode=$2
+  cleanup_label=$3
+  change_label=$4
+  [[ -n "$expected_inode" ]] || return 0
+  if ! path_exists "$serialization_path"; then
+    cleanup_error "$change_label changed before removal; retained for manual intervention"
+    return 1
+  fi
+  if ! is_exact_token_inode "$serialization_path" "$expected_inode"; then
+    cleanup_error "$change_label changed before removal; retained for manual intervention"
+    return 1
+  fi
+  rm -f "$serialization_path" 2> /dev/null
+  path_exists "$serialization_path" || return 0
+  if is_exact_token_inode "$serialization_path" "$expected_inode"; then
+    cleanup_error "unable to remove $cleanup_label: $serialization_path"
+  else
+    cleanup_error "$change_label changed during removal; retained for manual intervention"
+  fi
+  return 1
+}
+
+remove_serialization_directory() {
+  serialization_directory=$1
+  expected_inode=$2
+  cleanup_label=$3
+  change_label=$4
+  [[ -n "$expected_inode" ]] || return 0
+  if ! path_exists "$serialization_directory"; then
+    cleanup_error "$change_label changed before removal; retained for manual intervention"
+    return 1
+  fi
+  if [[ ! -d "$serialization_directory" || -L "$serialization_directory" ]] ||
+    [[ "$(inode_of "$serialization_directory" 2> /dev/null)" != "$expected_inode" ]] ||
+    ! directory_is_empty "$serialization_directory"; then
+    cleanup_error "$change_label changed before removal; retained for manual intervention"
+    return 1
+  fi
+  rmdir "$serialization_directory" 2> /dev/null
+  path_exists "$serialization_directory" || return 0
+  if [[ -d "$serialization_directory" && ! -L "$serialization_directory" ]] &&
+    [[ "$(inode_of "$serialization_directory" 2> /dev/null)" == "$expected_inode" ]] &&
+    directory_is_empty "$serialization_directory"; then
+    cleanup_error "unable to remove $cleanup_label: $serialization_directory"
+  else
+    cleanup_error "$change_label changed during removal; retained for manual intervention"
+  fi
+  return 1
+}
+
 restore_lock_owner() {
+  restored_inode=""
   if [[ -d "$adapter_lock" && ! -L "$adapter_lock" ]] &&
     [[ "$(inode_of "$adapter_lock" 2> /dev/null)" == "$lock_directory_inode" ]] &&
     ! path_exists "$adapter_lock_owner"; then
     link "$adapter_guard" "$adapter_lock_owner" 2> /dev/null || true
   fi
+  if is_exact_token_inode "$adapter_lock_owner" "$guard_inode"; then
+    restored_inode="$(inode_of "$adapter_lock_owner" 2> /dev/null)"
+  fi
+  if [[ "$restored_inode" == "$guard_inode" ]]; then
+    lock_owner_inode=$restored_inode
+    return 0
+  fi
+  cleanup_error "unable to restore adapter lock owner: $adapter_lock_owner"
+  return 1
 }
 
 release_serialization() {
   if ((lock_owned)); then
-    # All three regular-file names are hard links. Check the lock-owner path
-    # first so a byte mutation receives the most precise actionable diagnosis.
+    # Validate the directory identity before its sole owner, then distinguish
+    # owner mutation from a foreign extra child for actionable diagnostics.
+    if ! lock_directory_identity_is_exact; then
+      cleanup_error "adapter lock changed; retained serialization for manual intervention"
+      return 1
+    fi
     if ! is_exact_token_inode "$adapter_lock_owner" "$lock_owner_inode"; then
       cleanup_error "adapter lock owner changed; retained adapter lock for manual intervention"
       return 1
     fi
-    if ! is_exact_token_inode "$adapter_guard" "$guard_inode" ||
-      ! is_exact_token_inode "$adapter_claim_file" "$claim_file_inode" ||
-      [[ ! -d "$adapter_lock" || -L "$adapter_lock" ]] ||
-      [[ "$(inode_of "$adapter_lock" 2> /dev/null)" != "$lock_directory_inode" ]]; then
-      cleanup_error "adapter serialization evidence changed; retained adapter lock for manual intervention"
+  fi
+  if [[ -n "$guard_inode" ]] && ! is_exact_token_inode "$adapter_guard" "$guard_inode"; then
+    cleanup_error "adapter acquisition guard changed; retained serialization for manual intervention"
+    return 1
+  fi
+  if ! claim_state_is_exact_for_release; then
+    cleanup_error "adapter claim state changed; retained serialization for manual intervention"
+    return 1
+  fi
+  if ((lock_owned)); then
+    if ! lock_directory_is_exact; then
+      cleanup_error "adapter lock state changed; retained adapter lock for manual intervention"
       return 1
     fi
     rm -f "$adapter_lock_owner" 2> /dev/null
-    if path_exists "$adapter_lock_owner" &&
-      [[ "$(inode_of "$adapter_lock_owner" 2> /dev/null)" == "$lock_owner_inode" ]]; then
-      cleanup_error "unable to remove adapter lock-owner: $adapter_lock_owner"
+    if path_exists "$adapter_lock_owner"; then
+      if is_exact_token_inode "$adapter_lock_owner" "$lock_owner_inode"; then
+        cleanup_error "unable to remove adapter lock-owner: $adapter_lock_owner"
+      else
+        cleanup_error "adapter lock owner changed during removal; retained for manual intervention"
+      fi
       return 1
     fi
     rmdir "$adapter_lock" 2> /dev/null
-    if [[ -d "$adapter_lock" && ! -L "$adapter_lock" ]] &&
-      [[ "$(inode_of "$adapter_lock" 2> /dev/null)" == "$lock_directory_inode" ]]; then
-      restore_lock_owner
-      cleanup_error "unable to remove adapter lock-directory: $adapter_lock"
+    if path_exists "$adapter_lock"; then
+      if [[ -d "$adapter_lock" && ! -L "$adapter_lock" ]] &&
+        [[ "$(inode_of "$adapter_lock" 2> /dev/null)" == "$lock_directory_inode" ]]; then
+        restore_lock_owner
+        cleanup_error "unable to remove adapter lock-directory: $adapter_lock"
+      else
+        cleanup_error "adapter lock changed during removal; retained for manual intervention"
+      fi
       return 1
     fi
   elif [[ -n "$lock_directory_inode" ]]; then
-    remove_owned_directory "$adapter_lock" "$lock_directory_inode" "adapter lock-directory" || return 1
+    remove_serialization_directory "$adapter_lock" "$lock_directory_inode" \
+      "adapter lock-directory" "adapter lock" || return 1
   fi
 
-  remove_owned_path "$adapter_claim_file" "$claim_file_inode" "adapter claim owner" || return 1
-  remove_owned_directory "$adapter_claim_directory" "$claim_directory_inode" \
-    "adapter claim directory" || return 1
-  remove_owned_path "$adapter_guard" "$guard_inode" "adapter acquisition guard" || return 1
+  remove_serialization_path "$adapter_claim_file" "$claim_file_inode" \
+    "adapter claim owner" "adapter claim owner" || return 1
+  remove_serialization_directory "$adapter_claim_directory" "$claim_directory_inode" \
+    "adapter claim directory" "adapter claim directory" || return 1
+  remove_serialization_path "$adapter_guard" "$guard_inode" \
+    "adapter acquisition guard" "adapter acquisition guard" || return 1
   return 0
 }
 
@@ -465,7 +648,8 @@ lock_token="$$:$adapter_id:$lock_nonce"
 adapter_claim_directory="$TARGET/.research-repo-standard-adapter.claim.$$-$lock_nonce"
 adapter_claim_file="$adapter_claim_directory/owner"
 
-# All declared destinations are validated before the first mutation.
+# Validate structural destinations before transaction mutation; generated
+# leaves are validated against their completed stages before publication.
 check_output_parent "$agents_directory"
 check_output_parent "$claude_directory"
 check_output_parent "$claude_agents_directory"
@@ -507,8 +691,10 @@ create_output_parent "$claude_directory" claude_directory_inode
 check_output_parent "$claude_agents_directory"
 create_output_parent "$claude_agents_directory" claude_agents_directory_inode
 
-canonical_stage="$(mktemp "$agents_directory/.code-simplifier.md.stage.XXXXXX")"
-canonical_stage_inode="$(inode_of "$canonical_stage")"
+if ! create_temporary_transition "$agents_directory/.code-simplifier.md.stage.XXXXXX" file \
+  canonical_stage canonical_stage_inode; then
+  fail "failed to create canonical simplifier stage"
+fi
 if ! cp "$canonical_profile" "$canonical_stage"; then
   fail "failed to stage canonical simplifier profile"
 fi
@@ -517,8 +703,10 @@ if ! cmp -s "$canonical_profile" "$canonical_stage"; then
 fi
 chmod 0644 "$canonical_stage"
 
-host_stage="$(mktemp "$claude_agents_directory/.code-simplifier.md.stage.XXXXXX")"
-host_stage_inode="$(inode_of "$host_stage")"
+if ! create_temporary_transition "$claude_agents_directory/.code-simplifier.md.stage.XXXXXX" file \
+  host_stage host_stage_inode; then
+  fail "failed to create Claude simplifier stage"
+fi
 {
   printf '%s\n' '---' "name: $canonical_name" "description: $canonical_description" '---'
   awk '
@@ -528,11 +716,14 @@ host_stage_inode="$(inode_of "$host_stage")"
 } > "$host_stage"
 chmod 0644 "$host_stage"
 
-alias_staging_directory="$(mktemp -d "$TARGET/.CLAUDE.md.stage.XXXXXX")"
-alias_staging_directory_inode="$(inode_of "$alias_staging_directory")"
+if ! create_temporary_transition "$TARGET/.CLAUDE.md.stage.XXXXXX" directory \
+  alias_staging_directory alias_staging_directory_inode; then
+  fail "failed to create Claude policy alias stage directory"
+fi
 alias_stage="$alias_staging_directory/CLAUDE.md"
-ln -s AGENTS.md "$alias_stage"
-alias_stage_inode="$(inode_of "$alias_stage")"
+if ! create_symlink_transition AGENTS.md "$alias_stage" alias_stage_inode; then
+  fail "failed to create Claude policy alias stage"
+fi
 
 check_policy_alias
 check_expected_file "$canonical_stage" "$canonical_destination"

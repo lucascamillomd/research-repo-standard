@@ -106,10 +106,12 @@ grep -vx '## Using this standard' "$ROOT/AGENTS.md" > "$bad/AGENTS.md"
 t3="$tmp/badtarget"
 mkdir "$t3"
 echo "sentinel" > "$t3/AGENTS.md"
-if err3="$("$bad/vendor.sh" "$t3" 2>&1 > /dev/null)"; then
-  fail "corrupted source must abort"
-else
+corrupt_source_status=0
+err3="$("$bad/vendor.sh" "$t3" 2>&1 > /dev/null)" || corrupt_source_status=$?
+if [[ "$corrupt_source_status" -eq 1 ]]; then
   pass "corrupted source aborts"
+else
+  fail "corrupted source must abort with status 1"
 fi
 if echo "$err3" | grep -q "must contain '## This repository' followed by '## Using this standard'"; then
   pass "corrupted source prints diagnostic"
@@ -129,10 +131,12 @@ printf '## This repository\n\nSome content.\n' > "$t4/AGENTS.md"
 malformed_target_before="$tmp/malformed-target.before"
 cp "$t4/AGENTS.md" "$malformed_target_before"
 malformed_target_inode="$(inode_of "$t4/AGENTS.md")"
-if err4="$("$ROOT/vendor.sh" "$t4" 2>&1 > /dev/null)"; then
-  fail "malformed target must abort"
-else
+malformed_status=0
+err4="$("$ROOT/vendor.sh" "$t4" 2>&1 > /dev/null)" || malformed_status=$?
+if [[ "$malformed_status" -eq 1 ]]; then
   pass "malformed target aborts"
+else
+  fail "malformed target must abort with status 1"
 fi
 if echo "$err4" | grep -q "## Using this standard"; then
   pass "malformed target prints diagnostic"

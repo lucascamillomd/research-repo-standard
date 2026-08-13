@@ -30,6 +30,16 @@ serialization_is_retained() {
   [[ "$(inode_of "$serialization_claim")" == "$serialization_guard_inode" ]]
 }
 
+serialization_is_absent() {
+  serialization_fixture=$1
+  [[ ! -e "$serialization_fixture/.research-repo-standard-adapter.lock" &&
+    ! -L "$serialization_fixture/.research-repo-standard-adapter.lock" ]] &&
+    [[ ! -e "$serialization_fixture/.research-repo-standard-adapter.guard" &&
+      ! -L "$serialization_fixture/.research-repo-standard-adapter.guard" ]] &&
+    ! find "$serialization_fixture" -mindepth 1 -maxdepth 1 \
+      -name '.research-repo-standard-adapter.claim.*' -print -quit | grep -q .
+}
+
 path_fingerprint() {
   fingerprint_path=$1
   if [[ -L "$fingerprint_path" ]]; then
@@ -58,6 +68,15 @@ path_fingerprint() {
   else
     printf 'absent\n'
   fi
+}
+
+target_tree_fingerprint() {
+  fingerprint_root=$1
+  find "$fingerprint_root" -mindepth 1 -print | LC_ALL=C sort |
+    while IFS= read -r fingerprint_entry; do
+      printf '%s|' "${fingerprint_entry#"$fingerprint_root"/}"
+      path_fingerprint "$fingerprint_entry"
+    done
 }
 
 tmp="$(mktemp -d)"
@@ -119,7 +138,8 @@ claude_before="$(cksum "$target/CLAUDE.md" "$target/agents/code-simplifier.md" "
 if "$ROOT/adapters/claude-code.sh" "$target" > /dev/null &&
   [[ "$(readlink "$target/CLAUDE.md" 2> /dev/null || true)" == "AGENTS.md" ]] &&
   [[ "$(cksum "$target/CLAUDE.md" "$target/agents/code-simplifier.md" "$claude_profile")" == "$claude_before" ]] &&
-  [[ ! -e "$target/.research-repo-standard-adapter.lock" && ! -L "$target/.research-repo-standard-adapter.lock" ]]; then
+  serialization_is_absent "$target" &&
+  [[ -z "$(find "$target" -name '*.stage.*' -print -quit)" ]]; then
   pass "Claude adapter accepts the exact policy alias idempotently"
 else
   fail "Claude adapter accepts the exact policy alias idempotently"
@@ -168,7 +188,8 @@ fi
 codex_before="$(cksum "$target/agents/code-simplifier.md" "$codex_profile")"
 if "$ROOT/adapters/codex.sh" "$target" > /dev/null &&
   [[ "$(cksum "$target/agents/code-simplifier.md" "$codex_profile")" == "$codex_before" ]] &&
-  [[ ! -e "$target/.research-repo-standard-adapter.lock" && ! -L "$target/.research-repo-standard-adapter.lock" ]]; then
+  serialization_is_absent "$target" &&
+  [[ -z "$(find "$target" -name '*.stage.*' -print -quit)" ]]; then
   pass "Codex adapter is idempotent"
 else
   fail "Codex adapter is idempotent"
@@ -216,6 +237,12 @@ for ((attempt = 0; attempt < 500; attempt++)); do
 done
 lock_token_before="$(cat "$shared_lock_owner" 2> /dev/null || true)"
 lock_owner_inode_before="$(inode_of "$shared_lock_owner" 2> /dev/null)"
+shared_claim_before="$(find "$shared_lock_target" -mindepth 1 -maxdepth 1 \
+  -type d -name '.research-repo-standard-adapter.claim.*' -print)"
+shared_claim_owner_before="$shared_claim_before/owner"
+shared_claim_directory_inode_before="$(inode_of "$shared_claim_before" 2> /dev/null)"
+shared_claim_owner_inode_before="$(inode_of "$shared_claim_owner_before" 2> /dev/null)"
+shared_target_fingerprint_before="$(target_tree_fingerprint "$shared_lock_target")"
 contender_status=0
 contender_error="$("$ROOT/adapters/codex.sh" "$shared_lock_target" 2>&1)" || contender_status=$?
 lock_token_after="$(cat "$shared_lock_owner" 2> /dev/null || true)"
@@ -225,10 +252,18 @@ if ((lock_ready)) && [[ "$lock_token_before" =~ ^${lock_owner_pid}:claude-code\.
   grep -Fqx "source=$ROOT/agents/code-simplifier.md" "$block_ready" &&
   grep -Eq "^destination=$shared_lock_target/agents/\.code-simplifier\.md\.stage\.[[:alnum:]]+$" "$block_ready" &&
   grep -Fqx "ppid=$lock_owner_pid" "$block_ready" && [[ "$(cat "$block_count")" == "1" ]] &&
-  [[ "$contender_status" -ne 0 ]] &&
+  [[ "$contender_status" -eq 1 ]] &&
   grep -q "adapter installation already in progress: $lock_token_before" <<< "$contender_error" &&
   [[ "$lock_token_after" == "$lock_token_before" ]] &&
   [[ "$lock_owner_inode_after" == "$lock_owner_inode_before" ]] &&
+  [[ "$(find "$shared_lock_target" -mindepth 1 -maxdepth 1 \
+    -type d -name '.research-repo-standard-adapter.claim.*' -print)" == "$shared_claim_before" ]] &&
+  [[ "$(inode_of "$shared_claim_before")" == "$shared_claim_directory_inode_before" ]] &&
+  [[ "$(find "$shared_claim_before" -mindepth 1 -maxdepth 1 -print)" == \
+    "$shared_claim_owner_before" ]] &&
+  [[ "$(inode_of "$shared_claim_owner_before")" == "$shared_claim_owner_inode_before" ]] &&
+  [[ "$(target_tree_fingerprint "$shared_lock_target")" == \
+    "$shared_target_fingerprint_before" ]] &&
   [[ ! -e "$shared_lock_target/.codex" && ! -L "$shared_lock_target/.codex" ]]; then
   pass "Claude and Codex adapters contend on one live lock"
 else
@@ -238,7 +273,7 @@ touch "$block_release"
 lock_owner_status=0
 wait "$lock_owner_pid" || lock_owner_status=$?
 if [[ "$lock_owner_status" -eq 0 ]] &&
-  [[ ! -e "$shared_lock" && ! -L "$shared_lock" ]] &&
+  serialization_is_absent "$shared_lock_target" &&
   [[ -f "$shared_lock_target/agents/code-simplifier.md" ]] &&
   [[ -f "$shared_lock_target/.claude/agents/code-simplifier.md" ]] &&
   [[ "$(readlink "$shared_lock_target/CLAUDE.md" 2> /dev/null || true)" == "AGENTS.md" ]]; then
@@ -282,7 +317,10 @@ else
 fi
 touch "$second_block_release"
 wait "$second_lock_pid" || fail "Adapter releases the second owned lock"
-if [[ ! -e "$second_lock" && ! -L "$second_lock" ]]; then
+if serialization_is_absent "$second_lock_target" &&
+  [[ -f "$second_lock_target/agents/code-simplifier.md" ]] &&
+  [[ -f "$second_lock_target/.codex/agents/code-simplifier.toml" ]] &&
+  [[ -z "$(find "$second_lock_target" -name '*.stage.*' -print -quit)" ]]; then
   pass "Adapter releases the second owned lock"
 else
   fail "Adapter releases the second owned lock"
@@ -399,7 +437,7 @@ run_protocol_id_case() {
   protocol_status=0
   wait "$protocol_pid" || protocol_status=$?
   if ((protocol_ready_state)) && [[ "$protocol_status" -eq 0 ]] &&
-    [[ "$protocol_contender_status" -ne 0 ]] &&
+    [[ "$protocol_contender_status" -eq 1 ]] &&
     [[ "$protocol_token" =~ ^${protocol_pid}:${adapter_id//./\.}:[0-9]+-[0-9]+-[0-9]+$ ]] &&
     grep -Fq "adapter installation already in progress: $protocol_token" <<< "$protocol_contender_error" &&
     grep -Fqx 'blocking-copy' "$protocol_ready" && grep -Fqx 'count=1' "$protocol_ready" &&
@@ -549,7 +587,7 @@ run_claim_collision_case() {
   mkdir "$fixture" "$outside"
   cp "$target/AGENTS.md" "$fixture/AGENTS.md"
   printf 'outside marker\n' > "$outside/marker"
-  outside_before="$(cksum "$outside/marker")"
+  outside_before="$(path_fingerprint "$outside")"
   collision_status=0
   CLAIM_PATH_FILE="$claim_path_file" CLAIM_STATE_FILE="$claim_state_file" \
     COLLISION_KIND="$collision_kind" \
@@ -599,7 +637,9 @@ run_claim_collision_case() {
       [[ -d "$claim_path" && ! -L "$claim_path" ]] &&
         [[ "$(inode_of "$claim_path")" == "$claim_inode_before" ]] &&
         [[ "$(cksum "$claim_path/marker")" == \
-          "$(sed -n 's/^marker_checksum=//p' "$claim_state_file")" ]] && claim_shape_ok=1
+          "$(sed -n 's/^marker_checksum=//p' "$claim_state_file")" ]] &&
+        [[ "$(find "$claim_path" -mindepth 1 -maxdepth 1 -print)" == \
+          "$claim_path/marker" ]] && claim_shape_ok=1
       ;;
     dangling)
       [[ -L "$claim_path" && "$(inode_of "$claim_path")" == "$claim_inode_before" ]] &&
@@ -610,17 +650,21 @@ run_claim_collision_case() {
       [[ -L "$claim_path" && "$(inode_of "$claim_path")" == "$claim_inode_before" ]] &&
         [[ "$(readlink "$claim_path")" == \
           "$(sed -n 's/^target=//p' "$claim_state_file")" ]] &&
-        [[ "$(cat "$fixture/claim-source/marker")" == 'internal marker' ]] && claim_shape_ok=1
+        [[ "$(cat "$fixture/claim-source/marker")" == 'internal marker' ]] &&
+        [[ "$(find "$fixture/claim-source" -mindepth 1 -maxdepth 1 -print)" == \
+          "$fixture/claim-source/marker" ]] && claim_shape_ok=1
       ;;
     external)
       [[ -L "$claim_path" && "$(inode_of "$claim_path")" == "$claim_inode_before" ]] &&
         [[ "$(readlink "$claim_path")" == \
-          "$(sed -n 's/^target=//p' "$claim_state_file")" ]] && claim_shape_ok=1
+          "$(sed -n 's/^target=//p' "$claim_state_file")" ]] &&
+        [[ "$(find "$outside" -mindepth 1 -maxdepth 1 -print)" == "$outside/marker" ]] &&
+        claim_shape_ok=1
       ;;
   esac
   if [[ "$collision_status" -eq 1 ]] &&
     grep -Fq 'adapter acquisition claim requires manual intervention' "$output" &&
-    ((claim_shape_ok)) && [[ "$(cksum "$outside/marker")" == "$outside_before" ]] &&
+    ((claim_shape_ok)) && [[ "$(path_fingerprint "$outside")" == "$outside_before" ]] &&
     [[ ! -e "$fixture/.research-repo-standard-adapter.guard" ]] &&
     [[ ! -e "$fixture/.research-repo-standard-adapter.lock" ]] &&
     [[ ! -e "$fixture/agents" ]] && [[ ! -e "$fixture/.claude" ]] &&
@@ -654,24 +698,30 @@ count=$((count + 1))
 printf '%s\n' "$count" > "$LINK_COUNT_FILE"
 source=$1
 destination=$2
+argument_count=$#
 if [[ "$count" -ne "$LINK_FAIL_ON_COUNT" ]]; then
   exec "$REAL_LINK" "$@"
 fi
 if [[ "$PPID" != "$EXPECTED_ADAPTER_PID" ]]; then
-  printf 'unexpected-parent\ncount=%s\nsource=%s\ndestination=%s\nppid=%s\n' \
-    "$count" "$source" "$destination" "$PPID" > "$LINK_EFFECT_MARKER"
+  printf 'unexpected-parent\ncount=%s\nargument_count=%s\nsource=%s\ndestination=%s\nppid=%s\n' \
+    "$count" "$argument_count" "$source" "$destination" "$PPID" > "$LINK_EFFECT_MARKER"
+  exit 1
+fi
+if [[ "$argument_count" -ne 2 ]]; then
+  printf 'unexpected-arguments\ncount=%s\nargument_count=%s\nsource=%s\ndestination=%s\nppid=%s\n' \
+    "$count" "$argument_count" "$source" "$destination" "$PPID" > "$LINK_EFFECT_MARKER"
   exit 1
 fi
 if [[ "$LINK_FAULT_MODE" == pre ]]; then
-  printf 'pre-effect link\ncount=%s\nsource=%s\ndestination=%s\nppid=%s\n' \
-    "$count" "$source" "$destination" "$PPID" > "$LINK_EFFECT_MARKER"
+  printf 'pre-effect link\ncount=%s\nargument_count=%s\nsource=%s\ndestination=%s\nppid=%s\n' \
+    "$count" "$argument_count" "$source" "$destination" "$PPID" > "$LINK_EFFECT_MARKER"
   exit 71
 fi
 "$REAL_LINK" "$source" "$destination"
 source_inode="$(LC_ALL=C ls -di "$source" | awk '{ print $1 }')"
 destination_inode="$(LC_ALL=C ls -di "$destination" | awk '{ print $1 }')"
-printf 'post-effect link\ncount=%s\nsource=%s\ndestination=%s\nsource_inode=%s\ndestination_inode=%s\nppid=%s\nsignal=%s\nreturn_status=73\n' \
-  "$count" "$source" "$destination" "$source_inode" "$destination_inode" "$PPID" \
+printf 'post-effect link\ncount=%s\nargument_count=%s\nsource=%s\ndestination=%s\nsource_inode=%s\ndestination_inode=%s\nppid=%s\nsignal=%s\nreturn_status=73\n' \
+  "$count" "$argument_count" "$source" "$destination" "$source_inode" "$destination_inode" "$PPID" \
   "$FAULT_SIGNAL" > "$LINK_EFFECT_MARKER"
 if ! kill -"$FAULT_SIGNAL" "$PPID"; then
   printf 'signal-delivery-failed\ncount=%s\npid=%s\nsignal=%s\n' \
@@ -711,6 +761,7 @@ run_link_fault_case() {
   link_evidence_ok=0
   if [[ "$link_status" -eq "$expected_status" ]] && [[ "$(cat "$link_count_file" 2> /dev/null)" == "$link_count" ]] &&
     grep -Fqx "$fault_mode-effect link" "$link_marker" && grep -Fqx "count=$link_count" "$link_marker" &&
+    grep -Fqx 'argument_count=2' "$link_marker" &&
     [[ "$link_source" == "$link_fixture"/.research-repo-standard-adapter.claim.*/owner ]] &&
     grep -Fqx "destination=$expected_link_destination" "$link_marker" &&
     grep -Fqx "ppid=$link_pid" "$link_marker"; then
@@ -801,7 +852,7 @@ assert_lock_refused_without_output() {
     esac
     status=0
     error="$("$adapter" "$adapter_fixture" 2>&1)" || status=$?
-    if [[ "$status" -ne 0 ]] && grep -q "$expected_diagnostic" <<< "$error" &&
+    if [[ "$status" -eq 1 ]] && grep -q "$expected_diagnostic" <<< "$error" &&
       [[ ! -e "$adapter_fixture/agents" && ! -L "$adapter_fixture/agents" ]] &&
       [[ ! -e "$adapter_fixture/.claude" && ! -L "$adapter_fixture/.claude" ]] &&
       [[ ! -e "$adapter_fixture/CLAUDE.md" && ! -L "$adapter_fixture/CLAUDE.md" ]] &&
@@ -957,6 +1008,7 @@ cp "$target/AGENTS.md" "$dead_owner_target/AGENTS.md"
 dead_owner_token='99999999:claude-code.sh:123-456-789'
 printf '%s\n' "$dead_owner_token" > "$dead_owner_target/.research-repo-standard-adapter.lock/owner"
 dead_owner_inode="$(inode_of "$dead_owner_target/.research-repo-standard-adapter.lock/owner")"
+dead_owner_target_fingerprint="$(target_tree_fingerprint "$dead_owner_target")"
 assert_lock_refused_without_output "$dead_owner_target" 'adapter lock requires manual intervention' \
   "Nonzero owner liveness preserves a stale lock"
 if [[ "$(cat "$dead_owner_target/.research-repo-standard-adapter.lock/owner")" == "$dead_owner_token" ]] &&
@@ -974,11 +1026,19 @@ stale_claude_pid=$!
 stale_codex_pid=$!
 wait "$stale_claude_pid" || stale_claude_status=$?
 wait "$stale_codex_pid" || stale_codex_status=$?
-if [[ "$stale_claude_status" -ne 0 && "$stale_codex_status" -ne 0 ]] &&
+if [[ "$stale_claude_status" -eq 1 && "$stale_codex_status" -eq 1 ]] &&
   grep -q 'adapter lock requires manual intervention' "$tmp/stale-claude.out" &&
   grep -q 'adapter lock requires manual intervention' "$tmp/stale-codex.out" &&
   [[ "$(cat "$dead_owner_target/.research-repo-standard-adapter.lock/owner")" == "$dead_owner_token" ]] &&
-  [[ "$(inode_of "$dead_owner_target/.research-repo-standard-adapter.lock/owner")" == "$dead_owner_inode" ]]; then
+  [[ "$(inode_of "$dead_owner_target/.research-repo-standard-adapter.lock/owner")" == "$dead_owner_inode" ]] &&
+  [[ "$(target_tree_fingerprint "$dead_owner_target")" == "$dead_owner_target_fingerprint" ]] &&
+  [[ ! -e "$dead_owner_target/.research-repo-standard-adapter.guard" &&
+    ! -L "$dead_owner_target/.research-repo-standard-adapter.guard" ]] &&
+  ! find "$dead_owner_target" -mindepth 1 -maxdepth 1 \
+    -name '.research-repo-standard-adapter.claim.*' -print -quit | grep -q . &&
+  [[ ! -e "$dead_owner_target/agents" && ! -e "$dead_owner_target/.claude" &&
+    ! -e "$dead_owner_target/.codex" && ! -e "$dead_owner_target/CLAUDE.md" ]] &&
+  [[ -z "$(find "$dead_owner_target" -name '*.stage.*' -print -quit)" ]]; then
   pass "Simultaneous stale-lock contenders both fail without mutation"
 else
   fail "Simultaneous stale-lock contenders both fail without mutation"
@@ -1045,7 +1105,7 @@ assert_guard_refused_without_output() {
     esac
     guard_status=0
     guard_error="$("$guard_adapter" "$guard_fixture" 2>&1)" || guard_status=$?
-    if [[ "$guard_status" -ne 0 ]] && grep -Fq "$expected_diagnostic" <<< "$guard_error" &&
+    if [[ "$guard_status" -eq 1 ]] && grep -Fq "$expected_diagnostic" <<< "$guard_error" &&
       [[ ! -e "$guard_fixture/.research-repo-standard-adapter.lock" &&
         ! -L "$guard_fixture/.research-repo-standard-adapter.lock" ]] &&
       [[ ! -e "$guard_fixture/agents" && ! -L "$guard_fixture/agents" ]] &&
@@ -1451,7 +1511,9 @@ elif [[ "$claude_cp_status" -eq 1 ]] && [[ "$(cat "$claude_cp_count" 2> /dev/nul
   [[ ! -e "$claude_cp_failure/agents/code-simplifier.md" && ! -L "$claude_cp_failure/agents/code-simplifier.md" ]] &&
   [[ ! -e "$claude_cp_failure/.claude/agents/code-simplifier.md" && ! -L "$claude_cp_failure/.claude/agents/code-simplifier.md" ]] &&
   [[ -z "$(find "$claude_cp_failure" -name '*.stage.*' -print -quit)" ]] &&
-  [[ ! -e "$claude_cp_failure/.research-repo-standard-adapter.lock" && ! -L "$claude_cp_failure/.research-repo-standard-adapter.lock" ]]; then
+  serialization_is_absent "$claude_cp_failure" &&
+  [[ "$(find "$claude_cp_failure" -mindepth 1 -maxdepth 1 -print)" == \
+    "$claude_cp_failure/AGENTS.md" ]]; then
   pass "Claude adapter cleans a partial staging copy"
 else
   fail "Claude adapter cleans a partial staging copy"
@@ -1482,7 +1544,9 @@ elif [[ "$codex_cp_status" -eq 1 ]] && [[ "$(cat "$codex_cp_count" 2> /dev/null)
   [[ ! -e "$codex_cp_failure/agents/code-simplifier.md" && ! -L "$codex_cp_failure/agents/code-simplifier.md" ]] &&
   [[ ! -e "$codex_cp_failure/.codex/agents/code-simplifier.toml" && ! -L "$codex_cp_failure/.codex/agents/code-simplifier.toml" ]] &&
   [[ -z "$(find "$codex_cp_failure" -name '*.stage.*' -print -quit)" ]] &&
-  [[ ! -e "$codex_cp_failure/.research-repo-standard-adapter.lock" && ! -L "$codex_cp_failure/.research-repo-standard-adapter.lock" ]]; then
+  serialization_is_absent "$codex_cp_failure" &&
+  [[ "$(find "$codex_cp_failure" -mindepth 1 -maxdepth 1 -print)" == \
+    "$codex_cp_failure/AGENTS.md" ]]; then
   pass "Codex adapter cleans a partial staging copy"
 else
   fail "Codex adapter cleans a partial staging copy"
@@ -1717,6 +1781,8 @@ run_stage_cleanup_failure() {
   adapter_label=$2
   host_profile_relative=$3
   expected_stage_count=$4
+  expected_rm_total=$5
+  expected_rmdir_total=$6
   cleanup_fixture="$tmp/cleanup-stage-$adapter_label"
   mkdir "$cleanup_fixture"
   cp "$target/AGENTS.md" "$cleanup_fixture/AGENTS.md"
@@ -1728,6 +1794,8 @@ run_stage_cleanup_failure() {
   cleanup_rmdir_count="$tmp/cleanup-stage-$adapter_label.rmdir-count"
   cleanup_pid_file="$tmp/cleanup-stage-$adapter_label.pid"
   cleanup_output="$tmp/cleanup-stage-$adapter_label.out"
+  printf '%s\n' 0 > "$cleanup_rm_count"
+  printf '%s\n' 0 > "$cleanup_rmdir_count"
   cleanup_status=0
   CLEANUP_EFFECT_MARKER="$cleanup_marker" CLEANUP_RM_COUNT="$cleanup_rm_count" \
     CLEANUP_RMDIR_COUNT="$cleanup_rmdir_count" FAIL_RM_PATTERN="$cleanup_fixture/*.stage.*" \
@@ -1739,12 +1807,26 @@ run_stage_cleanup_failure() {
   stage_residue_count="$(find "$cleanup_fixture" \( -type f -o -type l \) \
     -path '*.stage.*' | wc -l | tr -d '[:space:]')"
   marker_stage_count="$(grep -c '^cleanup-rm$' "$cleanup_marker" 2> /dev/null || true)"
+  marker_pid_count="$(grep -c "^ppid=$cleanup_pid$" "$cleanup_marker" 2> /dev/null || true)"
+  marker_stage_paths="$(sed -n 's/^path=//p' "$cleanup_marker" 2> /dev/null | LC_ALL=C sort)"
+  residue_stage_paths="$(find "$cleanup_fixture" \( -type f -o -type l \) \
+    -path '*.stage.*' | LC_ALL=C sort)"
+  marker_count_sequence="$(sed -n 's/^count=//p' "$cleanup_marker" 2> /dev/null | \
+    tr '\n' ' ' | sed 's/[[:space:]]*$//')"
+  case "$expected_stage_count" in
+    3) expected_marker_count_sequence='1 2 3' ;;
+    2) expected_marker_count_sequence='1 2' ;;
+  esac
   diagnostic_stage_count="$(grep -c 'cleanup incomplete: unable to remove stage:' \
     "$cleanup_output" 2> /dev/null || true)"
   if [[ "$cleanup_status" -eq 1 ]] && [[ "$stage_residue_count" -eq "$expected_stage_count" ]] &&
     [[ "$marker_stage_count" -eq "$expected_stage_count" &&
-      "$diagnostic_stage_count" -eq "$expected_stage_count" ]] &&
-    grep -Fqx "ppid=$cleanup_pid" "$cleanup_marker" &&
+      "$diagnostic_stage_count" -eq "$expected_stage_count" &&
+      "$marker_pid_count" -eq "$expected_stage_count" ]] &&
+    [[ "$(cat "$cleanup_rm_count")" -eq "$expected_rm_total" &&
+      "$(cat "$cleanup_rmdir_count")" -eq "$expected_rmdir_total" ]] &&
+    [[ "$marker_stage_paths" == "$residue_stage_paths" &&
+      "$marker_count_sequence" == "$expected_marker_count_sequence" ]] &&
     [[ "$(cksum "$cleanup_fixture/agents/code-simplifier.md" \
       "$cleanup_fixture/$host_profile_relative")" == "$output_before" ]] &&
     serialization_is_retained "$cleanup_fixture" && ! grep -q '^installed ' "$cleanup_output"; then
@@ -1755,15 +1837,18 @@ run_stage_cleanup_failure() {
 }
 
 run_stage_cleanup_failure "$ROOT/adapters/claude-code.sh" Claude \
-  .claude/agents/code-simplifier.md 3
+  .claude/agents/code-simplifier.md 3 3 0
 run_stage_cleanup_failure "$ROOT/adapters/codex.sh" Codex \
-  .codex/agents/code-simplifier.toml 2
+  .codex/agents/code-simplifier.toml 2 2 0
 
 run_lock_cleanup_failure() {
   adapter=$1
   adapter_label=$2
   host_profile_relative=$3
   cleanup_role=$4
+  expected_rm_total=$5
+  expected_rmdir_total=$6
+  expected_marker_count=$7
   cleanup_fixture="$tmp/cleanup-$cleanup_role-$adapter_label"
   mkdir "$cleanup_fixture"
   cp "$target/AGENTS.md" "$cleanup_fixture/AGENTS.md"
@@ -1772,6 +1857,8 @@ run_lock_cleanup_failure() {
   cleanup_rmdir_count="$tmp/cleanup-$cleanup_role-$adapter_label.rmdir-count"
   cleanup_pid_file="$tmp/cleanup-$cleanup_role-$adapter_label.pid"
   cleanup_output="$tmp/cleanup-$cleanup_role-$adapter_label.out"
+  printf '%s\n' 0 > "$cleanup_rm_count"
+  printf '%s\n' 0 > "$cleanup_rmdir_count"
   fail_rm_pattern=''
   fail_rmdir_pattern=''
   case "$cleanup_role" in
@@ -1797,8 +1884,11 @@ run_lock_cleanup_failure() {
       ;;
   esac
   if [[ "$cleanup_status" -eq 1 ]] && grep -Fqx "$cleanup_marker_kind" "$cleanup_marker" &&
+    grep -Fqx "count=$expected_marker_count" "$cleanup_marker" &&
     grep -Fqx "path=$cleanup_expected_path" "$cleanup_marker" &&
     grep -Fqx "ppid=$cleanup_pid" "$cleanup_marker" &&
+    [[ "$(cat "$cleanup_rm_count")" -eq "$expected_rm_total" &&
+      "$(cat "$cleanup_rmdir_count")" -eq "$expected_rmdir_total" ]] &&
     grep -Fq "cleanup incomplete: unable to remove adapter $cleanup_role:" "$cleanup_output" &&
     [[ -f "$cleanup_fixture/agents/code-simplifier.md" ]] &&
     [[ -f "$cleanup_fixture/$host_profile_relative" ]] &&
@@ -1814,16 +1904,21 @@ for cleanup_adapter_case in Claude Codex; do
     Claude)
       cleanup_adapter="$ROOT/adapters/claude-code.sh"
       cleanup_host_profile=.claude/agents/code-simplifier.md
+      cleanup_lock_owner_rmdir_total=1
+      cleanup_lock_directory_rmdir_total=2
       ;;
     Codex)
       cleanup_adapter="$ROOT/adapters/codex.sh"
       cleanup_host_profile=.codex/agents/code-simplifier.toml
+      cleanup_lock_owner_rmdir_total=0
+      cleanup_lock_directory_rmdir_total=1
       ;;
   esac
   run_lock_cleanup_failure "$cleanup_adapter" "$cleanup_adapter_case" \
-    "$cleanup_host_profile" lock-owner
+    "$cleanup_host_profile" lock-owner 1 "$cleanup_lock_owner_rmdir_total" 1
   run_lock_cleanup_failure "$cleanup_adapter" "$cleanup_adapter_case" \
-    "$cleanup_host_profile" lock-directory
+    "$cleanup_host_profile" lock-directory 1 "$cleanup_lock_directory_rmdir_total" \
+    "$cleanup_lock_directory_rmdir_total"
 done
 
 run_directory_cleanup_failure() {
@@ -1832,6 +1927,9 @@ run_directory_cleanup_failure() {
   publish_count=$3
   destination_relative=$4
   nested_parent_relative=$5
+  expected_rm_total=$6
+  expected_rmdir_total=$7
+  expected_marker_count=$8
   cleanup_fixture="$tmp/cleanup-directory-$adapter_label"
   mkdir "$cleanup_fixture"
   cp "$target/AGENTS.md" "$cleanup_fixture/AGENTS.md"
@@ -1842,6 +1940,8 @@ run_directory_cleanup_failure() {
   cleanup_rmdir_count="$tmp/cleanup-directory-$adapter_label.rmdir-count"
   cleanup_pid_file="$tmp/cleanup-directory-$adapter_label.pid"
   cleanup_output="$tmp/cleanup-directory-$adapter_label.out"
+  printf '%s\n' 0 > "$cleanup_rm_count"
+  printf '%s\n' 0 > "$cleanup_rmdir_count"
   cleanup_status=0
   MV_COUNT_FILE="$effect_count" MV_EFFECT_MARKER="$effect_marker" \
     EXPECTED_DESTINATION="$cleanup_fixture/$destination_relative" FAIL_ON_COUNT="$publish_count" \
@@ -1856,8 +1956,11 @@ run_directory_cleanup_failure() {
   cleanup_pid="$(cat "$cleanup_pid_file")"
   if [[ "$cleanup_status" -eq 1 ]] && grep -Fqx 'post-effect' "$effect_marker" &&
     grep -Fqx 'cleanup-rmdir' "$cleanup_marker" &&
+    grep -Fqx "count=$expected_marker_count" "$cleanup_marker" &&
     grep -Fqx "path=$cleanup_fixture/$nested_parent_relative" "$cleanup_marker" &&
     grep -Fqx "ppid=$cleanup_pid" "$cleanup_marker" &&
+    [[ "$(cat "$cleanup_rm_count")" -eq "$expected_rm_total" &&
+      "$(cat "$cleanup_rmdir_count")" -eq "$expected_rmdir_total" ]] &&
     grep -Fq "cleanup incomplete: unable to remove output parent: $cleanup_fixture/$nested_parent_relative" \
       "$cleanup_output" && [[ -d "$cleanup_fixture/$nested_parent_relative" ]] &&
     [[ -z "$(find "$cleanup_fixture/$nested_parent_relative" -mindepth 1 -print -quit)" ]] &&
@@ -1868,15 +1971,19 @@ run_directory_cleanup_failure() {
   fi
 }
 
-run_directory_cleanup_failure "$ROOT/adapters/claude-code.sh" Claude 3 CLAUDE.md .claude/agents
+run_directory_cleanup_failure "$ROOT/adapters/claude-code.sh" Claude 3 CLAUDE.md \
+  .claude/agents 3 3 2
 run_directory_cleanup_failure "$ROOT/adapters/codex.sh" Codex 2 \
-  .codex/agents/code-simplifier.toml .codex/agents
+  .codex/agents/code-simplifier.toml .codex/agents 2 3 1
 
 run_output_cleanup_failure() {
   adapter=$1
   adapter_label=$2
   publish_count=$3
   destination_relative=$4
+  expected_rm_total=$5
+  expected_rmdir_total=$6
+  expected_marker_count=$7
   cleanup_fixture="$tmp/cleanup-output-$adapter_label"
   mkdir "$cleanup_fixture"
   cp "$target/AGENTS.md" "$cleanup_fixture/AGENTS.md"
@@ -1888,6 +1995,8 @@ run_output_cleanup_failure() {
   cleanup_pid_file="$tmp/cleanup-output-$adapter_label.pid"
   cleanup_output="$tmp/cleanup-output-$adapter_label.out"
   cleanup_destination="$cleanup_fixture/$destination_relative"
+  printf '%s\n' 0 > "$cleanup_rm_count"
+  printf '%s\n' 0 > "$cleanup_rmdir_count"
   cleanup_status=0
   MV_COUNT_FILE="$effect_count" MV_EFFECT_MARKER="$effect_marker" \
     EXPECTED_DESTINATION="$cleanup_destination" FAIL_ON_COUNT="$publish_count" \
@@ -1905,8 +2014,11 @@ run_output_cleanup_failure() {
   owned_inode="$(sed -n 's/^owned_inode=//p' "$effect_marker" 2> /dev/null)"
   if [[ "$cleanup_status" -eq 143 ]] && grep -Fqx 'post-effect' "$effect_marker" &&
     grep -Fqx 'signal=TERM' "$effect_marker" && grep -Fqx 'cleanup-rm' "$cleanup_marker" &&
+    grep -Fqx "count=$expected_marker_count" "$cleanup_marker" &&
     grep -Fqx "path=$cleanup_destination" "$cleanup_marker" &&
     grep -Fqx "ppid=$cleanup_pid" "$cleanup_marker" &&
+    [[ "$(cat "$cleanup_rm_count")" -eq "$expected_rm_total" &&
+      "$(cat "$cleanup_rmdir_count")" -eq "$expected_rmdir_total" ]] &&
     grep -Fq "cleanup incomplete: unable to remove owned output: $cleanup_destination" \
       "$cleanup_output" && [[ -e "$cleanup_destination" || -L "$cleanup_destination" ]] &&
     [[ "$(inode_of "$cleanup_destination")" == "$owned_inode" ]] &&
@@ -1918,9 +2030,9 @@ run_output_cleanup_failure() {
   fi
 }
 
-run_output_cleanup_failure "$ROOT/adapters/claude-code.sh" Claude 3 CLAUDE.md
+run_output_cleanup_failure "$ROOT/adapters/claude-code.sh" Claude 3 CLAUDE.md 3 4 3
 run_output_cleanup_failure "$ROOT/adapters/codex.sh" Codex 2 \
-  .codex/agents/code-simplifier.toml
+  .codex/agents/code-simplifier.toml 2 3 1
 
 # Claude's target-local alias staging directory is also finalized before success.
 alias_cleanup_fixture="$tmp/cleanup-alias-staging-Claude"
@@ -1931,6 +2043,8 @@ alias_cleanup_rm_count="$tmp/cleanup-alias-staging.rm-count"
 alias_cleanup_rmdir_count="$tmp/cleanup-alias-staging.rmdir-count"
 alias_cleanup_pid_file="$tmp/cleanup-alias-staging.pid"
 alias_cleanup_output="$tmp/cleanup-alias-staging.out"
+printf '%s\n' 0 > "$alias_cleanup_rm_count"
+printf '%s\n' 0 > "$alias_cleanup_rmdir_count"
 alias_cleanup_status=0
 CLEANUP_EFFECT_MARKER="$alias_cleanup_marker" CLEANUP_RM_COUNT="$alias_cleanup_rm_count" \
   CLEANUP_RMDIR_COUNT="$alias_cleanup_rmdir_count" FAIL_RM_PATTERN='' \
@@ -1943,8 +2057,11 @@ CLEANUP_EFFECT_MARKER="$alias_cleanup_marker" CLEANUP_RM_COUNT="$alias_cleanup_r
 alias_cleanup_pid="$(cat "$alias_cleanup_pid_file")"
 alias_staging_path="$(sed -n 's/^path=//p' "$alias_cleanup_marker" 2> /dev/null)"
 if [[ "$alias_cleanup_status" -eq 1 ]] && grep -Fqx 'cleanup-rmdir' "$alias_cleanup_marker" &&
+  grep -Fqx 'count=1' "$alias_cleanup_marker" &&
   [[ "$alias_staging_path" == "$alias_cleanup_fixture"/.CLAUDE.md.stage.* ]] &&
   grep -Fqx "ppid=$alias_cleanup_pid" "$alias_cleanup_marker" &&
+  [[ "$(cat "$alias_cleanup_rm_count")" -eq 0 &&
+    "$(cat "$alias_cleanup_rmdir_count")" -eq 1 ]] &&
   grep -Fq 'cleanup incomplete: unable to remove alias staging directory:' "$alias_cleanup_output" &&
   [[ -d "$alias_staging_path" ]] && serialization_is_retained "$alias_cleanup_fixture" &&
   ! grep -q '^installed ' "$alias_cleanup_output"; then
@@ -2000,7 +2117,10 @@ elif [[ "$claude_pre_status" -eq 1 ]] && [[ "$(cat "$claude_pre_count" 2> /dev/n
   [[ "$(readlink "$claude_existing/CLAUDE.md")" == "AGENTS.md" ]] &&
   [[ ! -e "$claude_existing/.claude" && ! -L "$claude_existing/.claude" ]] &&
   [[ -z "$(find "$claude_existing" -name '*.stage.*' -print -quit)" ]] &&
-  [[ ! -e "$claude_existing/.research-repo-standard-adapter.lock" && ! -L "$claude_existing/.research-repo-standard-adapter.lock" ]]; then
+  serialization_is_absent "$claude_existing" &&
+  [[ "$(find "$claude_existing" -mindepth 1 -maxdepth 1 -print | LC_ALL=C sort)" == \
+    "$(printf '%s\n%s\n%s\n' "$claude_existing/AGENTS.md" "$claude_existing/CLAUDE.md" \
+      "$claude_existing/agents" | LC_ALL=C sort)" ]]; then
   pass "Claude adapter preserves pre-existing outputs during rollback"
 else
   fail "Claude adapter preserves pre-existing outputs during rollback"
@@ -2032,7 +2152,10 @@ elif [[ "$codex_pre_status" -eq 1 ]] && [[ "$(cat "$codex_pre_count" 2> /dev/nul
   [[ "$(inode_of "$codex_existing/agents/code-simplifier.md")" == "$codex_existing_inode" ]] &&
   [[ ! -e "$codex_existing/.codex" && ! -L "$codex_existing/.codex" ]] &&
   [[ -z "$(find "$codex_existing" -name '*.stage.*' -print -quit)" ]] &&
-  [[ ! -e "$codex_existing/.research-repo-standard-adapter.lock" && ! -L "$codex_existing/.research-repo-standard-adapter.lock" ]]; then
+  serialization_is_absent "$codex_existing" &&
+  [[ "$(find "$codex_existing" -mindepth 1 -maxdepth 1 -print | LC_ALL=C sort)" == \
+    "$(printf '%s\n%s\n' "$codex_existing/AGENTS.md" "$codex_existing/agents" | \
+      LC_ALL=C sort)" ]]; then
   pass "Codex adapter preserves a pre-existing output during rollback"
 else
   fail "Codex adapter preserves a pre-existing output during rollback"

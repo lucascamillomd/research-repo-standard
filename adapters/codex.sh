@@ -68,13 +68,14 @@ read_exact_token_file() {
     return 1
   fi
   byte_count=""
-  if byte_count="$(LC_ALL=C wc -c < "$path" | tr -d '[:space:]')"; then
+  if byte_count="$(LC_ALL=C wc -c < "$path")"; then
     :
   else
     # Filesystem evidence, not an injected post-effect command status, decides
     # whether a creation transition owns this exact token file.
     :
   fi
+  byte_count=${byte_count//[[:space:]]/}
   [[ "$byte_count" =~ ^[0-9]+$ ]] || return 1
   ((byte_count == ${#exact_token_value} + 1))
 }
@@ -125,6 +126,32 @@ create_owned_directory() {
   ((command_status == 0)) && [[ -n "$observed_inode" ]]
 }
 
+create_temporary_file() {
+  local template=$1
+  local path_variable=$2
+  local inode_variable=$3
+  local command_status=0
+  local observed_path=""
+  local observed_inode=""
+  local expected_prefix=${template%XXXXXX}
+  creation_transition=1
+  if observed_path="$(mktemp "$template")"; then
+    command_status=0
+  else
+    command_status=$?
+  fi
+  if [[ "$observed_path" == "$expected_prefix"?????? ]] &&
+    [[ -f "$observed_path" && ! -L "$observed_path" ]]; then
+    observed_inode="$(inode_of "$observed_path" 2> /dev/null)" || observed_inode=""
+  fi
+  if [[ -n "$observed_inode" ]]; then
+    printf -v "$path_variable" '%s' "$observed_path"
+    printf -v "$inode_variable" '%s' "$observed_inode"
+  fi
+  finish_creation_transition
+  ((command_status == 0)) && [[ -n "$observed_inode" ]]
+}
+
 create_claim_file() {
   local command_status=0
   local observed_inode=""
@@ -142,7 +169,8 @@ create_claim_file() {
     observed_value=$exact_token_value
     observed_inode="$(inode_of "$claim_file" 2> /dev/null)" || observed_inode=""
   fi
-  if [[ -n "$observed_inode" && "$observed_value" == "$lock_token" ]]; then
+  if ((command_status == 0)) &&
+    [[ -n "$observed_inode" && "$observed_value" == "$lock_token" ]]; then
     claim_file_inode=$observed_inode
   fi
   finish_creation_transition
@@ -271,10 +299,11 @@ acquire_adapter_lock() {
     fi
     fail "adapter hard-link operation is unsupported"
   fi
-  if ! verify_owned_directory "$adapter_lock" "$adapter_lock_inode" ||
+  if ! lock_directory_is_exact ||
     ! verify_owned_regular "$adapter_guard" "$adapter_guard_inode" "$lock_token" ||
     ! verify_owned_regular "$claim_file" "$claim_file_inode" "$lock_token" ||
-    ! verify_owned_regular "$adapter_lock_owner" "$adapter_lock_owner_inode" "$lock_token"; then
+    ! verify_owned_regular "$adapter_lock_owner" "$adapter_lock_owner_inode" "$lock_token" ||
+    ! claim_directory_is_exact; then
     fail "failed to verify adapter lock ownership"
   fi
 }
@@ -320,26 +349,69 @@ remove_owned_parent() {
 }
 
 remove_claim_without_guard() {
-  local current_inode
-  if [[ -n "$claim_file_inode" ]] && ! path_is_absent "$claim_file"; then
-    current_inode="$(inode_of "$claim_file" 2> /dev/null)" || current_inode=""
-    if [[ "$current_inode" == "$claim_file_inode" ]]; then
-      rm "$claim_file" 2> /dev/null
-      if ! path_is_absent "$claim_file" &&
-        [[ "$(inode_of "$claim_file" 2> /dev/null)" == "$claim_file_inode" ]]; then
+  if [[ -n "$claim_file_inode" ]]; then
+    if ! verify_owned_regular "$claim_file" "$claim_file_inode" "$lock_token"; then
+      mark_cleanup_error "adapter claim owner changed before removal; retained for manual intervention"
+      return 1
+    fi
+    rm "$claim_file" 2> /dev/null
+    if ! path_is_absent "$claim_file"; then
+      if verify_owned_regular "$claim_file" "$claim_file_inode" "$lock_token"; then
         mark_cleanup_error "unable to remove adapter claim owner: $claim_file"
-        return 1
+      else
+        mark_cleanup_error "adapter claim owner changed during removal; retained for manual intervention"
       fi
+      return 1
     fi
   fi
-  if [[ -n "$claim_directory_inode" ]] && verify_owned_directory "$claim_directory" "$claim_directory_inode"; then
+  if [[ -n "$claim_directory_inode" ]]; then
+    if ! verify_owned_directory "$claim_directory" "$claim_directory_inode" ||
+      [[ -n "$(find "$claim_directory" -mindepth 1 -print -quit 2> /dev/null)" ]]; then
+      mark_cleanup_error "adapter claim directory changed before removal; retained for manual intervention"
+      return 1
+    fi
     rmdir "$claim_directory" 2> /dev/null
-    if verify_owned_directory "$claim_directory" "$claim_directory_inode"; then
-      mark_cleanup_error "unable to remove adapter claim directory: $claim_directory"
+    if ! path_is_absent "$claim_directory"; then
+      if verify_owned_directory "$claim_directory" "$claim_directory_inode" &&
+        [[ -z "$(find "$claim_directory" -mindepth 1 -print -quit 2> /dev/null)" ]]; then
+        mark_cleanup_error "unable to remove adapter claim directory: $claim_directory"
+      else
+        mark_cleanup_error "adapter claim directory changed during removal; retained for manual intervention"
+      fi
       return 1
     fi
   fi
   return 0
+}
+
+claim_directory_is_exact() {
+  verify_owned_directory "$claim_directory" "$claim_directory_inode" &&
+    [[ "$(find "$claim_directory" -mindepth 1 -maxdepth 1 -print 2> /dev/null)" == \
+      "$claim_file" ]]
+}
+
+claim_state_is_exact_for_release() {
+  if [[ -z "$claim_directory_inode" ]]; then
+    [[ -z "$claim_file_inode" ]]
+    return
+  fi
+  verify_owned_directory "$claim_directory" "$claim_directory_inode" || return 1
+  if [[ -n "$claim_file_inode" ]]; then
+    claim_directory_is_exact &&
+      verify_owned_regular "$claim_file" "$claim_file_inode" "$lock_token"
+  else
+    [[ -z "$(find "$claim_directory" -mindepth 1 -print -quit 2> /dev/null)" ]]
+  fi
+}
+
+lock_directory_is_exact() {
+  lock_directory_identity_is_exact &&
+    [[ "$(find "$adapter_lock" -mindepth 1 -maxdepth 1 -print 2> /dev/null)" == \
+      "$adapter_lock_owner" ]]
+}
+
+lock_directory_identity_is_exact() {
+  verify_owned_directory "$adapter_lock" "$adapter_lock_inode"
 }
 
 restore_lock_owner() {
@@ -365,19 +437,33 @@ release_partial_serialization() {
       return 1
     fi
     rmdir "$adapter_lock" 2> /dev/null
-    if verify_owned_directory "$adapter_lock" "$adapter_lock_inode"; then
-      mark_cleanup_error "unable to remove adapter lock-directory: $adapter_lock"
+    if ! path_is_absent "$adapter_lock"; then
+      if verify_owned_directory "$adapter_lock" "$adapter_lock_inode" &&
+        [[ -z "$(find "$adapter_lock" -mindepth 1 -print -quit 2> /dev/null)" ]]; then
+        mark_cleanup_error "unable to remove adapter lock-directory: $adapter_lock"
+      else
+        mark_cleanup_error "adapter lock changed during removal; retained for manual intervention"
+      fi
       return 1
     fi
-  elif [[ -n "$adapter_lock_inode" ]] && ! path_is_absent "$adapter_lock"; then
-    mark_cleanup_error "adapter lock state changed; retained adapter lock for manual intervention"
+  elif [[ -n "$adapter_lock_inode" ]]; then
+    if path_is_absent "$adapter_lock"; then
+      mark_cleanup_error "adapter lock changed before removal; retained serialization for manual intervention"
+    else
+      mark_cleanup_error "adapter lock state changed; retained adapter lock for manual intervention"
+    fi
     return 1
   fi
   remove_claim_without_guard || return 1
   if verify_owned_regular "$adapter_guard" "$adapter_guard_inode" "$lock_token"; then
     rm "$adapter_guard" 2> /dev/null
-    if verify_owned_regular "$adapter_guard" "$adapter_guard_inode" "$lock_token"; then
-      mark_cleanup_error "unable to remove adapter acquisition guard: $adapter_guard"
+    if ! path_is_absent "$adapter_guard"; then
+      if verify_owned_regular "$adapter_guard" "$adapter_guard_inode" "$lock_token"; then
+        mark_cleanup_error "unable to remove adapter acquisition guard: $adapter_guard"
+      else
+        mark_cleanup_error \
+          "adapter acquisition guard changed during removal; retained for manual intervention"
+      fi
       return 1
     fi
   else
@@ -388,7 +474,7 @@ release_partial_serialization() {
 }
 
 release_owned_serialization() {
-  if ! verify_owned_directory "$adapter_lock" "$adapter_lock_inode"; then
+  if ! lock_directory_identity_is_exact; then
     mark_cleanup_error "adapter lock state changed; retained adapter lock for manual intervention"
     return 1
   fi
@@ -396,13 +482,17 @@ release_owned_serialization() {
     mark_cleanup_error "adapter lock owner changed; retained adapter lock for manual intervention"
     return 1
   fi
-  if ! verify_owned_regular "$adapter_guard" "$adapter_guard_inode" "$lock_token"; then
-    mark_cleanup_error "adapter acquisition guard changed; retained for manual intervention"
+  if ! lock_directory_is_exact; then
+    mark_cleanup_error "adapter lock state changed; retained adapter lock for manual intervention"
     return 1
   fi
-  if ! verify_owned_directory "$claim_directory" "$claim_directory_inode" ||
+  if ! verify_owned_regular "$adapter_guard" "$adapter_guard_inode" "$lock_token"; then
+    mark_cleanup_error "adapter acquisition guard changed; retained serialization for manual intervention"
+    return 1
+  fi
+  if ! claim_directory_is_exact ||
     ! verify_owned_regular "$claim_file" "$claim_file_inode" "$lock_token"; then
-    mark_cleanup_error "adapter claim changed; retained adapter lock for manual intervention"
+    mark_cleanup_error "adapter claim state changed; retained serialization for manual intervention"
     return 1
   fi
 
@@ -459,15 +549,24 @@ release_owned_serialization() {
 }
 
 release_serialization() {
+  if [[ -n "$adapter_lock_owner_inode" ]]; then
+    release_owned_serialization
+    return
+  fi
+  if [[ -n "$adapter_guard_inode" ]] &&
+    ! verify_owned_regular "$adapter_guard" "$adapter_guard_inode" "$lock_token"; then
+    mark_cleanup_error "adapter acquisition guard changed; retained serialization for manual intervention"
+    return 1
+  fi
+  if ! claim_state_is_exact_for_release; then
+    mark_cleanup_error "adapter claim state changed; retained serialization for manual intervention"
+    return 1
+  fi
   if [[ -z "$adapter_guard_inode" ]]; then
     remove_claim_without_guard
     return
   fi
-  if [[ -n "$adapter_lock_owner_inode" ]]; then
-    release_owned_serialization
-  else
-    release_partial_serialization
-  fi
+  release_partial_serialization
 }
 
 cleanup() {
@@ -601,8 +700,10 @@ if [[ ! -d "$codex_agents_directory" ]]; then
 fi
 verify_physical_parent "$codex_agents_directory"
 
-canonical_stage="$(mktemp "$agents_directory/.code-simplifier.md.stage.XXXXXX")"
-canonical_stage_inode="$(inode_of "$canonical_stage")"
+if ! create_temporary_file "$agents_directory/.code-simplifier.md.stage.XXXXXX" \
+  canonical_stage canonical_stage_inode; then
+  fail "failed to create canonical simplifier stage"
+fi
 if ! cp "$canonical_profile" "$canonical_stage"; then
   fail "failed to stage canonical simplifier profile"
 fi
@@ -611,8 +712,10 @@ if ! cmp -s "$canonical_profile" "$canonical_stage"; then
 fi
 chmod 0644 "$canonical_stage"
 
-host_stage="$(mktemp "$codex_agents_directory/.code-simplifier.toml.stage.XXXXXX")"
-host_stage_inode="$(inode_of "$host_stage")"
+if ! create_temporary_file "$codex_agents_directory/.code-simplifier.toml.stage.XXXXXX" \
+  host_stage host_stage_inode; then
+  fail "failed to create Codex simplifier stage"
+fi
 {
   printf 'name = "%s"\n' "$escaped_name"
   printf 'description = "%s"\n' "$escaped_description"

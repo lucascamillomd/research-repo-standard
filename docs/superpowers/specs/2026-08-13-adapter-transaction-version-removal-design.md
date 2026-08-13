@@ -12,7 +12,8 @@ safety, adapter, reference, and test requirements remain in force.
 
 ## Transaction model
 
-Both adapters continue to validate the target and every declared destination before mutation. They
+Both adapters validate the target and structural destinations before transaction mutation, then
+validate generated leaves against their completed stages before publication. They
 reject symlinked output parents, reject generated-profile leaf symlinks, preserve existing exact
 regular files, and refuse to replace customized files. Claude's exact `CLAUDE.md -> AGENTS.md`
 policy alias remains the sole permitted generated symlink destination.
@@ -39,7 +40,8 @@ branches to read-only inspection and never receives an owner. Only an absent-to-
 transition may establish creation. The invocation records the exact directory path and inode
 observed immediately after `mkdir`, regardless of command status. It hard-links the same claim
 inode as the exact owner path with `link SOURCE TARGET` and treats the lock as owned only after exact
-guard/claim/directory/owner path, inode, and byte verification. This evidence distinguishes a
+guard/claim/directory/owner path, inode, and byte verification, with the claim and lock directories
+each containing its recorded owner as the sole child. This evidence distinguishes a
 post-effect nonzero return from a pre-effect failure without misattributing a competing adapter's
 directory. A live owner is reported as contention. Every dead-PID, ambiguous-liveness, malformed,
 missing, non-directory, or symlink lock state is preserved and reported for manual intervention;
@@ -47,7 +49,13 @@ locks are never automatically reclaimed.
 
 Success, ordinary failure, and trapped signals release serialization only after all other
 finalization succeeds and only when the invocation-owned guard, claim, lock directory, and owner
-file retain their exact recorded identities. Cleanup first aggregates every independent output,
+file retain their exact recorded identities. The claim directory must retain its recorded inode
+and contain exactly its recorded owner file; a replacement directory or foreign extra child stops
+the dependent release chain before the lock is changed, including partial/no-guard cleanup. The
+lock directory likewise must retain its recorded inode with the exact owner as its sole child.
+Every recorded guard, claim, lock, and owner component is prevalidated before the first dependent
+removal in both full and partial ownership states.
+Cleanup first aggregates every independent output,
 stage, staging-directory, and output-parent result. Only if those are complete does the dependent
 release chain remove the owner, verify and remove the lock directory, remove the claim file and
 directory, and unlink the guard last. Any residual or changed state stops that dependent chain
@@ -59,9 +67,11 @@ If rollback or finalization is incomplete, the invocation retains its owned lock
 guard for manual intervention. This serializes cooperating Claude and Codex installations without
 traversing or deleting pre-existing lock paths.
 
-Each filesystem creation command, including exact unique-claim-directory creation, and only its
+Each filesystem creation command, including exact unique-claim-directory creation, stage-file and
+staging-directory `mktemp`, and Claude's staged-alias `ln -s`, and only its
 immediate path/inode bookkeeping forms one creation transition. Claim-file noclobber creation uses
-the same deferral until its exact type, inode, and bytes are recorded. A trapped signal arriving in
+the same deferral until its exact type, inode, and bytes are recorded, but assigns ownership only
+when the shell redirect itself succeeded; an exact-token collision remains foreign. A trapped signal arriving in
 that transition records the first conventional signal status (`HUP=129`, `INT=130`, `TERM=143`) and
 is handled through normal cleanup only after the adapter records the command status and exact
 filesystem evidence. This applies to the acquisition guard link, lock directory, owner link, and
@@ -131,11 +141,18 @@ output, and writes nothing outside the target.
 
 Run the corresponding no-follow matrix for claim collisions and fixed-guard regular files,
 directories, dangling symlinks, internal-directory symlinks, and external-directory symlinks. Add
+an exact-token noclobber collision that preserves the foreign owner inode and bytes. Add
 pre-effect failure and effect-then-signal-then-nonzero cases for unique claim-directory creation,
-claim-to-guard linking, and claim-to-owner linking. Require the exact two-path `link` primitive and exact path/source/destination, inode,
+claim-to-guard linking, claim-to-owner linking, each stage `mktemp`, and Claude's staged-alias
+`ln -s`. Require the exact two-path `link` primitive and exact path/source/destination, inode,
 adapter PID, invocation count, effect marker, status, residue, and serialization-retention evidence.
 An injected unsupported hard-link operation fails before output-parent mutation and cleans its
 exact owned claim when cleanup succeeds.
+
+During the final acquisition-link transition, independently add a foreign extra child to the claim
+directory and the lock directory. Both adapters must reject each changed inventory before any
+output-parent or stage attempt and preserve the complete serialization evidence for manual
+intervention.
 
 Prove unique nonces and release after success, ordinary error, and trapped signals. Invoke each
 adapter through renamed and symlinked entry points and require its lock token to retain the
@@ -157,7 +174,10 @@ while every other visible invocation-owned output rolls back. Cleanup-fault case
 owned outputs, output/staging directories, lock owner removal, and lock-directory removal. They
 require precise diagnostics, best-effort aggregation, nonzero final status, absence of success
 output, and retention of invocation-owned serialization. Changed lock-owner bytes likewise turn an
-otherwise successful run into failure and retain the lock.
+otherwise successful run into failure and retain the lock. Before dependent release, replacing the
+claim or lock directory or adding a foreign child must preserve the exact lock, guard, and remaining claim
+state. During full or partial release, a missing or different-inode serialization component is an
+incomplete cleanup, preserves foreign state, and retains the remaining owned serialization.
 
 Every partial-copy, pre-effect rename, post-effect rename/signal, directory-creation, cleanup, and
 vendor failed-rename double records an external marker containing its exact invocation count,

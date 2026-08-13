@@ -21,7 +21,7 @@
 - Cover ordinary failures and trapped `HUP`/`INT`/`TERM`; do not claim recovery from untrappable process or machine termination.
 - Remove `standard_version` metadata, parsing, propagation, stripping, synchronization, and audits without introducing a replacement version source or persistent drift check.
 - Remove obsolete version parsing/output from `vendor.sh`. Preserve vendor safety behavior and the semantics of tests 3–6; strengthen their evidence rather than preserving obsolete bytes.
-- Every creation transition records exact path/inode evidence before honoring a pending trapped signal, even when the wrapped command returns nonzero. The deferral covers only the filesystem command and immediate bookkeeping.
+- Every creation transition, including stage `mktemp` and Claude staged-alias `ln -s`, records exact path/inode evidence before honoring a pending trapped signal, even when the wrapped command returns nonzero. The deferral covers only the filesystem command and immediate bookkeeping.
 - Cleanup aggregates destination, stage, staging-directory, parent-directory, owner, lock-directory, claim, and guard failures. Incomplete finalization emits precise diagnostics, exits nonzero without success output, and retains invocation-owned serialization for manual intervention. Preserve an original error or conventional signal status (`HUP=129`, `INT=130`, `TERM=143`); cleanup alone yields status `1`.
 
 ---
@@ -125,10 +125,13 @@ git commit -m "docs: remove per-file version metadata"
 
 - [ ] **Step 0: Serialize cooperating adapter installations**
 
-Use the same target-local lock path in both adapters and acquire its exact directory with `mkdir` before output-parent creation or staging. First record no-follow absence of a predictable PID-and-nonce-qualified claim path, then atomically create its directory and establish ownership only from that absence-to-exact-directory-inode transition. Write its exact-token regular claim file with shell noclobber semantics and record both inodes. Atomically hard-link the claim to the fixed exact guard path with the POSIX two-path `link SOURCE TARGET` utility; prove guard ownership by exact claim/guard inode and bytes regardless of `link` status. Only that guard owner records no-follow absence of the lock path, attempts the lock `mkdir`, records its observed directory inode regardless of status, and hard-links the claim inode to the exact owner path with `link SOURCE TARGET`. A pre-existing lock branches to read-only inspection and never receives an owner. Set ownership only after exact guard/claim/lock/owner identity and byte verification. Track the invocation-created empty directory so owner-link failure permits only inode-checked `rmdir` while it remains empty. Apply the same no-follow absence-to-exact-inode ownership rule to every output-parent `mkdir` while the adapter lock excludes cooperating creators.
+Use the same target-local lock path in both adapters and acquire its exact directory with `mkdir` before output-parent creation or staging. First record no-follow absence of a predictable PID-and-nonce-qualified claim path, then atomically create its directory and establish ownership only from that absence-to-exact-directory-inode transition. Write its exact-token regular claim file with shell noclobber semantics and record both inodes. Atomically hard-link the claim to the fixed exact guard path with the POSIX two-path `link SOURCE TARGET` utility; prove guard ownership by exact claim/guard inode and bytes regardless of `link` status. Only that guard owner records no-follow absence of the lock path, attempts the lock `mkdir`, records its observed directory inode regardless of status, and hard-links the claim inode to the exact owner path with `link SOURCE TARGET`. A pre-existing lock branches to read-only inspection and never receives an owner. Set ownership only after exact guard/claim/lock/owner identity and byte verification and after proving that the claim and lock directories each contain only their recorded owner. Track the invocation-created empty directory so owner-link failure permits only inode-checked `rmdir` while it remains empty. Apply the same no-follow absence-to-exact-inode ownership rule to every output-parent `mkdir` while the adapter lock excludes cooperating creators.
 
 Treat exact unique-claim-directory creation, claim-file noclobber creation, each guard/owner link,
-or directory `mkdir` and only its immediate status/path/inode bookkeeping as a creation transition.
+stage-file or staging-directory `mktemp`, staged-alias `ln -s`, or directory `mkdir` and only its
+immediate status/path/inode bookkeeping as a creation transition.
+Claim-file ownership requires a successful shell noclobber redirect as well as exact inode and
+byte evidence; preserve an exact-token collision as foreign state.
 During that transition, the first trapped signal records its conventional status and returns;
 immediately after the command, record exact evidence, leave the transition, and exit through normal
 cleanup if a signal is pending. Apply the same helper to every invocation-created output parent.
@@ -143,6 +146,14 @@ symlinks, internal-directory symlinks, and external-directory symlinks. Add pre-
 effect-then-signal-then-nonzero cases for claim-directory creation, claim-to-guard `link`, and
 claim-to-owner `link`, with exact count/path/source/destination/inode/PID markers. Treat lack of
 hard-link support as a pre-output failure and prove exact claim cleanup.
+
+Inject a foreign extra child into the claim directory and, independently, the lock directory during
+the final acquisition-link transition. For both adapters, require failure before the first output
+parent or stage attempt and exact preservation of the changed serialization inventory.
+
+Add effect-then-signal-then-nonzero wrappers for every stage-file/staging-directory `mktemp` and
+Claude's staged-alias `ln -s`. Require exact template or source/destination, resulting path, type,
+inode, adapter process chain, call count, real-command status, injected status, and complete cleanup.
 
 Use deterministic `mkdir` wrappers that perform the real exact-path creation and record exact count,
 path, inode, adapter PID, signal, and return mode. For both adapters, the lock case sends `TERM` and
@@ -236,6 +247,13 @@ original directory remains. Otherwise retain serialization. A changed owner is a
 not a silent no-op. Ignore further trapped signals during finite cleanup, preserve the original
 status, convert cleanup-only failure to status `1`, and print success only after complete
 finalization. Set `transaction_complete=1` only after the final publish succeeds.
+
+Before the first dependent removal, including partial/no-guard cleanup, verify that the exact claim
+and lock directories still have their recorded inodes and each contains only its recorded owner.
+Prevalidate every recorded guard, claim, lock, and owner component before removing any other
+serialization component. Test replacement and extra-child mutations before release, plus
+missing/different-inode lock, owner, claim, and guard states during both full and partial release.
+Preserve foreign state, emit a precise diagnostic, and retain remaining owned serialization.
 
 The inode comparison and unlink are separate operations. The implementation and report must state that rollback removes only an invocation-owned inode visible at cleanup verification and does not promise atomic safety against an adversarial replacement between those operations. The shared lock eliminates that interleaving only for cooperating adapter invocations.
 
