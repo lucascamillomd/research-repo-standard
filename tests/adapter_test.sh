@@ -68,7 +68,8 @@ fi
 claude_before="$(cksum "$target/CLAUDE.md" "$target/agents/code-simplifier.md" "$claude_profile")"
 if "$ROOT/adapters/claude-code.sh" "$target" > /dev/null &&
   [[ "$(readlink "$target/CLAUDE.md" 2> /dev/null || true)" == "AGENTS.md" ]] &&
-  [[ "$(cksum "$target/CLAUDE.md" "$target/agents/code-simplifier.md" "$claude_profile")" == "$claude_before" ]]; then
+  [[ "$(cksum "$target/CLAUDE.md" "$target/agents/code-simplifier.md" "$claude_profile")" == "$claude_before" ]] &&
+  [[ ! -e "$target/.research-repo-standard-adapter.lock" && ! -L "$target/.research-repo-standard-adapter.lock" ]]; then
   pass "Claude adapter accepts the exact policy alias idempotently"
 else
   fail "Claude adapter accepts the exact policy alias idempotently"
@@ -116,10 +117,101 @@ fi
 
 codex_before="$(cksum "$target/agents/code-simplifier.md" "$codex_profile")"
 if "$ROOT/adapters/codex.sh" "$target" > /dev/null &&
-  [[ "$(cksum "$target/agents/code-simplifier.md" "$codex_profile")" == "$codex_before" ]]; then
+  [[ "$(cksum "$target/agents/code-simplifier.md" "$codex_profile")" == "$codex_before" ]] &&
+  [[ ! -e "$target/.research-repo-standard-adapter.lock" && ! -L "$target/.research-repo-standard-adapter.lock" ]]; then
   pass "Codex adapter is idempotent"
 else
   fail "Codex adapter is idempotent"
+fi
+
+# Claude and Codex must serialize through one target-local lock.
+real_cp="$(command -v cp)"
+blocking_cp_bin="$tmp/blocking-cp-bin"
+mkdir "$blocking_cp_bin"
+cat > "$blocking_cp_bin/cp" << 'EOF'
+#!/usr/bin/env bash
+set -eu
+printf 'owner reached staging copy\n' > "$BLOCK_READY"
+while [[ ! -f "$BLOCK_RELEASE" ]]; do
+  sleep 0.01
+done
+exec "$REAL_CP" "$@"
+EOF
+chmod +x "$blocking_cp_bin/cp"
+
+shared_lock_target="$tmp/shared lock target"
+mkdir "$shared_lock_target"
+cp "$target/AGENTS.md" "$shared_lock_target/AGENTS.md"
+shared_lock="$shared_lock_target/.research-repo-standard-adapter.lock"
+block_ready="$tmp/block-ready"
+block_release="$tmp/block-release"
+BLOCK_READY="$block_ready" BLOCK_RELEASE="$block_release" REAL_CP="$real_cp" \
+  PATH="$blocking_cp_bin:$PATH" "$ROOT/adapters/claude-code.sh" "$shared_lock_target" \
+    > "$tmp/shared-lock-owner.out" 2>&1 &
+lock_owner_pid=$!
+lock_ready=0
+for ((attempt = 0; attempt < 500; attempt++)); do
+  if [[ -f "$block_ready" && -L "$shared_lock" ]]; then
+    lock_ready=1
+    break
+  fi
+  sleep 0.01
+done
+lock_token_before="$(readlink "$shared_lock" 2> /dev/null || true)"
+contender_status=0
+contender_error="$("$ROOT/adapters/codex.sh" "$shared_lock_target" 2>&1)" || contender_status=$?
+lock_token_after="$(readlink "$shared_lock" 2> /dev/null || true)"
+if ((lock_ready)) && [[ "$lock_token_before" == "$lock_owner_pid:claude-code.sh" ]] &&
+  [[ "$contender_status" -ne 0 ]] &&
+  grep -q "adapter installation already in progress: $lock_token_before" <<< "$contender_error" &&
+  [[ "$lock_token_after" == "$lock_token_before" ]] &&
+  [[ ! -e "$shared_lock_target/.codex" && ! -L "$shared_lock_target/.codex" ]]; then
+  pass "Claude and Codex adapters contend on one live lock"
+else
+  fail "Claude and Codex adapters contend on one live lock"
+fi
+touch "$block_release"
+lock_owner_status=0
+wait "$lock_owner_pid" || lock_owner_status=$?
+if [[ "$lock_owner_status" -eq 0 ]] &&
+  [[ ! -e "$shared_lock" && ! -L "$shared_lock" ]] &&
+  [[ -f "$shared_lock_target/agents/code-simplifier.md" ]] &&
+  [[ -f "$shared_lock_target/.claude/agents/code-simplifier.md" ]] &&
+  [[ "$(readlink "$shared_lock_target/CLAUDE.md" 2> /dev/null || true)" == "AGENTS.md" ]]; then
+  pass "Adapter releases its live lock after success"
+else
+  fail "Adapter releases its live lock after success"
+fi
+
+stale_lock_target="$tmp/stale-lock-target"
+mkdir "$stale_lock_target"
+cp "$target/AGENTS.md" "$stale_lock_target/AGENTS.md"
+ln -s '99999999:claude-code.sh' "$stale_lock_target/.research-repo-standard-adapter.lock"
+if "$ROOT/adapters/codex.sh" "$stale_lock_target" > /dev/null &&
+  [[ ! -e "$stale_lock_target/.research-repo-standard-adapter.lock" ]] &&
+  [[ ! -L "$stale_lock_target/.research-repo-standard-adapter.lock" ]] &&
+  [[ -f "$stale_lock_target/agents/code-simplifier.md" ]] &&
+  [[ -f "$stale_lock_target/.codex/agents/code-simplifier.toml" ]]; then
+  pass "Adapter safely reclaims a verifiably stale lock"
+else
+  fail "Adapter safely reclaims a verifiably stale lock"
+fi
+
+unknown_lock_target="$tmp/unknown-lock-target"
+mkdir "$unknown_lock_target"
+cp "$target/AGENTS.md" "$unknown_lock_target/AGENTS.md"
+ln -s 'unknown-owner' "$unknown_lock_target/.research-repo-standard-adapter.lock"
+unknown_lock_status=0
+unknown_lock_error="$("$ROOT/adapters/claude-code.sh" "$unknown_lock_target" 2>&1)" ||
+  unknown_lock_status=$?
+if [[ "$unknown_lock_status" -ne 0 ]] &&
+  grep -q 'cannot verify adapter lock owner: unknown-owner' <<< "$unknown_lock_error" &&
+  [[ "$(readlink "$unknown_lock_target/.research-repo-standard-adapter.lock")" == "unknown-owner" ]] &&
+  [[ ! -e "$unknown_lock_target/agents" && ! -L "$unknown_lock_target/agents" ]] &&
+  [[ ! -e "$unknown_lock_target/.claude" && ! -L "$unknown_lock_target/.claude" ]]; then
+  pass "Adapter preserves an unverifiable lock before creating output parents"
+else
+  fail "Adapter preserves an unverifiable lock before creating output parents"
 fi
 
 claude_canonical_conflict="$tmp/claude-canonical-conflict"
@@ -373,7 +465,8 @@ if PATH="$partial_cp_bin:$PATH" "$ROOT/adapters/claude-code.sh" "$claude_cp_fail
 elif [[ ! -e "$claude_cp_failure/CLAUDE.md" && ! -L "$claude_cp_failure/CLAUDE.md" ]] &&
   [[ ! -e "$claude_cp_failure/agents/code-simplifier.md" && ! -L "$claude_cp_failure/agents/code-simplifier.md" ]] &&
   [[ ! -e "$claude_cp_failure/.claude/agents/code-simplifier.md" && ! -L "$claude_cp_failure/.claude/agents/code-simplifier.md" ]] &&
-  [[ -z "$(find "$claude_cp_failure" -name '*.stage.*' -print -quit)" ]]; then
+  [[ -z "$(find "$claude_cp_failure" -name '*.stage.*' -print -quit)" ]] &&
+  [[ ! -e "$claude_cp_failure/.research-repo-standard-adapter.lock" && ! -L "$claude_cp_failure/.research-repo-standard-adapter.lock" ]]; then
   pass "Claude adapter cleans a partial staging copy"
 else
   fail "Claude adapter cleans a partial staging copy"
@@ -386,7 +479,8 @@ if PATH="$partial_cp_bin:$PATH" "$ROOT/adapters/codex.sh" "$codex_cp_failure" > 
   fail "Codex adapter aborts after a partial staging copy"
 elif [[ ! -e "$codex_cp_failure/agents/code-simplifier.md" && ! -L "$codex_cp_failure/agents/code-simplifier.md" ]] &&
   [[ ! -e "$codex_cp_failure/.codex/agents/code-simplifier.toml" && ! -L "$codex_cp_failure/.codex/agents/code-simplifier.toml" ]] &&
-  [[ -z "$(find "$codex_cp_failure" -name '*.stage.*' -print -quit)" ]]; then
+  [[ -z "$(find "$codex_cp_failure" -name '*.stage.*' -print -quit)" ]] &&
+  [[ ! -e "$codex_cp_failure/.research-repo-standard-adapter.lock" && ! -L "$codex_cp_failure/.research-repo-standard-adapter.lock" ]]; then
   pass "Codex adapter cleans a partial staging copy"
 else
   fail "Codex adapter cleans a partial staging copy"
@@ -565,11 +659,17 @@ cp "$target/AGENTS.md" "$claude_existing/AGENTS.md"
 cp "$ROOT/agents/code-simplifier.md" "$claude_existing/agents/code-simplifier.md"
 ln -s AGENTS.md "$claude_existing/CLAUDE.md"
 claude_existing_before="$(cksum "$claude_existing/agents/code-simplifier.md")"
+claude_existing_inode="$(LC_ALL=C ls -di "$claude_existing/agents/code-simplifier.md" | awk '{ print $1 }')"
+claude_existing_alias_inode="$(LC_ALL=C ls -di "$claude_existing/CLAUDE.md" | awk '{ print $1 }')"
 if PATH="$first_mv_bin:$PATH" "$ROOT/adapters/claude-code.sh" "$claude_existing" > /dev/null 2>&1; then
   fail "Claude adapter reports a host publish failure with pre-existing outputs"
 elif [[ "$(cksum "$claude_existing/agents/code-simplifier.md")" == "$claude_existing_before" ]] &&
+  [[ "$(LC_ALL=C ls -di "$claude_existing/agents/code-simplifier.md" | awk '{ print $1 }')" == "$claude_existing_inode" ]] &&
+  [[ "$(LC_ALL=C ls -di "$claude_existing/CLAUDE.md" | awk '{ print $1 }')" == "$claude_existing_alias_inode" ]] &&
   [[ "$(readlink "$claude_existing/CLAUDE.md")" == "AGENTS.md" ]] &&
-  [[ ! -e "$claude_existing/.claude/agents/code-simplifier.md" ]]; then
+  [[ ! -e "$claude_existing/.claude" && ! -L "$claude_existing/.claude" ]] &&
+  [[ -z "$(find "$claude_existing" -name '*.stage.*' -print -quit)" ]] &&
+  [[ ! -e "$claude_existing/.research-repo-standard-adapter.lock" && ! -L "$claude_existing/.research-repo-standard-adapter.lock" ]]; then
   pass "Claude adapter preserves pre-existing outputs during rollback"
 else
   fail "Claude adapter preserves pre-existing outputs during rollback"
@@ -580,10 +680,14 @@ mkdir -p "$codex_existing/agents"
 cp "$target/AGENTS.md" "$codex_existing/AGENTS.md"
 cp "$ROOT/agents/code-simplifier.md" "$codex_existing/agents/code-simplifier.md"
 codex_existing_before="$(cksum "$codex_existing/agents/code-simplifier.md")"
+codex_existing_inode="$(LC_ALL=C ls -di "$codex_existing/agents/code-simplifier.md" | awk '{ print $1 }')"
 if PATH="$first_mv_bin:$PATH" "$ROOT/adapters/codex.sh" "$codex_existing" > /dev/null 2>&1; then
   fail "Codex adapter reports a TOML publish failure with a pre-existing output"
 elif [[ "$(cksum "$codex_existing/agents/code-simplifier.md")" == "$codex_existing_before" ]] &&
-  [[ ! -e "$codex_existing/.codex/agents/code-simplifier.toml" ]]; then
+  [[ "$(LC_ALL=C ls -di "$codex_existing/agents/code-simplifier.md" | awk '{ print $1 }')" == "$codex_existing_inode" ]] &&
+  [[ ! -e "$codex_existing/.codex" && ! -L "$codex_existing/.codex" ]] &&
+  [[ -z "$(find "$codex_existing" -name '*.stage.*' -print -quit)" ]] &&
+  [[ ! -e "$codex_existing/.research-repo-standard-adapter.lock" && ! -L "$codex_existing/.research-repo-standard-adapter.lock" ]]; then
   pass "Codex adapter preserves a pre-existing output during rollback"
 else
   fail "Codex adapter preserves a pre-existing output during rollback"

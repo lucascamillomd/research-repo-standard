@@ -63,6 +63,38 @@ remove_if_owned() {
   fi
 }
 
+release_adapter_lock() {
+  if ((lock_acquisition_started)) && [[ -L "$adapter_lock" ]] &&
+    [[ "$(readlink "$adapter_lock")" == "$lock_token" ]]; then
+    rm -f "$adapter_lock"
+  fi
+}
+
+acquire_adapter_lock() {
+  lock_acquisition_started=1
+  for attempt in 1 2; do
+    if ln -s "$lock_token" "$adapter_lock" 2> /dev/null; then
+      return
+    fi
+    if [[ ! -L "$adapter_lock" ]]; then
+      fail "refusing unverifiable adapter lock path"
+    fi
+    existing_lock_token="$(readlink "$adapter_lock")"
+    existing_lock_pid="${existing_lock_token%%:*}"
+    if [[ ! "$existing_lock_pid" =~ ^[0-9]+$ ]]; then
+      fail "cannot verify adapter lock owner: $existing_lock_token"
+    fi
+    if kill -0 "$existing_lock_pid" 2> /dev/null; then
+      fail "adapter installation already in progress: $existing_lock_token"
+    fi
+    if [[ "$(readlink "$adapter_lock" 2> /dev/null || true)" != "$existing_lock_token" ]]; then
+      fail "adapter lock owner changed during stale-lock verification"
+    fi
+    rm -f "$adapter_lock"
+  done
+  fail "could not acquire adapter lock"
+}
+
 [[ $# -eq 1 ]] || usage
 requested_target=$1
 
@@ -99,6 +131,8 @@ codex_directory="$TARGET/.codex"
 codex_agents_directory="$codex_directory/agents"
 canonical_destination="$agents_directory/code-simplifier.md"
 host_profile="$codex_agents_directory/code-simplifier.toml"
+adapter_lock="$TARGET/.research-repo-standard-adapter.lock"
+lock_token="$$:$script_name"
 
 check_output_parent "$agents_directory"
 check_output_parent "$codex_directory"
@@ -108,6 +142,7 @@ canonical_stage=""
 host_stage=""
 canonical_inode=""
 host_inode=""
+lock_acquisition_started=0
 created_agents_directory=0
 created_codex_directory=0
 created_codex_agents_directory=0
@@ -128,10 +163,13 @@ cleanup() {
     ((created_codex_directory)) && rmdir "$codex_directory" 2> /dev/null
     ((created_agents_directory)) && rmdir "$agents_directory" 2> /dev/null
   fi
+  release_adapter_lock
   exit "$status"
 }
 trap cleanup EXIT
 trap 'exit 1' HUP INT TERM
+
+acquire_adapter_lock
 
 if [[ ! -d "$agents_directory" ]]; then
   mkdir "$agents_directory"
