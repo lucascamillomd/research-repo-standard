@@ -47,25 +47,54 @@ else
   fail "bootstrap must own post-vendor host adapter integration"
 fi
 
-# --- 4. portable simplifier profile is routed from AGENTS.md ---
-if grep -qs 'agents/code-simplifier\.md' "$ROOT/AGENTS.md" &&
-  [[ -f "$ROOT/agents/code-simplifier.md" ]]; then
-  pass "portable simplifier profile is routed from AGENTS.md"
+# --- 4. canonical simplifier profile has the collision-safe identity ---
+if [[ -f "$ROOT/agents/research-code-simplifier.md" ]] &&
+  grep -Fqx 'name: research-code-simplifier' "$ROOT/agents/research-code-simplifier.md" &&
+  grep -Fq 'research-repo-standard' "$ROOT/agents/research-code-simplifier.md"; then
+  pass "canonical simplifier profile uses the collision-safe identity"
 else
-  fail "portable simplifier profile is routed from AGENTS.md"
+  fail "canonical simplifier profile must use research-code-simplifier and invoke the skill"
 fi
 
 # --- 5. simplifier profile and policy are provider neutral ---
 profile_ok=1
-if grep -Eq '^model:' "$ROOT/agents/code-simplifier.md"; then
+if grep -Eq '^model:' "$ROOT/agents/research-code-simplifier.md"; then
   fail "canonical simplifier profile must not select a provider model"
   profile_ok=0
 fi
-if grep -Eq '\.claude/agents|Claude Code|Anthropic|Codex|OpenAI' "$ROOT/agents/code-simplifier.md"; then
+if grep -Eq '\.claude/agents|Claude Code|Anthropic|Codex|OpenAI' \
+  "$ROOT/agents/research-code-simplifier.md"; then
   fail "canonical simplifier profile must be host neutral"
   profile_ok=0
 fi
 ((profile_ok)) && pass "canonical simplifier profile is provider neutral"
+
+adapter_runtime_ok=1
+for adapter in claude-code codex; do
+  grep -Fq 'source "$SCRIPT_DIR/profile-installer.sh"' "$ROOT/adapters/$adapter.sh" ||
+    adapter_runtime_ok=0
+  grep -Fq "install_research_code_simplifier '$adapter'" "$ROOT/adapters/$adapter.sh" ||
+    adapter_runtime_ok=0
+  if grep -Eq 'AGENTS\.md|CLAUDE\.md|CODEX\.md|agents/code-simplifier|shared' \
+    "$ROOT/adapters/$adapter.sh"; then
+    adapter_runtime_ok=0
+  fi
+done
+if [[ -f "$ROOT/adapters/profile-installer.sh" ]] &&
+  grep -Fq 'install_research_code_simplifier()' "$ROOT/adapters/profile-installer.sh" &&
+  ((adapter_runtime_ok)); then
+  pass "host adapters source one common installer with fixed host identities"
+else
+  fail "host adapters must source the common installer and install only their fixed host profile"
+fi
+
+if ! grep -Eq 'AGENTS\.md|CLAUDE\.md|CODEX\.md|agents/code-simplifier|target policy|shared profile' \
+  "$ROOT/adapters/profile-installer.sh" "$ROOT/adapters/claude-code.sh" \
+  "$ROOT/adapters/codex.sh" 2> /dev/null; then
+  pass "adapter runtime contains no target-policy or shared-profile logic"
+else
+  fail "adapter runtime must not contain target-policy or shared-profile logic"
+fi
 
 policy_ok=1
 if ! tr '\n' ' ' < "$ROOT/AGENTS.md" | grep -qs 'independent code-simplification pass'; then
@@ -243,7 +272,8 @@ fi
 
 figure_duplicates="$(
   grep -HnE 'mf[0-9]+_|edf[0-9]+_|short_descriptive_name|hazard_ratio_distribution' \
-    "$ROOT/AGENTS.md" "$ROOT/SKILL.md" "$ROOT/README.md" "$ROOT/agents/code-simplifier.md" \
+    "$ROOT/AGENTS.md" "$ROOT/SKILL.md" "$ROOT/README.md" \
+    "$ROOT/agents/research-code-simplifier.md" \
     "$ROOT/references/analysis.md" "$ROOT/references/bootstrap.md" \
     "$ROOT/references/configuration.md" "$ROOT/references/data.md" \
     "$ROOT/references/prerequisites.md" 2> /dev/null || true
@@ -274,7 +304,7 @@ done
 
 # --- 16. simplifier profile delegates naming and configuration policy ---
 if ! grep -Eq 'config/analysis\.yaml|random_seed:|test_[a-z]|datasets\.yaml' \
-  "$ROOT/agents/code-simplifier.md"; then
+  "$ROOT/agents/research-code-simplifier.md"; then
   pass "simplifier profile contains no independent configuration or test-naming grammar"
 else
   fail "simplifier profile must delegate configuration and test-naming grammar to repository authorities"

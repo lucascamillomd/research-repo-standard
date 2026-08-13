@@ -10,5 +10,5 @@ format: ## Wrap Markdown files
 test: ## Run vendoring, adapter, and documentation-contract tests
 	bash tests/vendor_test.sh
 	bash tests/adapter_test.sh
-	bash tests/adapter_finalization_test.sh
+	bash tests/adapter_safety_test.sh
 	bash tests/consistency_test.sh
