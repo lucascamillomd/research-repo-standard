@@ -9,6 +9,9 @@ fail() {
   printf 'FAIL: %s\n' "$*"
   FAILS=$((FAILS + 1))
 }
+inode_of() {
+  LC_ALL=C ls -di "$1" | awk '{ print $1 }'
+}
 
 tmp="$(mktemp -d)"
 tmp="$(cd "$tmp" && pwd -P)"
@@ -143,6 +146,7 @@ shared_lock_target="$tmp/shared lock target"
 mkdir "$shared_lock_target"
 cp "$target/AGENTS.md" "$shared_lock_target/AGENTS.md"
 shared_lock="$shared_lock_target/.research-repo-standard-adapter.lock"
+shared_lock_owner="$shared_lock/owner"
 block_ready="$tmp/block-ready"
 block_release="$tmp/block-release"
 BLOCK_READY="$block_ready" BLOCK_RELEASE="$block_release" REAL_CP="$real_cp" \
@@ -151,20 +155,23 @@ BLOCK_READY="$block_ready" BLOCK_RELEASE="$block_release" REAL_CP="$real_cp" \
 lock_owner_pid=$!
 lock_ready=0
 for ((attempt = 0; attempt < 500; attempt++)); do
-  if [[ -f "$block_ready" && -L "$shared_lock" ]]; then
+  if [[ -f "$block_ready" && -d "$shared_lock" && ! -L "$shared_lock" && -f "$shared_lock_owner" ]]; then
     lock_ready=1
     break
   fi
   sleep 0.01
 done
-lock_token_before="$(readlink "$shared_lock" 2> /dev/null || true)"
+lock_token_before="$(cat "$shared_lock_owner" 2> /dev/null || true)"
+lock_owner_inode_before="$(inode_of "$shared_lock_owner" 2> /dev/null)"
 contender_status=0
 contender_error="$("$ROOT/adapters/codex.sh" "$shared_lock_target" 2>&1)" || contender_status=$?
-lock_token_after="$(readlink "$shared_lock" 2> /dev/null || true)"
-if ((lock_ready)) && [[ "$lock_token_before" == "$lock_owner_pid:claude-code.sh" ]] &&
+lock_token_after="$(cat "$shared_lock_owner" 2> /dev/null || true)"
+lock_owner_inode_after="$(inode_of "$shared_lock_owner" 2> /dev/null)"
+if ((lock_ready)) && [[ "$lock_token_before" =~ ^${lock_owner_pid}:claude-code\.sh:[0-9]+-[0-9]+-[0-9]+$ ]] &&
   [[ "$contender_status" -ne 0 ]] &&
   grep -q "adapter installation already in progress: $lock_token_before" <<< "$contender_error" &&
   [[ "$lock_token_after" == "$lock_token_before" ]] &&
+  [[ "$lock_owner_inode_after" == "$lock_owner_inode_before" ]] &&
   [[ ! -e "$shared_lock_target/.codex" && ! -L "$shared_lock_target/.codex" ]]; then
   pass "Claude and Codex adapters contend on one live lock"
 else
@@ -183,35 +190,197 @@ else
   fail "Adapter releases its live lock after success"
 fi
 
-stale_lock_target="$tmp/stale-lock-target"
-mkdir "$stale_lock_target"
-cp "$target/AGENTS.md" "$stale_lock_target/AGENTS.md"
-ln -s '99999999:claude-code.sh' "$stale_lock_target/.research-repo-standard-adapter.lock"
-if "$ROOT/adapters/codex.sh" "$stale_lock_target" > /dev/null &&
-  [[ ! -e "$stale_lock_target/.research-repo-standard-adapter.lock" ]] &&
-  [[ ! -L "$stale_lock_target/.research-repo-standard-adapter.lock" ]] &&
-  [[ -f "$stale_lock_target/agents/code-simplifier.md" ]] &&
-  [[ -f "$stale_lock_target/.codex/agents/code-simplifier.toml" ]]; then
-  pass "Adapter safely reclaims a verifiably stale lock"
+# A second owned lock must use the exact grammar and a distinct nonce.
+second_lock_target="$tmp/second lock target"
+mkdir "$second_lock_target"
+cp "$target/AGENTS.md" "$second_lock_target/AGENTS.md"
+second_block_ready="$tmp/second-block-ready"
+second_block_release="$tmp/second-block-release"
+BLOCK_READY="$second_block_ready" BLOCK_RELEASE="$second_block_release" REAL_CP="$real_cp" \
+  PATH="$blocking_cp_bin:$PATH" "$ROOT/adapters/codex.sh" "$second_lock_target" \
+    > "$tmp/second-lock-owner.out" 2>&1 &
+second_lock_pid=$!
+second_lock="$second_lock_target/.research-repo-standard-adapter.lock"
+second_lock_owner="$second_lock/owner"
+second_lock_ready=0
+for ((attempt = 0; attempt < 500; attempt++)); do
+  if [[ -f "$second_block_ready" && -f "$second_lock_owner" && ! -L "$second_lock" ]]; then
+    second_lock_ready=1
+    break
+  fi
+  sleep 0.01
+done
+second_lock_token="$(cat "$second_lock_owner" 2> /dev/null || true)"
+if ((second_lock_ready)) &&
+  [[ "$second_lock_token" =~ ^${second_lock_pid}:codex\.sh:[0-9]+-[0-9]+-[0-9]+$ ]] &&
+  [[ "${second_lock_token##*:}" != "${lock_token_before##*:}" ]]; then
+  pass "Adapter lock tokens use exact names and unique nonces"
 else
-  fail "Adapter safely reclaims a verifiably stale lock"
+  fail "Adapter lock tokens use exact names and unique nonces"
+fi
+touch "$second_block_release"
+wait "$second_lock_pid" || fail "Adapter releases the second owned lock"
+if [[ ! -e "$second_lock" && ! -L "$second_lock" ]]; then
+  pass "Adapter releases the second owned lock"
+else
+  fail "Adapter releases the second owned lock"
 fi
 
-unknown_lock_target="$tmp/unknown-lock-target"
-mkdir "$unknown_lock_target"
-cp "$target/AGENTS.md" "$unknown_lock_target/AGENTS.md"
-ln -s 'unknown-owner' "$unknown_lock_target/.research-repo-standard-adapter.lock"
-unknown_lock_status=0
-unknown_lock_error="$("$ROOT/adapters/claude-code.sh" "$unknown_lock_target" 2>&1)" ||
-  unknown_lock_status=$?
-if [[ "$unknown_lock_status" -ne 0 ]] &&
-  grep -q 'cannot verify adapter lock owner: unknown-owner' <<< "$unknown_lock_error" &&
-  [[ "$(readlink "$unknown_lock_target/.research-repo-standard-adapter.lock")" == "unknown-owner" ]] &&
-  [[ ! -e "$unknown_lock_target/agents" && ! -L "$unknown_lock_target/agents" ]] &&
-  [[ ! -e "$unknown_lock_target/.claude" && ! -L "$unknown_lock_target/.claude" ]]; then
-  pass "Adapter preserves an unverifiable lock before creating output parents"
+assert_lock_refused_without_output() {
+  fixture=$1
+  expected_diagnostic=$2
+  label=$3
+  status=0
+  error="$("$ROOT/adapters/claude-code.sh" "$fixture" 2>&1)" || status=$?
+  if [[ "$status" -ne 0 ]] && grep -q "$expected_diagnostic" <<< "$error" &&
+    [[ ! -e "$fixture/agents" && ! -L "$fixture/agents" ]] &&
+    [[ ! -e "$fixture/.claude" && ! -L "$fixture/.claude" ]] &&
+    [[ ! -e "$fixture/CLAUDE.md" && ! -L "$fixture/CLAUDE.md" ]]; then
+    pass "$label"
+  else
+    fail "$label"
+  fi
+}
+
+regular_lock_target="$tmp/regular-lock-target"
+mkdir "$regular_lock_target"
+cp "$target/AGENTS.md" "$regular_lock_target/AGENTS.md"
+printf 'regular lock\n' > "$regular_lock_target/.research-repo-standard-adapter.lock"
+regular_lock_before="$(cksum "$regular_lock_target/.research-repo-standard-adapter.lock")"
+regular_lock_inode="$(inode_of "$regular_lock_target/.research-repo-standard-adapter.lock")"
+assert_lock_refused_without_output "$regular_lock_target" 'adapter lock requires manual intervention' \
+  "Adapter preserves a regular-file lock path"
+if [[ "$(cksum "$regular_lock_target/.research-repo-standard-adapter.lock")" == "$regular_lock_before" ]] &&
+  [[ "$(inode_of "$regular_lock_target/.research-repo-standard-adapter.lock")" == "$regular_lock_inode" ]]; then
+  pass "Regular-file lock identity remains unchanged"
 else
-  fail "Adapter preserves an unverifiable lock before creating output parents"
+  fail "Regular-file lock identity remains unchanged"
+fi
+
+ordinary_lock_target="$tmp/ordinary-lock-target"
+mkdir -p "$ordinary_lock_target/.research-repo-standard-adapter.lock"
+cp "$target/AGENTS.md" "$ordinary_lock_target/AGENTS.md"
+printf 'preserve me\n' > "$ordinary_lock_target/.research-repo-standard-adapter.lock/marker"
+ordinary_marker_before="$(cksum "$ordinary_lock_target/.research-repo-standard-adapter.lock/marker")"
+assert_lock_refused_without_output "$ordinary_lock_target" 'adapter lock requires manual intervention' \
+  "Adapter preserves an ordinary lock directory"
+if [[ "$(cksum "$ordinary_lock_target/.research-repo-standard-adapter.lock/marker")" == "$ordinary_marker_before" ]] &&
+  [[ ! -e "$ordinary_lock_target/.research-repo-standard-adapter.lock/owner" ]]; then
+  pass "Adapter creates nothing inside an ordinary lock directory"
+else
+  fail "Adapter creates nothing inside an ordinary lock directory"
+fi
+
+missing_owner_target="$tmp/missing-owner-target"
+mkdir -p "$missing_owner_target/.research-repo-standard-adapter.lock"
+cp "$target/AGENTS.md" "$missing_owner_target/AGENTS.md"
+assert_lock_refused_without_output "$missing_owner_target" 'adapter lock requires manual intervention' \
+  "Adapter preserves a missing-owner lock directory"
+
+for token_case in numeric-only empty-adapter arbitrary-adapter extra-suffix; do
+  malformed_target="$tmp/malformed-$token_case-target"
+  mkdir -p "$malformed_target/.research-repo-standard-adapter.lock"
+  cp "$target/AGENTS.md" "$malformed_target/AGENTS.md"
+  case "$token_case" in
+    numeric-only) malformed_token='12345' ;;
+    empty-adapter) malformed_token="$$::123-456-789" ;;
+    arbitrary-adapter) malformed_token="$$:other.sh:123-456-789" ;;
+    extra-suffix) malformed_token="$$:claude-code.sh:123-456-789:extra" ;;
+  esac
+  printf '%s\n' "$malformed_token" > "$malformed_target/.research-repo-standard-adapter.lock/owner"
+  malformed_inode="$(inode_of "$malformed_target/.research-repo-standard-adapter.lock/owner")"
+  assert_lock_refused_without_output "$malformed_target" 'adapter lock requires manual intervention' \
+    "Adapter rejects $token_case lock token grammar"
+  if [[ "$(cat "$malformed_target/.research-repo-standard-adapter.lock/owner")" == "$malformed_token" ]] &&
+    [[ "$(inode_of "$malformed_target/.research-repo-standard-adapter.lock/owner")" == "$malformed_inode" ]]; then
+    pass "Adapter preserves $token_case lock token"
+  else
+    fail "Adapter preserves $token_case lock token"
+  fi
+done
+
+live_owner_target="$tmp/live-owner-target"
+mkdir -p "$live_owner_target/.research-repo-standard-adapter.lock"
+cp "$target/AGENTS.md" "$live_owner_target/AGENTS.md"
+live_owner_token="$$:codex.sh:123-456-789"
+printf '%s\n' "$live_owner_token" > "$live_owner_target/.research-repo-standard-adapter.lock/owner"
+live_owner_inode="$(inode_of "$live_owner_target/.research-repo-standard-adapter.lock/owner")"
+assert_lock_refused_without_output "$live_owner_target" "adapter installation already in progress: $live_owner_token" \
+  "Same-PID contender preserves a never-acquired live lock"
+if [[ "$(cat "$live_owner_target/.research-repo-standard-adapter.lock/owner")" == "$live_owner_token" ]] &&
+  [[ "$(inode_of "$live_owner_target/.research-repo-standard-adapter.lock/owner")" == "$live_owner_inode" ]]; then
+  pass "Never-acquired live lock identity remains unchanged"
+else
+  fail "Never-acquired live lock identity remains unchanged"
+fi
+
+dead_owner_target="$tmp/dead-owner-target"
+mkdir -p "$dead_owner_target/.research-repo-standard-adapter.lock"
+cp "$target/AGENTS.md" "$dead_owner_target/AGENTS.md"
+dead_owner_token='99999999:claude-code.sh:123-456-789'
+printf '%s\n' "$dead_owner_token" > "$dead_owner_target/.research-repo-standard-adapter.lock/owner"
+dead_owner_inode="$(inode_of "$dead_owner_target/.research-repo-standard-adapter.lock/owner")"
+assert_lock_refused_without_output "$dead_owner_target" 'adapter lock requires manual intervention' \
+  "Nonzero owner liveness preserves a stale lock"
+if [[ "$(cat "$dead_owner_target/.research-repo-standard-adapter.lock/owner")" == "$dead_owner_token" ]] &&
+  [[ "$(inode_of "$dead_owner_target/.research-repo-standard-adapter.lock/owner")" == "$dead_owner_inode" ]]; then
+  pass "Dead-PID lock is never reclaimed"
+else
+  fail "Dead-PID lock is never reclaimed"
+fi
+
+stale_claude_status=0
+stale_codex_status=0
+"$ROOT/adapters/claude-code.sh" "$dead_owner_target" > "$tmp/stale-claude.out" 2>&1 &
+stale_claude_pid=$!
+"$ROOT/adapters/codex.sh" "$dead_owner_target" > "$tmp/stale-codex.out" 2>&1 &
+stale_codex_pid=$!
+wait "$stale_claude_pid" || stale_claude_status=$?
+wait "$stale_codex_pid" || stale_codex_status=$?
+if [[ "$stale_claude_status" -ne 0 && "$stale_codex_status" -ne 0 ]] &&
+  grep -q 'adapter lock requires manual intervention' "$tmp/stale-claude.out" &&
+  grep -q 'adapter lock requires manual intervention' "$tmp/stale-codex.out" &&
+  [[ "$(cat "$dead_owner_target/.research-repo-standard-adapter.lock/owner")" == "$dead_owner_token" ]] &&
+  [[ "$(inode_of "$dead_owner_target/.research-repo-standard-adapter.lock/owner")" == "$dead_owner_inode" ]]; then
+  pass "Simultaneous stale-lock contenders both fail without mutation"
+else
+  fail "Simultaneous stale-lock contenders both fail without mutation"
+fi
+
+dangling_lock_target="$tmp/dangling-lock-target"
+mkdir "$dangling_lock_target"
+cp "$target/AGENTS.md" "$dangling_lock_target/AGENTS.md"
+ln -s missing-lock-directory "$dangling_lock_target/.research-repo-standard-adapter.lock"
+assert_lock_refused_without_output "$dangling_lock_target" 'adapter lock requires manual intervention' \
+  "Adapter preserves a dangling lock symlink"
+[[ "$(readlink "$dangling_lock_target/.research-repo-standard-adapter.lock")" == 'missing-lock-directory' ]] ||
+  fail "Adapter preserves dangling lock symlink identity"
+
+directory_lock_target="$tmp/directory-lock-target"
+mkdir -p "$directory_lock_target/lock-source"
+cp "$target/AGENTS.md" "$directory_lock_target/AGENTS.md"
+ln -s lock-source "$directory_lock_target/.research-repo-standard-adapter.lock"
+assert_lock_refused_without_output "$directory_lock_target" 'adapter lock requires manual intervention' \
+  "Adapter preserves a directory lock symlink"
+if [[ "$(readlink "$directory_lock_target/.research-repo-standard-adapter.lock")" == 'lock-source' ]] &&
+  [[ -z "$(find "$directory_lock_target/lock-source" -mindepth 1 -print -quit)" ]]; then
+  pass "Adapter writes nothing through a directory lock symlink"
+else
+  fail "Adapter writes nothing through a directory lock symlink"
+fi
+
+external_lock_target="$tmp/external-lock-target"
+external_lock_directory="$tmp/external-lock-directory"
+mkdir "$external_lock_target" "$external_lock_directory"
+cp "$target/AGENTS.md" "$external_lock_target/AGENTS.md"
+ln -s "$external_lock_directory" "$external_lock_target/.research-repo-standard-adapter.lock"
+assert_lock_refused_without_output "$external_lock_target" 'adapter lock requires manual intervention' \
+  "Adapter preserves an external directory lock symlink"
+if [[ "$(readlink "$external_lock_target/.research-repo-standard-adapter.lock")" == "$external_lock_directory" ]] &&
+  [[ -z "$(find "$external_lock_directory" -mindepth 1 -print -quit)" ]]; then
+  pass "Adapter writes nothing outside the target through a lock symlink"
+else
+  fail "Adapter writes nothing outside the target through a lock symlink"
 fi
 
 claude_canonical_conflict="$tmp/claude-canonical-conflict"

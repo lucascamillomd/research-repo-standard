@@ -64,35 +64,39 @@ remove_if_owned() {
 }
 
 release_adapter_lock() {
-  if ((lock_acquisition_started)) && [[ -L "$adapter_lock" ]] &&
-    [[ "$(readlink "$adapter_lock")" == "$lock_token" ]]; then
-    rm -f "$adapter_lock"
+  if ((lock_owned)) && [[ -d "$adapter_lock" && ! -L "$adapter_lock" ]] &&
+    [[ -f "$adapter_lock_owner" && ! -L "$adapter_lock_owner" ]] &&
+    [[ "$(cat "$adapter_lock_owner" 2> /dev/null || true)" == "$lock_token" ]]; then
+    rm -f "$adapter_lock_owner"
+    rmdir "$adapter_lock" 2> /dev/null
   fi
 }
 
 acquire_adapter_lock() {
-  lock_acquisition_started=1
-  for attempt in 1 2; do
-    if ln -s "$lock_token" "$adapter_lock" 2> /dev/null; then
-      return
+  if ! mkdir "$adapter_lock" 2> /dev/null; then
+    if [[ -L "$adapter_lock" || ! -d "$adapter_lock" ]] ||
+      [[ ! -f "$adapter_lock_owner" || -L "$adapter_lock_owner" ]]; then
+      fail "adapter lock requires manual intervention"
     fi
-    if [[ ! -L "$adapter_lock" ]]; then
-      fail "refusing unverifiable adapter lock path"
+    existing_lock_token="$(cat "$adapter_lock_owner" 2> /dev/null || true)"
+    if [[ ! "$existing_lock_token" =~ ^([0-9]+):(claude-code\.sh|codex\.sh):[0-9]+-[0-9]+-[0-9]+$ ]]; then
+      fail "adapter lock requires manual intervention"
     fi
-    existing_lock_token="$(readlink "$adapter_lock")"
-    existing_lock_pid="${existing_lock_token%%:*}"
-    if [[ ! "$existing_lock_pid" =~ ^[0-9]+$ ]]; then
-      fail "cannot verify adapter lock owner: $existing_lock_token"
-    fi
+    existing_lock_pid="${BASH_REMATCH[1]}"
     if kill -0 "$existing_lock_pid" 2> /dev/null; then
       fail "adapter installation already in progress: $existing_lock_token"
     fi
-    if [[ "$(readlink "$adapter_lock" 2> /dev/null || true)" != "$existing_lock_token" ]]; then
-      fail "adapter lock owner changed during stale-lock verification"
-    fi
-    rm -f "$adapter_lock"
-  done
-  fail "could not acquire adapter lock"
+    fail "adapter lock requires manual intervention"
+  fi
+  created_lock_directory=1
+  if ! printf '%s\n' "$lock_token" > "$adapter_lock_owner"; then
+    fail "failed to write adapter lock owner"
+  fi
+  if [[ ! -f "$adapter_lock_owner" || -L "$adapter_lock_owner" ]] ||
+    [[ "$(cat "$adapter_lock_owner" 2> /dev/null || true)" != "$lock_token" ]]; then
+    fail "failed to verify adapter lock owner"
+  fi
+  lock_owned=1
 }
 
 [[ $# -eq 1 ]] || usage
@@ -132,7 +136,9 @@ codex_agents_directory="$codex_directory/agents"
 canonical_destination="$agents_directory/code-simplifier.md"
 host_profile="$codex_agents_directory/code-simplifier.toml"
 adapter_lock="$TARGET/.research-repo-standard-adapter.lock"
-lock_token="$$:$script_name"
+adapter_lock_owner="$adapter_lock/owner"
+lock_nonce="$(date +%s)-$RANDOM-$RANDOM"
+lock_token="$$:$script_name:$lock_nonce"
 
 check_output_parent "$agents_directory"
 check_output_parent "$codex_directory"
@@ -142,7 +148,8 @@ canonical_stage=""
 host_stage=""
 canonical_inode=""
 host_inode=""
-lock_acquisition_started=0
+created_lock_directory=0
+lock_owned=0
 created_agents_directory=0
 created_codex_directory=0
 created_codex_agents_directory=0
@@ -164,6 +171,9 @@ cleanup() {
     ((created_agents_directory)) && rmdir "$agents_directory" 2> /dev/null
   fi
   release_adapter_lock
+  if ((created_lock_directory)) && ((lock_owned == 0)); then
+    rmdir "$adapter_lock" 2> /dev/null
+  fi
   exit "$status"
 }
 trap cleanup EXIT
