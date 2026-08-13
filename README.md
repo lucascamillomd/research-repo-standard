@@ -29,7 +29,7 @@ references/
   analysis.md              analysis planning, reporting, and critique
   bootstrap.md             initial tool configuration and scaffolding
   configuration.md         configuration ownership, loading, and provenance
-  data.md                  data registry, schemas, validation, and fixtures
+  data.md                  data registry, schemas, validation, and dictionaries
   figures.md               figure contracts, exports, and QA
   prerequisites.md         required skills, installation, and verification
 agents/

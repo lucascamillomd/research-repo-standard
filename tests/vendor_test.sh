@@ -28,8 +28,7 @@ fi
 # --- 2. re-vendor preserves a modified '## This repository' section ---
 awk '/^## This repository$/{print; print ""; print "CUSTOM-MARKER project identity line."; next} {print}' \
   "$t1/AGENTS.md" > "$t1/AGENTS.md.new" && mv "$t1/AGENTS.md.new" "$t1/AGENTS.md"
-"$ROOT/vendor.sh" "$t1" > /dev/null
-if grep -q 'CUSTOM-MARKER' "$t1/AGENTS.md"; then
+if "$ROOT/vendor.sh" "$t1" > /dev/null && grep -q 'CUSTOM-MARKER' "$t1/AGENTS.md"; then
   pass "re-vendor preserves the This repository section"
 else
   fail "re-vendor preserves the This repository section"

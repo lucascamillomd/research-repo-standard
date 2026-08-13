@@ -32,8 +32,8 @@ resolve the skill. Successful invocation during the required workflow is the fun
 verification.
 
 Do not install these skills silently or modify global agent configuration without the user's
-authorization. If a skill is missing, stop before repository mutations. Do not substitute another
-workflow for a missing required skill.
+authorization. If a skill is missing, stop before mutations that depend on it. Do not substitute
+another workflow for a missing required skill.
 
 ## Resolve this standard
 
@@ -62,6 +62,8 @@ Install Superpowers from Anthropic's official plugin marketplace:
 ```text
 /plugin install superpowers@claude-plugins-official
 ```
+
+## Shared planning companion
 
 At planning time, confirm the companion `superpowers:writing-plans` skill resolves from the selected
 Superpowers installation. It is used after design approval and is not a fourth bootstrap hard gate.

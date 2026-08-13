@@ -149,10 +149,11 @@ Read `references/configuration.md` before creating YAML, `config.py`, `paths.py`
 configuration provenance. TOML remains the source of truth for packaging and tool configuration.
 Create mandatory `config/datasets.yaml` and `config/analysis.yaml`.
 
-Put every stable scientific or result-affecting value explicitly in `config/analysis.yaml`.
-`config.py` validates strict typed schemas and contains no project values or hidden result-affecting
-defaults. `paths.py` derives internal paths and reads permitted machine-specific roots from
-environment variables.
+Put all stable researcher-editable scientific or result-affecting settings explicitly in
+`config/analysis.yaml`. Non-setting implementation constants remain in code under the ownership
+decision in `references/configuration.md`. `config.py` validates strict typed schemas and contains
+no project values or hidden result-affecting defaults. `paths.py` derives internal paths and reads
+permitted machine-specific roots from environment variables.
 
 Create `.env.example` only when the project consumes environment variables. It lists variable names
 with safe descriptions or placeholders and never contains real values. The real `.env` is

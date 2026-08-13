@@ -76,7 +76,10 @@ AGENTS.md back to the user.
    code-simplifier profile. Then launch an independent review agent in the target repository and
    require it to name the applicable `AGENTS.md`, resolve or read its assigned profile, and return
    findings without implementation. When no adapter was selected, skip the installer and smoke test.
-   In either case, report what was created, assumptions, and unresolved boundaries.
+   Selecting `none` is valid only when the host can independently resolve the canonical simplifier
+   profile required for future reviews; otherwise future code changes will block at the independent
+   simplification gate. In either case, report what was created, assumptions, and unresolved
+   boundaries.
 
 ## Interview
 

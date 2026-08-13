@@ -64,10 +64,10 @@ else
   fail "Claude adapter installs provider-neutral simplifier profile"
 fi
 
-claude_before="$(cksum "$claude_profile")"
-"$ROOT/adapters/claude-code.sh" "$target" > /dev/null
-if [[ "$(readlink "$target/CLAUDE.md" 2> /dev/null || true)" == "AGENTS.md" ]] &&
-  [[ "$(cksum "$claude_profile")" == "$claude_before" ]]; then
+claude_before="$(cksum "$target/CLAUDE.md" "$target/agents/code-simplifier.md" "$claude_profile")"
+if "$ROOT/adapters/claude-code.sh" "$target" > /dev/null &&
+  [[ "$(readlink "$target/CLAUDE.md" 2> /dev/null || true)" == "AGENTS.md" ]] &&
+  [[ "$(cksum "$target/CLAUDE.md" "$target/agents/code-simplifier.md" "$claude_profile")" == "$claude_before" ]]; then
   pass "Claude adapter accepts the exact policy alias idempotently"
 else
   fail "Claude adapter accepts the exact policy alias idempotently"
@@ -113,9 +113,9 @@ else
   fail "Codex adapter installs provider-neutral simplifier profile"
 fi
 
-codex_before="$(cksum "$codex_profile" "$target/agents/code-simplifier.md")"
-"$ROOT/adapters/codex.sh" "$target" > /dev/null
-if [[ "$(cksum "$codex_profile" "$target/agents/code-simplifier.md")" == "$codex_before" ]]; then
+codex_before="$(cksum "$target/agents/code-simplifier.md" "$codex_profile")"
+if "$ROOT/adapters/codex.sh" "$target" > /dev/null &&
+  [[ "$(cksum "$target/agents/code-simplifier.md" "$codex_profile")" == "$codex_before" ]]; then
   pass "Codex adapter is idempotent"
 else
   fail "Codex adapter is idempotent"
@@ -237,6 +237,248 @@ elif grep -q 'refusing to replace customized' <<< "$codex_dangling_error" &&
   pass "Codex adapter preserves a dangling TOML profile symlink"
 else
   fail "Codex adapter preserves a dangling TOML profile symlink"
+fi
+
+# Generated profiles must never be reached through symlinked output parents.
+for parent in agents .claude .claude/agents; do
+  fixture_name="${parent//\//-}"
+  claude_parent_target="$tmp/claude-parent-$fixture_name"
+  claude_parent_outside="$tmp/claude-parent-$fixture_name-outside"
+  mkdir -p "$claude_parent_target" "$claude_parent_outside"
+  cp "$target/AGENTS.md" "$claude_parent_target/AGENTS.md"
+  case "$parent" in
+    agents | .claude)
+      ln -s "$claude_parent_outside" "$claude_parent_target/$parent"
+      ;;
+    .claude/agents)
+      mkdir "$claude_parent_target/.claude"
+      ln -s "$claude_parent_outside" "$claude_parent_target/.claude/agents"
+      ;;
+  esac
+  if claude_parent_error="$("$ROOT/adapters/claude-code.sh" "$claude_parent_target" 2>&1)"; then
+    fail "Claude adapter rejects symlinked $parent output parent"
+  elif grep -q 'symlinked output parent' <<< "$claude_parent_error" &&
+    [[ -z "$(find "$claude_parent_outside" -mindepth 1 -print -quit)" ]] &&
+    [[ ! -e "$claude_parent_target/CLAUDE.md" && ! -L "$claude_parent_target/CLAUDE.md" ]] &&
+    [[ ! -e "$claude_parent_target/agents/code-simplifier.md" ]] &&
+    [[ ! -e "$claude_parent_target/.claude/agents/code-simplifier.md" ]]; then
+    pass "Claude adapter contains symlinked $parent output parent"
+  else
+    fail "Claude adapter contains symlinked $parent output parent"
+  fi
+done
+
+for parent in agents .codex .codex/agents; do
+  fixture_name="${parent//\//-}"
+  codex_parent_target="$tmp/codex-parent-$fixture_name"
+  codex_parent_outside="$tmp/codex-parent-$fixture_name-outside"
+  mkdir -p "$codex_parent_target" "$codex_parent_outside"
+  cp "$target/AGENTS.md" "$codex_parent_target/AGENTS.md"
+  case "$parent" in
+    agents | .codex)
+      ln -s "$codex_parent_outside" "$codex_parent_target/$parent"
+      ;;
+    .codex/agents)
+      mkdir "$codex_parent_target/.codex"
+      ln -s "$codex_parent_outside" "$codex_parent_target/.codex/agents"
+      ;;
+  esac
+  if codex_parent_error="$("$ROOT/adapters/codex.sh" "$codex_parent_target" 2>&1)"; then
+    fail "Codex adapter rejects symlinked $parent output parent"
+  elif grep -q 'symlinked output parent' <<< "$codex_parent_error" &&
+    [[ -z "$(find "$codex_parent_outside" -mindepth 1 -print -quit)" ]] &&
+    [[ ! -e "$codex_parent_target/agents/code-simplifier.md" ]] &&
+    [[ ! -e "$codex_parent_target/.codex/agents/code-simplifier.toml" ]]; then
+    pass "Codex adapter contains symlinked $parent output parent"
+  else
+    fail "Codex adapter contains symlinked $parent output parent"
+  fi
+done
+
+# Byte-identical symlinks at generated-profile leaves remain customized artifacts.
+claude_canonical_link="$tmp/claude-identical-canonical-link"
+mkdir -p "$claude_canonical_link/agents"
+cp "$target/AGENTS.md" "$claude_canonical_link/AGENTS.md"
+ln -s "$ROOT/agents/code-simplifier.md" "$claude_canonical_link/agents/code-simplifier.md"
+if claude_canonical_link_error="$("$ROOT/adapters/claude-code.sh" "$claude_canonical_link" 2>&1)"; then
+  fail "Claude adapter rejects a byte-identical canonical-profile symlink"
+elif grep -q 'refusing to replace customized' <<< "$claude_canonical_link_error" &&
+  [[ -L "$claude_canonical_link/agents/code-simplifier.md" ]] &&
+  [[ ! -e "$claude_canonical_link/.claude/agents/code-simplifier.md" ]] &&
+  [[ ! -e "$claude_canonical_link/CLAUDE.md" && ! -L "$claude_canonical_link/CLAUDE.md" ]]; then
+  pass "Claude adapter preserves a byte-identical canonical-profile symlink"
+else
+  fail "Claude adapter preserves a byte-identical canonical-profile symlink"
+fi
+
+claude_host_link="$tmp/claude-identical-host-link"
+mkdir -p "$claude_host_link/.claude/agents"
+cp "$target/AGENTS.md" "$claude_host_link/AGENTS.md"
+ln -s "$claude_profile" "$claude_host_link/.claude/agents/code-simplifier.md"
+if claude_host_link_error="$("$ROOT/adapters/claude-code.sh" "$claude_host_link" 2>&1)"; then
+  fail "Claude adapter rejects a byte-identical host-profile symlink"
+elif grep -q 'refusing to replace customized' <<< "$claude_host_link_error" &&
+  [[ -L "$claude_host_link/.claude/agents/code-simplifier.md" ]] &&
+  [[ ! -e "$claude_host_link/agents/code-simplifier.md" ]] &&
+  [[ ! -e "$claude_host_link/CLAUDE.md" && ! -L "$claude_host_link/CLAUDE.md" ]]; then
+  pass "Claude adapter preserves a byte-identical host-profile symlink"
+else
+  fail "Claude adapter preserves a byte-identical host-profile symlink"
+fi
+
+codex_canonical_link="$tmp/codex-identical-canonical-link"
+mkdir -p "$codex_canonical_link/agents"
+cp "$target/AGENTS.md" "$codex_canonical_link/AGENTS.md"
+ln -s "$ROOT/agents/code-simplifier.md" "$codex_canonical_link/agents/code-simplifier.md"
+if codex_canonical_link_error="$("$ROOT/adapters/codex.sh" "$codex_canonical_link" 2>&1)"; then
+  fail "Codex adapter rejects a byte-identical canonical-profile symlink"
+elif grep -q 'refusing to replace customized' <<< "$codex_canonical_link_error" &&
+  [[ -L "$codex_canonical_link/agents/code-simplifier.md" ]] &&
+  [[ ! -e "$codex_canonical_link/.codex/agents/code-simplifier.toml" ]]; then
+  pass "Codex adapter preserves a byte-identical canonical-profile symlink"
+else
+  fail "Codex adapter preserves a byte-identical canonical-profile symlink"
+fi
+
+codex_host_link="$tmp/codex-identical-host-link"
+mkdir -p "$codex_host_link/.codex/agents"
+cp "$target/AGENTS.md" "$codex_host_link/AGENTS.md"
+ln -s "$codex_profile" "$codex_host_link/.codex/agents/code-simplifier.toml"
+if codex_host_link_error="$("$ROOT/adapters/codex.sh" "$codex_host_link" 2>&1)"; then
+  fail "Codex adapter rejects a byte-identical TOML-profile symlink"
+elif grep -q 'refusing to replace customized' <<< "$codex_host_link_error" &&
+  [[ -L "$codex_host_link/.codex/agents/code-simplifier.toml" ]] &&
+  [[ ! -e "$codex_host_link/agents/code-simplifier.md" ]]; then
+  pass "Codex adapter preserves a byte-identical TOML-profile symlink"
+else
+  fail "Codex adapter preserves a byte-identical TOML-profile symlink"
+fi
+
+# A partial staging copy must never become a declared output.
+partial_cp_bin="$tmp/partial-cp-bin"
+mkdir "$partial_cp_bin"
+cat > "$partial_cp_bin/cp" << 'EOF'
+#!/usr/bin/env bash
+printf 'partial copy\n' > "$2"
+exit 1
+EOF
+chmod +x "$partial_cp_bin/cp"
+
+claude_cp_failure="$tmp/claude-cp-failure"
+mkdir "$claude_cp_failure"
+cp "$target/AGENTS.md" "$claude_cp_failure/AGENTS.md"
+if PATH="$partial_cp_bin:$PATH" "$ROOT/adapters/claude-code.sh" "$claude_cp_failure" > /dev/null 2>&1; then
+  fail "Claude adapter aborts after a partial staging copy"
+elif [[ ! -e "$claude_cp_failure/CLAUDE.md" && ! -L "$claude_cp_failure/CLAUDE.md" ]] &&
+  [[ ! -e "$claude_cp_failure/agents/code-simplifier.md" && ! -L "$claude_cp_failure/agents/code-simplifier.md" ]] &&
+  [[ ! -e "$claude_cp_failure/.claude/agents/code-simplifier.md" && ! -L "$claude_cp_failure/.claude/agents/code-simplifier.md" ]] &&
+  [[ -z "$(find "$claude_cp_failure" -name '*.stage.*' -print -quit)" ]]; then
+  pass "Claude adapter cleans a partial staging copy"
+else
+  fail "Claude adapter cleans a partial staging copy"
+fi
+
+codex_cp_failure="$tmp/codex-cp-failure"
+mkdir "$codex_cp_failure"
+cp "$target/AGENTS.md" "$codex_cp_failure/AGENTS.md"
+if PATH="$partial_cp_bin:$PATH" "$ROOT/adapters/codex.sh" "$codex_cp_failure" > /dev/null 2>&1; then
+  fail "Codex adapter aborts after a partial staging copy"
+elif [[ ! -e "$codex_cp_failure/agents/code-simplifier.md" && ! -L "$codex_cp_failure/agents/code-simplifier.md" ]] &&
+  [[ ! -e "$codex_cp_failure/.codex/agents/code-simplifier.toml" && ! -L "$codex_cp_failure/.codex/agents/code-simplifier.toml" ]] &&
+  [[ -z "$(find "$codex_cp_failure" -name '*.stage.*' -print -quit)" ]]; then
+  pass "Codex adapter cleans a partial staging copy"
+else
+  fail "Codex adapter cleans a partial staging copy"
+fi
+
+# Failure on the second atomic publish must roll back the first publish and Claude alias.
+real_mv="$(command -v mv)"
+second_mv_bin="$tmp/second-mv-bin"
+mkdir "$second_mv_bin"
+cat > "$second_mv_bin/mv" << 'EOF'
+#!/usr/bin/env bash
+set -eu
+count=0
+if [[ -f "$MV_COUNT_FILE" ]]; then
+  count="$(cat "$MV_COUNT_FILE")"
+fi
+count=$((count + 1))
+printf '%s\n' "$count" > "$MV_COUNT_FILE"
+if [[ "$count" -eq 2 ]]; then
+  exit 1
+fi
+exec "$REAL_MV" "$@"
+EOF
+chmod +x "$second_mv_bin/mv"
+
+claude_mv_failure="$tmp/claude-mv-failure"
+mkdir "$claude_mv_failure"
+cp "$target/AGENTS.md" "$claude_mv_failure/AGENTS.md"
+claude_mv_count="$tmp/claude-mv-count"
+if MV_COUNT_FILE="$claude_mv_count" REAL_MV="$real_mv" PATH="$second_mv_bin:$PATH" \
+  "$ROOT/adapters/claude-code.sh" "$claude_mv_failure" > /dev/null 2>&1; then
+  fail "Claude adapter aborts when the second publish fails"
+elif [[ ! -e "$claude_mv_failure/CLAUDE.md" && ! -L "$claude_mv_failure/CLAUDE.md" ]] &&
+  [[ ! -e "$claude_mv_failure/agents/code-simplifier.md" && ! -L "$claude_mv_failure/agents/code-simplifier.md" ]] &&
+  [[ ! -e "$claude_mv_failure/.claude/agents/code-simplifier.md" && ! -L "$claude_mv_failure/.claude/agents/code-simplifier.md" ]] &&
+  [[ -z "$(find "$claude_mv_failure" -name '*.stage.*' -print -quit)" ]]; then
+  pass "Claude adapter rolls back a failed publish transaction"
+else
+  fail "Claude adapter rolls back a failed publish transaction"
+fi
+
+codex_mv_failure="$tmp/codex-mv-failure"
+mkdir "$codex_mv_failure"
+cp "$target/AGENTS.md" "$codex_mv_failure/AGENTS.md"
+codex_mv_count="$tmp/codex-mv-count"
+if MV_COUNT_FILE="$codex_mv_count" REAL_MV="$real_mv" PATH="$second_mv_bin:$PATH" \
+  "$ROOT/adapters/codex.sh" "$codex_mv_failure" > /dev/null 2>&1; then
+  fail "Codex adapter aborts when the second publish fails"
+elif [[ ! -e "$codex_mv_failure/agents/code-simplifier.md" && ! -L "$codex_mv_failure/agents/code-simplifier.md" ]] &&
+  [[ ! -e "$codex_mv_failure/.codex/agents/code-simplifier.toml" && ! -L "$codex_mv_failure/.codex/agents/code-simplifier.toml" ]] &&
+  [[ -z "$(find "$codex_mv_failure" -name '*.stage.*' -print -quit)" ]]; then
+  pass "Codex adapter rolls back a failed publish transaction"
+else
+  fail "Codex adapter rolls back a failed publish transaction"
+fi
+
+# Rollback removes only outputs created by that invocation.
+first_mv_bin="$tmp/first-mv-bin"
+mkdir "$first_mv_bin"
+cat > "$first_mv_bin/mv" << 'EOF'
+#!/usr/bin/env bash
+exit 1
+EOF
+chmod +x "$first_mv_bin/mv"
+
+claude_existing="$tmp/claude-existing-before-failure"
+mkdir -p "$claude_existing/agents"
+cp "$target/AGENTS.md" "$claude_existing/AGENTS.md"
+cp "$ROOT/agents/code-simplifier.md" "$claude_existing/agents/code-simplifier.md"
+ln -s AGENTS.md "$claude_existing/CLAUDE.md"
+claude_existing_before="$(cksum "$claude_existing/agents/code-simplifier.md")"
+if PATH="$first_mv_bin:$PATH" "$ROOT/adapters/claude-code.sh" "$claude_existing" > /dev/null 2>&1; then
+  fail "Claude adapter reports a host publish failure with pre-existing outputs"
+elif [[ "$(cksum "$claude_existing/agents/code-simplifier.md")" == "$claude_existing_before" ]] &&
+  [[ "$(readlink "$claude_existing/CLAUDE.md")" == "AGENTS.md" ]] &&
+  [[ ! -e "$claude_existing/.claude/agents/code-simplifier.md" ]]; then
+  pass "Claude adapter preserves pre-existing outputs during rollback"
+else
+  fail "Claude adapter preserves pre-existing outputs during rollback"
+fi
+
+codex_existing="$tmp/codex-existing-before-failure"
+mkdir -p "$codex_existing/agents"
+cp "$target/AGENTS.md" "$codex_existing/AGENTS.md"
+cp "$ROOT/agents/code-simplifier.md" "$codex_existing/agents/code-simplifier.md"
+codex_existing_before="$(cksum "$codex_existing/agents/code-simplifier.md")"
+if PATH="$first_mv_bin:$PATH" "$ROOT/adapters/codex.sh" "$codex_existing" > /dev/null 2>&1; then
+  fail "Codex adapter reports a TOML publish failure with a pre-existing output"
+elif [[ "$(cksum "$codex_existing/agents/code-simplifier.md")" == "$codex_existing_before" ]] &&
+  [[ ! -e "$codex_existing/.codex/agents/code-simplifier.toml" ]]; then
+  pass "Codex adapter preserves a pre-existing output during rollback"
+else
+  fail "Codex adapter preserves a pre-existing output during rollback"
 fi
 
 missing="$tmp/missing"
