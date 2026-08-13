@@ -17,6 +17,14 @@ reject symlinked output parents, reject generated-profile leaf symlinks, preserv
 regular files, and refuse to replace customized files. Claude's exact `CLAUDE.md -> AGENTS.md`
 policy alias remains the sole permitted generated symlink destination.
 
+Before creating any output parent or staging any artifact, both adapters acquire the same
+target-local adapter lock. The portable lock is an atomically created symlink whose target records
+the owning PID and adapter name. A live or unverifiable owner is preserved and reported as
+contention. A lock carrying a verifiably dead PID may be reclaimed only after its owner token is
+re-read unchanged. Success, ordinary failure, and trapped signals release a lock only when its
+current owner token still matches the invocation. This serializes cooperating Claude and Codex
+installations without blindly deleting an unknown or live lock.
+
 Every new output is staged beside its destination. Before publication, the adapter records the
 staged artifact's filesystem inode and arms rollback. It then publishes by same-filesystem atomic
 rename. Claude's alias is also built as a target-local staged symlink and published by rename.
@@ -29,8 +37,14 @@ current inode equals the inode recorded for this invocation's staged artifact. T
 - a signal delivered after the filesystem effect but before the next shell statement is rolled back;
 - a rename that fails before taking effect leaves no destination to remove;
 - a pre-existing artifact is never marked as invocation-owned;
-- a destination concurrently replaced with a different inode is preserved; and
+- a destination whose invocation-owned inode is not visible when cleanup verifies it is preserved;
+  and
 - rollback never reaches outside the validated target.
+
+The inode check and subsequent unlink are separate filesystem operations. The guarantee is
+deliberately limited to the identity visible when cleanup verifies the destination; it does not
+claim atomic protection from adversarial out-of-band replacement between that check and unlink. The
+target-local lock prevents cooperating adapter installations from creating that interleaving.
 
 Rollback is disarmed only after every declared output is published. Staging paths are removed on
 success and failure. The guarantee covers ordinary failures and trapped `INT`/`TERM`; it does not
@@ -50,6 +64,13 @@ Add a focused trapped-signal case in which publication takes effect before the a
 `TERM`. Assert the same rollback and preservation properties. Retain existing pre-effect failure,
 parent-symlink, leaf-symlink, paths-with-spaces, customized-file, exact-rerun, and ordinary artifact
 coverage.
+
+Add focused serialization cases proving that a Claude and Codex invocation contend on the same lock
+while one is live, that the contender exits nonzero without removing the owner's lock, that a
+verifiably stale lock can be reclaimed, and that an unverifiable lock is preserved. Assert lock
+release after success, ordinary error, and trapped `TERM`. Pre-existing declared-output rollback
+tests record inode identity as well as checksums or symlink targets and verify complete stage and
+invocation-created-directory cleanup.
 
 ## Version-metadata removal
 

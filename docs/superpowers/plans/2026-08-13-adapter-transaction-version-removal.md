@@ -4,7 +4,7 @@
 
 **Goal:** Close the adapters' post-publication rollback race and remove per-file version metadata and drift enforcement from the standard.
 
-**Architecture:** Each adapter stages outputs on the destination filesystem, records the staged inode before publication, and uses inode identity to roll back only artifacts created by that invocation after ordinary errors or trapped signals. Standard files carry no version field; Git history is the only evolution record and adapters derive only canonical name and description.
+**Architecture:** Claude and Codex serialize cooperating installations through one target-local owner-token lock. Each adapter stages outputs on the destination filesystem, records the staged inode before publication, and uses inode identity to roll back only artifacts whose invocation-owned inode is visible when cleanup verifies the destination after ordinary errors or trapped signals. Standard files carry no version field; Git history is the only evolution record and adapters derive only canonical name and description.
 
 **Tech Stack:** Bash compatible with the repository's macOS assumptions, awk, `ls -di`, same-filesystem `mv`, Markdown, Make, Git.
 
@@ -12,8 +12,9 @@
 
 - This plan supersedes only the direct-copy/publication details and every version-stamp requirement in `docs/superpowers/plans/2026-08-13-contract-harmonization.md`.
 - Preserve all other approved policy, ownership, adapter, reference, and test behavior.
-- Rollback may remove a destination only when inode identity proves it is the exact staged artifact published by the failing invocation.
-- Preserve every pre-existing output and any destination concurrently replaced with a different inode.
+- Rollback may remove a destination only when the invocation-owned inode is visible when cleanup verifies that destination. Do not claim atomic protection from adversarial out-of-band replacement between inode check and unlink.
+- Preserve every pre-existing output and every destination whose inode does not match at cleanup verification.
+- Both adapters acquire the same target-local owner-token lock before output-parent creation or staging. Preserve and report live or unverifiable locks; reclaim only a verifiably stale token; release only a lock whose current token belongs to the invocation.
 - Reject symlinked output parents and generated-profile leaf symlinks; permit only the exact Claude policy alias `CLAUDE.md -> AGENTS.md`.
 - Stage each output on its destination filesystem and publish it by same-filesystem atomic rename.
 - Arm rollback before the first publish and disarm it only after all declared outputs publish successfully.
@@ -116,8 +117,14 @@ git commit -m "docs: remove per-file version metadata"
 - Modify: `tests/adapter_test.sh`
 
 **Interfaces:**
-- Consumes: staged artifact paths and destination paths already validated by each adapter
-- Produces: `inode_of PATH`, `remove_if_owned DESTINATION EXPECTED_INODE`, pre-publication ownership inode variables, and rollback-safe publication for every new declared output
+- Consumes: a canonical target, the shared adapter-lock path, and staged artifact/destination paths
+- Produces: serialized cooperating adapter runs, `inode_of PATH`, `remove_if_owned DESTINATION EXPECTED_INODE`, pre-publication ownership inode variables, and rollback-safe publication for every new declared output within the narrowed cleanup-verification guarantee
+
+- [ ] **Step 0: Serialize cooperating adapter installations**
+
+Use the same target-local lock path in both adapters. Acquire it atomically before output-parent creation or staging. Record the owner as a portable PID-and-adapter token. A live or unverifiable token fails with a clear contention diagnostic and remains untouched. A verifiably dead PID token may be removed only after re-reading the same token. Cleanup on success, ordinary error, or trapped signal removes the lock only when its current token still equals this invocation's token.
+
+Add focused tests that hold one adapter after lock acquisition, run the other against the same target, require a contention marker/diagnostic and nonzero status, and prove that the contender did not remove the live owner's lock. Cover stale-token recovery, unverifiable-token preservation, and lock release on success, error, and trapped `TERM`.
 
 - [ ] **Step 1: Add effect-then-fail and trapped-signal tests**
 
@@ -190,7 +197,9 @@ if ((transaction_complete == 0)); then
 fi
 ```
 
-Then remove any remaining stage files/staging directory and only `rmdir` invocation-created empty parents. Keep `trap - EXIT HUP INT TERM` and `set +e` at cleanup entry. Set `transaction_complete=1` only after the final publish succeeds.
+Then remove any remaining stage files/staging directory, only `rmdir` invocation-created empty parents, and release only this invocation's still-matching lock token. Keep `trap - EXIT HUP INT TERM` and `set +e` at cleanup entry. Set `transaction_complete=1` only after the final publish succeeds.
+
+The inode comparison and unlink are separate operations. The implementation and report must state that rollback removes only an invocation-owned inode visible at cleanup verification and does not promise atomic safety against an adversarial replacement between those operations. The shared lock eliminates that interleaving only for cooperating adapter invocations.
 
 - [ ] **Step 6: Run focused tests to GREEN**
 
@@ -201,7 +210,7 @@ bash -n adapters/claude-code.sh adapters/codex.sh tests/adapter_test.sh
 bash tests/adapter_test.sh
 ```
 
-Expected: all adapter tests pass, including exact marker/count assertions, post-effect failure rollback, trapped-signal rollback, pre-effect failure, parent/leaf symlinks, paths with spaces, customized preservation, exact reruns, and clean staging.
+Expected: all adapter tests pass, including shared-lock contention and lifecycle, exact marker/count assertions, post-effect failure rollback, trapped-signal rollback, pre-effect failure, pre-existing-output inode preservation, parent/leaf symlinks, paths with spaces, customized preservation, exact reruns, and clean staging/directories.
 
 - [ ] **Step 7: Run full verification and commit**
 
