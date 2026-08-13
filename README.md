@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.12 -->
+<!-- standard_version: 2026.08.13 -->
 
 # research-repo-standard
 
@@ -23,6 +23,7 @@ through the skill when needed.
 
 ```text
 AGENTS.md                  standard vendored into research repositories
+Makefile                   source-repo help/test/format wrapper
 SKILL.md                   skill entry point for bootstrap and on-demand guidance
 references/
   analysis.md              analysis planning, reporting, and critique
@@ -40,6 +41,8 @@ tests/
 adapters/                  installs optional host integration
 vendor.sh                  copies only AGENTS.md into a target repository
 ```
+
+This is not the generated-repository workflow interface.
 
 ## Vendor into a project
 

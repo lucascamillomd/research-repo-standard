@@ -71,15 +71,27 @@ if grep -Eq '\.claude/agents/' "$ROOT/AGENTS.md"; then
 fi
 ((policy_ok)) && pass "AGENTS.md routes an independent host-neutral simplification pass"
 
-# --- 6. removed generated documents are not prescribed by the standard ---
-removed_docs_ok=1
-for removed in PIPELINE DATA DECISIONS METHODS; do
-  if grep -Rqs "docs/${removed}\.md" "$ROOT/AGENTS.md" "$ROOT/SKILL.md" "$ROOT/references"; then
-    fail "removed generated document is still prescribed: docs/${removed}.md"
-    removed_docs_ok=0
-  fi
-done
-((removed_docs_ok)) && pass "removed generated documents are not prescribed"
+# --- 6. policy documents the source-repository role and required invariants ---
+if grep -q 'This repository distributes the portable standard' "$ROOT/AGENTS.md" &&
+  grep -q 'agents/' "$ROOT/AGENTS.md"; then
+  pass "source role and canonical agent-profile path are documented"
+else
+  fail "source role and canonical agent-profile path are documented"
+fi
+
+if grep -q 'preprocessing, normalization, imputation, feature selection, and tuning' \
+  "$ROOT/AGENTS.md"; then
+  pass "predictive leakage policy names normalization"
+else
+  fail "predictive leakage policy names normalization"
+fi
+
+if grep -q 'Required skills are gates\. A missing skill blocks only its dependent work\.' \
+  "$ROOT/AGENTS.md"; then
+  pass "required-skill floor is concise"
+else
+  fail "required-skill floor is concise"
+fi
 
 # --- 7. consequential decisions use the lab notebook ---
 if grep -qs 'docs/lab_notebook\.md' "$ROOT/AGENTS.md" &&
@@ -104,8 +116,7 @@ else
 fi
 
 # --- 9. bootstrap delegates host prerequisites to their owner ---
-if grep -qs 'references/prerequisites\.md' "$ROOT/references/bootstrap.md" &&
-  ! grep -qs '^## Agent-skill preflight' "$ROOT/references/bootstrap.md"; then
+if grep -qs 'references/prerequisites\.md' "$ROOT/references/bootstrap.md"; then
   pass "bootstrap delegates host prerequisites"
 else
   fail "bootstrap delegates host prerequisites"

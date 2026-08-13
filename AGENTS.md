@@ -1,4 +1,4 @@
-<!-- standard_version: 2026.08.12 -->
+<!-- standard_version: 2026.08.13 -->
 <!-- Source: https://github.com/lucascamillomd/research-repo-standard -->
 
 # Reproducible Research Repository Standard
@@ -8,10 +8,8 @@ is the normative policy regardless of which supported agent host applies it.
 
 ## This repository
 
-_Per-repository section — the only part expected to differ from the source. Replace it._
-
-<!-- What question does this repository answer, and what claim does it support? -->
-<!-- Where should a reader start: README or make help. -->
+This repository distributes the portable standard. Generated-repository rules describe the vendored
+artifact rather than maintenance of this source repository. Start at `README.md` or `make help`.
 
 ## Using this standard
 
@@ -25,7 +23,7 @@ rule in this policy. Invoke that skill by name when you need:
 | the data contract          | registering a dataset, defining a schema, writing validation                                |
 | the configuration contract | classifying settings; changing YAML, loaders, paths, overrides, or configuration provenance |
 | the analysis contract      | planning or reporting a confirmatory analysis                                               |
-| the figure contract        | the contract template and the full QA checklist                                             |
+| the figure contract        | planning a figure, writing plotting code, modifying figure outputs, or performing QA        |
 
 Placeholders (`<repo-name>`, `<package_name>`, `<dataset_id>`, `<figure_id>`) are for substitution.
 Never create a path containing angle brackets.
@@ -84,17 +82,12 @@ and say so rather than working around it.
    nondeterministic.
 7. **Outputs are written transactionally** — build a temporary artifact, validate it, then replace
    the declared destination. A failed run must not leave output that looks complete.
-8. **Required agent workflows are gates.** `superpowers:brainstorming` must be available before any
-   file-changing user-requested modification; `scientific-critical-thinking` and `nature-figure`
-   must be available for the work scoped to them in **Required agent skills**. Invocation follows
-   the modification-gate, bootstrap, and task-specific conditions in this standard. A missing or
-   unverifiable required skill stops the work that depends on it. Do not imitate or replace an
-   unavailable skill.
-9. **Configuration has one owner.** Stable scientific and operational settings live in versioned
-   YAML, never as hidden Python globals or defaults. Derived internal paths stay in `paths.py`;
-   secrets and machine-specific roots stay in environment variables. Unknown, missing, or
-   duplicate-owned values fail before computation; an unrecorded result-affecting override fails
-   provenance verification.
+8. **Required skills are gates. A missing skill blocks only its dependent work.**
+9. **Configuration has one owner.** Stable researcher-editable scientific and operational settings
+   live in versioned YAML, never as hidden Python globals or defaults. Derived internal paths stay
+   in `paths.py`; secrets and machine-specific roots stay in environment variables. Unknown,
+   missing, or duplicate-owned values fail before computation; an unrecorded result-affecting
+   override fails provenance verification.
 
 ## Core principles
 
@@ -121,6 +114,8 @@ and say so rather than working around it.
 ├── .python-version
 ├── .gitignore
 ├── .pre-commit-config.yaml
+├── agents/                       # only when installed by a selected host adapter
+│   └── code-simplifier.md
 ├── config/
 │   ├── datasets.yaml
 │   └── analysis.yaml
@@ -213,8 +208,8 @@ Before implementing a confirmatory analysis, write or update `docs/ANALYSIS_PLAN
 inferential result reports the effect estimate and its unit, an uncertainty interval, the sample
 size and analysis population, the exact test or model, its assumptions and diagnostics, and the
 multiplicity strategy or a justification for its absence. P-values alone are insufficient. For
-predictive work, test that preprocessing, imputation, feature selection, and tuning saw only
-permitted training data.
+predictive work, test that preprocessing, normalization, imputation, feature selection, and tuning
+saw only permitted training data.
 
 An independent critique is required when defining or changing: an estimand, a study design, a
 statistical method or model choice, inclusion or exclusion rules, a missing-data policy, a causal
@@ -223,8 +218,9 @@ decisions. A separate independent review agent applies `scientific-critical-thin
 `k-dense-ai/scientific-agent-skills`) and returns findings without implementing anything. The
 critique is advisory; weigh it against the evidence and the task. It may run concurrently with work
 that does not depend on the judgment under review; only dependent work waits. Routine plumbing does
-not need one. If the critique skill or an independent review agent is unavailable, stop before
-making or implementing the scientific judgment and report the blocker.
+not need one. If the critique skill is missing or cannot be invoked, stop before making or
+implementing the scientific judgment and report the blocker. If an independent review agent is
+unavailable, only the dependent judgment is blocked; unrelated work may continue.
 
 ## Figures
 
@@ -259,13 +255,9 @@ Each runtime has one job. Python does the science. Shell wires up environments a
 stops there — a transformation written in shell is untested and unversioned. Containers exist for
 runtimes uv cannot manage (R, system libraries).
 
-Stages report progress through a logger, never `print()` or `cat()`: `loguru` in Python, the
-`logger` package in R. Each stage configures a console sink and a file sink under `logs/` at entry,
-logs the parameters it resolved, the inputs it read, the outputs it wrote, and every skipped or
-failed unit — enough to tell a long-running stage apart from a hung one, and to reconstruct
-afterwards where a run diverged. Log levels carry meaning: `DEBUG` for developer detail, `INFO` for
-stage progress, `WARNING` for a recoverable deviation a reader must know about, `ERROR` for a unit
-that failed.
+Stages report progress through a logger, never `print()` or `cat()`. Each stage logs the parameters
+it resolved, the inputs it read, the outputs it wrote, and every skipped or failed unit — enough to
+tell a long-running stage apart from a hung one, and to reconstruct afterwards where a run diverged.
 
 Stable researcher-editable values have one versioned YAML owner. Scientific and result-affecting
 settings — seed, thresholds, inclusion rules, transformations, model parameters, and any batch size
@@ -291,13 +283,6 @@ Public functions and classes in `src/` have typed interfaces and Google-style do
 explain scientific meaning, units, ranges, array shapes, dataframe row grain and required columns,
 missing-value behaviour, side effects, and failure conditions. Express types in annotations, not
 prose.
-
-Comments carry what the code cannot: why this approach over the obvious one, which paper or protocol
-a constant comes from, what a caller must know before reaching for a function. They are not a
-line-by-line narration of syntax. A comment that no longer matches the code beneath it is a defect,
-and in scientific code it is the kind that survives review — a reader trusts a stated unit, cohort,
-or assumption over the arithmetic. Update comments and docstrings in the same change as the code
-they describe, or delete them.
 
 Ruff formats and lints; ty type-checks; pre-commit runs the fast hooks. In an established repository
 `pyproject.toml` and `.pre-commit-config.yaml` are the source of truth for their configuration —
@@ -329,13 +314,6 @@ files. Cover transformations and statistics, schemas and data contracts, pipelin
 paths, integration on fixtures, figure source-data and rendering contracts, known analytical
 examples, scientific invariants and boundary cases, deterministic or golden-file outputs, and a
 small end-to-end smoke test.
-
-A test earns its place by naming one behaviour it would catch breaking. Prefer few sharp tests over
-many shallow ones: one end-to-end smoke test tells you the wiring holds and a second one tells you
-nothing, and a suite padded with tests that only assert code ran hides the handful that assert
-science. When behaviour is deleted, delete its tests with it — a test kept to guard a removed
-feature pins an absence in place and misleads the next reader about what the pipeline does. A test
-that reproduces a real defect is always worth writing; a test written to raise a number is not.
 
 Use exact comparison for stable tabular and vector output, and explicit justified tolerances for
 floating point. CI-runnable verification uses fixtures already in the repository or generated during
