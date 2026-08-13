@@ -63,10 +63,21 @@ remove_if_owned() {
   fi
 }
 
+read_adapter_lock_owner() {
+  local owner_byte_count
+  lock_owner_value=""
+  if [[ ! -f "$adapter_lock_owner" || -L "$adapter_lock_owner" ]] ||
+    ! IFS= read -r lock_owner_value < "$adapter_lock_owner"; then
+    return 1
+  fi
+  owner_byte_count="$(LC_ALL=C wc -c < "$adapter_lock_owner" | tr -d '[:space:]')" || return 1
+  [[ "$owner_byte_count" =~ ^[0-9]+$ ]] || return 1
+  ((owner_byte_count == ${#lock_owner_value} + 1))
+}
+
 release_adapter_lock() {
   if ((lock_owned)) && [[ -d "$adapter_lock" && ! -L "$adapter_lock" ]] &&
-    [[ -f "$adapter_lock_owner" && ! -L "$adapter_lock_owner" ]] &&
-    [[ "$(cat "$adapter_lock_owner" 2> /dev/null || true)" == "$lock_token" ]]; then
+    read_adapter_lock_owner && [[ "$lock_owner_value" == "$lock_token" ]]; then
     rm -f "$adapter_lock_owner"
     rmdir "$adapter_lock" 2> /dev/null
   fi
@@ -93,11 +104,11 @@ acquire_adapter_lock() {
   fi
   if ((lock_mkdir_succeeded == 0)); then
     if [[ -L "$adapter_lock" || ! -d "$adapter_lock" ]] ||
-      [[ ! -f "$adapter_lock_owner" || -L "$adapter_lock_owner" ]]; then
+      ! read_adapter_lock_owner; then
       fail "adapter lock requires manual intervention"
     fi
-    existing_lock_token="$(cat "$adapter_lock_owner" 2> /dev/null || true)"
-    if [[ ! "$existing_lock_token" =~ ^([0-9]+):(claude-code\.sh|codex\.sh):[0-9]+-[0-9]+-[0-9]+$ ]]; then
+    existing_lock_token="$lock_owner_value"
+    if [[ ! "$existing_lock_token" =~ ^([1-9][0-9]*):(claude-code\.sh|codex\.sh):[0-9]+-[0-9]+-[0-9]+$ ]]; then
       fail "adapter lock requires manual intervention"
     fi
     existing_lock_pid="${BASH_REMATCH[1]}"
@@ -109,8 +120,7 @@ acquire_adapter_lock() {
   if ! printf '%s\n' "$lock_token" > "$adapter_lock_owner"; then
     fail "failed to write adapter lock owner"
   fi
-  if [[ ! -f "$adapter_lock_owner" || -L "$adapter_lock_owner" ]] ||
-    [[ "$(cat "$adapter_lock_owner" 2> /dev/null || true)" != "$lock_token" ]]; then
+  if ! read_adapter_lock_owner || [[ "$lock_owner_value" != "$lock_token" ]]; then
     fail "failed to verify adapter lock owner"
   fi
   lock_owned=1

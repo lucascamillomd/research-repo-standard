@@ -226,6 +226,46 @@ else
   fail "Adapter releases the second owned lock"
 fi
 
+# Cleanup must preserve an owned lock whose owner bytes change before release.
+changed_owner_target="$tmp/changed owner target"
+mkdir "$changed_owner_target"
+cp "$target/AGENTS.md" "$changed_owner_target/AGENTS.md"
+changed_owner_ready="$tmp/changed-owner-ready"
+changed_owner_release="$tmp/changed-owner-release"
+BLOCK_READY="$changed_owner_ready" BLOCK_RELEASE="$changed_owner_release" REAL_CP="$real_cp" \
+  PATH="$blocking_cp_bin:$PATH" "$ROOT/adapters/codex.sh" "$changed_owner_target" \
+    > "$tmp/changed-owner.out" 2>&1 &
+changed_owner_pid=$!
+changed_owner_lock="$changed_owner_target/.research-repo-standard-adapter.lock"
+changed_owner_file="$changed_owner_lock/owner"
+changed_owner_lock_ready=0
+for ((attempt = 0; attempt < 500; attempt++)); do
+  if [[ -f "$changed_owner_ready" && -f "$changed_owner_file" && ! -L "$changed_owner_lock" ]]; then
+    changed_owner_lock_ready=1
+    break
+  fi
+  sleep 0.01
+done
+changed_owner_token="$(cat "$changed_owner_file" 2> /dev/null || true)"
+printf '\n' >> "$changed_owner_file"
+changed_owner_inode="$(inode_of "$changed_owner_file")"
+changed_owner_checksum="$(cksum "$changed_owner_file")"
+touch "$changed_owner_release"
+changed_owner_status=0
+wait "$changed_owner_pid" || changed_owner_status=$?
+if ((changed_owner_lock_ready)) && [[ "$changed_owner_status" -eq 0 ]] &&
+  [[ "$changed_owner_token" =~ ^${changed_owner_pid}:codex\.sh:[0-9]+-[0-9]+-[0-9]+$ ]] &&
+  [[ -d "$changed_owner_lock" && ! -L "$changed_owner_lock" ]] &&
+  [[ -f "$changed_owner_file" && ! -L "$changed_owner_file" ]] &&
+  [[ "$(inode_of "$changed_owner_file")" == "$changed_owner_inode" ]] &&
+  [[ "$(cksum "$changed_owner_file")" == "$changed_owner_checksum" ]] &&
+  [[ -f "$changed_owner_target/agents/code-simplifier.md" ]] &&
+  [[ -f "$changed_owner_target/.codex/agents/code-simplifier.toml" ]]; then
+  pass "Adapter preserves byte-changed owner state during release"
+else
+  fail "Adapter preserves byte-changed owner state during release"
+fi
+
 # A signal after the exact mkdir effect must wait for creation bookkeeping.
 real_mkdir="$(command -v mkdir)"
 term_mkdir_bin="$tmp/term-mkdir-bin"
@@ -367,12 +407,14 @@ else
   fail "Missing-owner lock retains exact empty directory identity"
 fi
 
-for token_case in numeric-only empty-adapter arbitrary-adapter extra-suffix; do
+for token_case in numeric-only zero-pid leading-zero-pid empty-adapter arbitrary-adapter extra-suffix; do
   malformed_target="$tmp/malformed-$token_case-target"
   mkdir -p "$malformed_target/.research-repo-standard-adapter.lock"
   cp "$target/AGENTS.md" "$malformed_target/AGENTS.md"
   case "$token_case" in
     numeric-only) malformed_token='12345' ;;
+    zero-pid) malformed_token='0:claude-code.sh:123-456-789' ;;
+    leading-zero-pid) malformed_token="0$$:claude-code.sh:123-456-789" ;;
     empty-adapter) malformed_token="$$::123-456-789" ;;
     arbitrary-adapter) malformed_token="$$:other.sh:123-456-789" ;;
     extra-suffix) malformed_token="$$:claude-code.sh:123-456-789:extra" ;;
