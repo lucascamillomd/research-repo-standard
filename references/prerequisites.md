@@ -76,9 +76,9 @@ repository instructions and task scope through the host's supported delegation m
 delegate must report what it resolved and from which source; the parent must not infer resolution
 from its own environment.
 
-If the parent resolves a capability but the delegate cannot, dependent review remains blocked.
-Report that delegated-resolution boundary instead of replacing the independent review with a
-self-review.
+If the parent resolves a capability but the delegate cannot, dependent review remains blocked unless
+the user explicitly waives or defers it, in which case record the waiver and its scope. Report that
+delegated-resolution boundary instead of replacing the independent review with a self-review.
 
 ## Selected-host smoke test
 

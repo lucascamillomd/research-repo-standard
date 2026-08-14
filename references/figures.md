@@ -33,6 +33,12 @@ grid, schematic-led composite, image plate plus quantification, or asymmetric mi
 The panel map identifies atomic panels by semantic asset names. It may record provisional manuscript
 letters separately, but those letters never become part of the atomic asset names or renders.
 
+A figure produced from repository data is figure work regardless of framing. "Exploratory", "quick",
+"draft", or a deadline changes how fast this contract is approved, not whether the contract, the
+traceable source data, the four required export formats, and the rendered SVG and PDF inspection
+happen. Deferring publication polish — journal sizing, final typography, assembly — is a user scope
+decision only after the contract records it and the editable exports still exist.
+
 ## Python implementation and source data
 
 Python is the plotting backend. Do not switch languages or render a fallback preview in another

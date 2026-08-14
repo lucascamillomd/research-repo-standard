@@ -33,8 +33,10 @@ alone is not resolution. Do not silently install, imitate, or substitute a requi
 or unverifiable skill blocks only the work that depends on it. Load `references/prerequisites.md`
 when resolution, installation, recovery, or host verification is in scope.
 
-Classify every requested file modification into one path. Ceremony scales with what the change can
-break, so when the path is unclear, use the next stricter one.
+Classify every requested file modification into one path by what the change means scientifically,
+not by which file carries the edit: a configuration value that changes an estimand, an inclusion or
+exclusion rule, or a missing-data policy is a design-level change. Ceremony scales with what the
+change can break, so when uncertain, use the full gate.
 
 - **Full gate:** Design-level changes — estimands, study design, statistical methodology, inclusion
   or exclusion rules, missing-data policy, causal interpretation, data contracts, pipeline
@@ -43,10 +45,9 @@ break, so when the path is unclear, use the next stricter one.
   and delegated implementation inherits the completed gate; reopen it at design if scope expands.
 - **Standard gate:** Result-affecting changes below design level, such as analysis configuration
   values, figure changes, and feature additions within the already approved design. Obtain explicit
-  authorization for the change and append the decision, rationale, and authorization source to
-  `docs/lab_notebook.md` before the results are presented. Cover the change with tests. No
-  specification or plan artifact is required; escalate to the full gate the moment a design-level
-  item is in play.
+  authorization for the change and append to `docs/lab_notebook.md` the entry described under
+  Governed work before the results are presented. Cover the change with tests. No specification or
+  plan artifact is required; escalate to the full gate the moment a design-level item is in play.
 - **Light path:** Mechanical, non-result-affecting changes such as documentation, comments,
   formatting, behavior-preserving renames or tested refactors, and tests that do not change
   behavior. State the intent, files, and why the change is non-result-affecting; obtain one
@@ -85,12 +86,15 @@ blocker rather than weakening one.
 5. **No silent complete-case filtering.** Report missingness before exclusions or imputation.
    Inclusion and exclusion criteria are code, not prose.
 6. **Randomness is declared, never invented.** When randomness is unavoidable, the seed is explicit,
-   recorded configuration — Seed 42 — and never invented for a deterministic workflow.
+   recorded configuration — Seed 42 — and never invented for a deterministic workflow. Prefer
+   deterministic algorithms when scientifically equivalent, and declare nondeterministic boundaries
+   honestly.
 7. **Outputs are written transactionally.** Build a temporary artifact, validate it, and only then
    replace the declared destination. A failed run must not leave output that looks complete.
 8. **Configuration has one owner.** Every result-affecting setting has exactly one declared owner.
    Unknown, missing, duplicate-owned, or unrecorded result-affecting values fail loudly before
-   computation rather than defaulting silently.
+   computation rather than defaulting silently, and a result-affecting value is never hidden in a
+   code default.
 
 ## Bootstrapping sequence
 
@@ -101,9 +105,8 @@ blocker rather than weakening one.
    do not silently choose a Python version, seed, adapter, license, or scientific default. When the
    user explicitly asks for brevity, the mechanical topics — Python minor, host adapter, license —
    may be presented together as concrete proposed defaults that still require explicit confirmation.
-   The scientific topics — identity and purpose, question and claim, status, data and access,
-   workflow stages, outputs, boundaries, and journal — stay one at a time. Nothing is ever chosen
-   silently.
+   Batching is permitted for those three topics only; every other numbered topic below stays one at
+   a time. Nothing is ever chosen silently.
 3. **Design with the full gate.** Invoke `superpowers:brainstorming`, explore alternatives, and keep
    implementation blocked while the design is unsettled.
 4. **Critique the science independently.** Launch a separate review agent that applies
@@ -130,7 +133,7 @@ blocker rather than weakening one.
 
 ### Interview
 
-Ask these one at a time:
+Ask these, following the cadence rules in step 2:
 
 1. What is the project identity and purpose?
 2. What is the primary research question and intended scientific claim?
@@ -202,9 +205,17 @@ Do not avoid a contract through narrower task wording.
 
 Obtain authorization before any design-level change listed under the full gate above. Before results
 are presented, append the decision, rationale and evidence, authorization source, affected work, and
-any superseded entry to `docs/lab_notebook.md`. A separate review agent must apply
-`scientific-critical-thinking` to those scientific judgments and return findings without
-implementing them.
+any superseded entry to `docs/lab_notebook.md`; that entry field set is the one the standard gate
+above refers to. Before presenting results affected by a changed analysis decision, amend
+`docs/ANALYSIS_PLAN.md` as `references/analysis.md` prescribes and label the change's post hoc
+status honestly.
+
+Work that depends on a scientific judgment under review waits for an independent critique at every
+gate, not only at design level: a separate review agent must apply `scientific-critical-thinking` to
+that judgment and return findings without implementing them before dependent results are presented.
+Standard-gate changes that embody a scientific judgment — covariate sets, thresholds, model settings
+— are included. Batching one critique per coherent batch of decisions follows
+`references/analysis.md`.
 
 Keep changes narrow and follow the repository's declared interfaces. Tests and documentation change
 with behavior. Validate inputs before expensive computation, keep raw data immutable, and write
@@ -220,10 +231,10 @@ After changing code or tests, launch an independent review agent through the cur
 after every individual edit, so review effort tracks the change rather than the edit count. It must
 invoke this skill, load the references relevant to the changed code, preserve behavior, and return
 or apply only simplifications within the approved scope. Re-run covering tests after any simplifier
-edit. If the profile cannot be resolved or an independent agent cannot be launched, dependent
-completion is blocked by default; the user may explicitly waive or defer the pass, in which case
-record the waiver and its scope in the completion report so it is never silent. A self-pass never
-substitutes for the independent review.
+edit. Only when the profile cannot be resolved or an independent agent cannot be launched may the
+user explicitly waive or defer the pass; dependent completion is otherwise blocked, and the waiver
+and its scope are recorded in the completion report so it is never silent. This is not a general
+opt-out, and a self-pass never substitutes for the independent review.
 
 Before inspecting the delegated diff, the reviewer reports this additional resolution record:
 
@@ -242,4 +253,5 @@ inputs and unrelated work are unchanged.
 Report what changed, what was verified, what was skipped and why, and every manual or inaccessible
 reproducibility boundary. Do not claim a selected host integration is complete without the real
 resolver smoke test required above. Do not claim the work complete while a required critique,
-simplification pass, artifact inspection, or verification gate remains unresolved.
+simplification pass, artifact inspection, or verification gate remains unresolved and not explicitly
+waived and recorded.

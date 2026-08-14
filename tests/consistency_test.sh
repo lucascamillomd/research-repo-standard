@@ -82,6 +82,9 @@ grep -Eqi 'result-affecting setting[^.]*one[^.]*owner|one[^.]*owner[^.]*result-a
 grep -Fq 'before computation' <<< "$safety_floor_text" || safety_floor_ok=0
 grep -Eqi 'Seed 42' <<< "$safety_floor_text" || safety_floor_ok=0
 grep -Eqi 'deterministic' <<< "$safety_floor_text" || safety_floor_ok=0
+# the nondeterminism and hidden-default invariants stay in the floor itself
+grep -Eqi 'nondeterministic boundaries' <<< "$safety_floor_text" || safety_floor_ok=0
+grep -Eqi 'never hidden in a code default' <<< "$safety_floor_text" || safety_floor_ok=0
 # ownership bucket mechanics belong to references/configuration.md, not the floor
 if grep -Eq 'paths\.py|versioned YAML|environment variable' <<< "$safety_floor_text"; then
   safety_floor_ok=0
@@ -152,8 +155,11 @@ grep -Eqi 'design-level' <<< "$gate_text" || gate_ok=0
 for design_item in 'estimand' 'study design' 'data contract' 'pipeline structure' 'claim scope'; do
   grep -Fqi "$design_item" <<< "$gate_text" || gate_ok=0
 done
-# an unclear classification escalates upward rather than defaulting to the loosest path
-grep -Eqi 'stricter' <<< "$gate_text" || gate_ok=0
+# an uncertain classification resolves to the full gate rather than the loosest path
+grep -Eqi 'when uncertain[^.]*full gate' <<< "$gate_text" || gate_ok=0
+# classification keys to scientific meaning, not to which file carries the edit
+grep -Eqi 'not by which file' <<< "$gate_text" || gate_ok=0
+grep -Eqi 'configuration value that changes an estimand' <<< "$gate_text" || gate_ok=0
 standard_gate_text="$(awk '
     /^- \*\*Standard gate:\*\*/ { capture = 1; print; next }
     capture && /^- \*\*/ { exit }
@@ -162,6 +168,11 @@ standard_gate_text="$(awk '
 grep -Eqi 'authoriz' <<< "$standard_gate_text" || gate_ok=0
 grep -Fq 'docs/lab_notebook.md' <<< "$standard_gate_text" || gate_ok=0
 grep -Eqi 'test' <<< "$standard_gate_text" || gate_ok=0
+# governed work owns the entry field set; the standard-gate bullet only points at it
+grep -Eqi 'described under Governed work' <<< "$standard_gate_text" || gate_ok=0
+if grep -Eqi 'rationale[^.]*authorization source' <<< "$standard_gate_text"; then
+  gate_ok=0
+fi
 # the middle notch deliberately carries no specification or plan ceremony
 grep -Eqi 'no specification|without a specification|no plan|without a plan' \
   <<< "$standard_gate_text" || gate_ok=0
@@ -194,6 +205,9 @@ grep -Eqi 'mechanical' <<< "$bootstrap_step_two" || proportion_ok=0
 grep -Eqi 'explicit confirmation' <<< "$bootstrap_step_two" || proportion_ok=0
 grep -Eqi 'one at a time' <<< "$bootstrap_step_two" || proportion_ok=0
 grep -Eqi 'silent' <<< "$bootstrap_step_two" || proportion_ok=0
+# batching covers those three mechanical topics and nothing else
+grep -Eqi 'those three topics only' <<< "$bootstrap_step_two" || proportion_ok=0
+grep -Eqi 'every other numbered topic' <<< "$bootstrap_step_two" || proportion_ok=0
 # the scenario rubric must score the same relaxed cadence, not the old never-bundle rule
 scenario_c_rubric="$(awk '
     /^## Scenario C — deterministic bootstrap$/ { found = 1 }
@@ -209,6 +223,33 @@ if ((proportion_ok)); then
   pass "simplifier review batches per unit of work and brevity relaxes only mechanical interview topics"
 else
   fail "simplifier review must batch with a recorded waiver and brevity must batch only mechanical interview topics"
+fi
+
+# --- 3ca. critique, plan amendment, and the scoped simplifier waiver ---
+governed_section="$(awk '
+    /^## Governed work$/ { capture = 1; next }
+    capture && /^## Completion$/ { exit }
+    capture { print }
+' "$ROOT/SKILL.md")"
+governed_text="$(tr '\n' ' ' <<< "$governed_section" | tr -s '[:space:]' ' ')"
+governed_ok=1
+# the critique keys to dependent scientific judgment at every gate, not only design level
+grep -Eqi 'depends on a scientific judgment under review' <<< "$governed_text" || governed_ok=0
+grep -Eqi 'not only at design level' <<< "$governed_text" || governed_ok=0
+grep -Eqi 'covariate sets, thresholds, model settings' <<< "$governed_text" || governed_ok=0
+# the analysis plan is amended before affected results are presented
+grep -Fq 'docs/ANALYSIS_PLAN.md' <<< "$governed_text" || governed_ok=0
+grep -Eqi 'post hoc status' <<< "$governed_text" || governed_ok=0
+grep -Fq 'references/analysis.md' <<< "$governed_text" || governed_ok=0
+# the simplifier waiver applies only when resolution or delegation actually fails
+grep -Eqi 'only when the profile cannot be resolved' <<< "$governed_text" || governed_ok=0
+grep -Eqi 'not a general opt-out' <<< "$governed_text" || governed_ok=0
+grep -Eqi 'waived and recorded' <<< "$skill_text" || governed_ok=0
+grep -Eqi 'waives or defers' "$ROOT/references/prerequisites.md" || governed_ok=0
+if ((governed_ok)); then
+  pass "governed work critiques dependent judgments, amends the plan, and scopes the waiver"
+else
+  fail "governed work must critique every dependent scientific judgment, amend the analysis plan, and allow the waiver only on a resolution failure"
 fi
 
 # --- 3d. adoption mode assesses an existing repository before changing it ---
@@ -422,6 +463,8 @@ interview_section="$(awk '
 for required in 'Python minor' 'host adapter'; do
   grep -Fq "$required" <<< "$interview_section" || bootstrap_contract_ok=0
 done
+# the question list defers cadence to the bootstrapping step rather than stating a second rule
+grep -Eqi 'cadence rules in step 2' <<< "$interview_section" || bootstrap_contract_ok=0
 # the scientific topics stay separately numbered questions, whatever their wording
 for numbered_topic in \
   '^[0-9]+\. [^?]*identity' \
@@ -604,6 +647,10 @@ figures_contract_ok=1
 grep -Eqi 'visually inspect[^.]*SVG[^.]*PDF' <<< "$figures_text" || figures_contract_ok=0
 grep -Fq 'nature-figure' <<< "$figures_text" || figures_contract_ok=0
 grep -Eqi 'before planning a figure' <<< "$figures_text" || figures_contract_ok=0
+# exploratory or deadline framing changes approval speed, not the required contract and exports
+grep -Eqi 'figure work regardless of framing' <<< "$figures_text" || figures_contract_ok=0
+grep -Eqi 'exploratory' <<< "$figures_text" || figures_contract_ok=0
+grep -Eqi 'four required export formats' <<< "$figures_text" || figures_contract_ok=0
 # the obligation stays prose; no echoed preflight template
 if grep -Eqi 'Figure contract source loaded|Figure skill invoked' <<< "$figures_text"; then
   figures_contract_ok=0
