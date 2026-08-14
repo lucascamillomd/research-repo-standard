@@ -567,9 +567,13 @@ bash tests/adapter_test.sh
 bash tests/adapter_safety_test.sh
 ```
 
-Expected: both exit nonzero. Normal tests name the old vendoring/multi-output behavior. Safety tests
-must prove each marker was reached; a generic early abort or missing marker is a test defect, not RED
-evidence.
+Expected: both exit nonzero and prove that the obsolete vendoring, multi-output, shared-transaction,
+and old-profile architecture fails for the intended behavioral reasons. RED does not require exact
+markers or effects from the future single-file staging and publication transitions because those
+transitions do not exist in the old runtime. After implementation, GREEN must prove every specified
+fault transition was reached: each case requires its exact operation marker, count, recorded adapter
+PID, source and destination or operation-specific path, wrapper status, applicable effect inode, and
+artifact assertions. A generic early abort is never GREEN evidence.
 
 - [ ] **Step 3: Create the renamed canonical profile**
 
