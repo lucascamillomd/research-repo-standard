@@ -69,6 +69,19 @@ else
   fail "SKILL.md must own every normative heading, safety invariant, and required skill"
 fi
 
+safety_floor_section="$(awk '
+    /^## Safety floor$/ { capture = 1; next }
+    capture && /^## Bootstrapping sequence$/ { exit }
+    capture { print }
+' "$ROOT/SKILL.md")"
+safety_floor_text="$(tr '\n' ' ' <<< "$safety_floor_section" | tr -s '[:space:]' ' ')"
+if grep -Fq 'Stable researcher-editable scientific and operational settings live in versioned YAML' \
+  <<< "$safety_floor_text"; then
+  pass "safety floor assigns stable scientific and operational settings to versioned YAML"
+else
+  fail "safety floor must assign stable scientific and operational settings to versioned YAML"
+fi
+
 skill_text="$(tr '\n' ' ' < "$ROOT/SKILL.md" | tr -s '[:space:]' ' ')"
 routing_ok=1
 for trigger in \
@@ -305,6 +318,25 @@ else
   fail "bootstrap interview, placeholders, and runtime contracts are explicit"
 fi
 
+stage_logging_section="$(awk '
+    /^## Stage logging$/ { capture = 1; next }
+    capture && /^## / { exit }
+    capture { print }
+' "$ROOT/references/bootstrap.md")"
+stage_logging_text="$(tr '\n' ' ' <<< "$stage_logging_section" | tr -s '[:space:]' ' ')"
+logging_ownership_ok=1
+grep -Fq 'stage_config.log_level' <<< "$stage_logging_section" || logging_ownership_ok=0
+grep -Eqi 'validated.*passed explicitly|passed explicitly.*validated' \
+  <<< "$stage_logging_text" || logging_ownership_ok=0
+if grep -Fq 'os.environ.get("LOG_LEVEL"' <<< "$stage_logging_section"; then
+  logging_ownership_ok=0
+fi
+if ((logging_ownership_ok)); then
+  pass "bootstrap logging receives its classified operational setting explicitly"
+else
+  fail "bootstrap logging must not create an environment-owned operational setting"
+fi
+
 # --- 10. final-review ownership corrections remain aligned ---
 final_review_contract_ok=1
 if grep -Fq 'stop before repository mutations' "$ROOT/references/prerequisites.md"; then
@@ -443,10 +475,26 @@ else
   fail "simplifier profile must delegate configuration and test-naming grammar to repository authorities"
 fi
 
-# --- 14. delegated simplifier resolution is explicit and host-native ---
+# --- 14. governed work and delegated simplification resolve exact identities ---
+governed_resolution_ok=1
+governed_record="$(awk '
+    /^### Governed-work invocation record$/ { found = 1; next }
+    found && /^```text$/ { capture = 1; next }
+    capture && /^```$/ { exit }
+    capture { print }
+' "$ROOT/SKILL.md")"
+grep -Fqx \
+  'Standard skill: exact research-repo-standard; host-native resolver; source provenance; invoked' \
+  <<< "$governed_record" || governed_resolution_ok=0
+if ((governed_resolution_ok)); then
+  pass "governed work records exact standard resolution and invocation before classification"
+else
+  fail "governed work must record exact standard resolution and invocation before classification"
+fi
+
 simplifier_resolution_ok=1
 simplifier_record="$(awk '
-    /^Before inspecting the delegated diff, the reviewer reports this resolution record:$/ {
+    /^Before inspecting the delegated diff, the reviewer reports this additional resolution record:$/ {
       found = 1
       next
     }
@@ -455,15 +503,13 @@ simplifier_record="$(awk '
     capture { print }
 ' "$ROOT/SKILL.md")"
 simplifier_record_text="$(tr '\n' ' ' <<< "$simplifier_record" | tr -s '[:space:]' ' ')"
-for required in \
-  'Standard skill: exact research-repo-standard; host-native resolver; source provenance; invoked' \
-  'Simplifier profile: exact research-code-simplifier; host-native resolver; resolved profile path; invoked'; do
-  grep -Fq "$required" <<< "$simplifier_record_text" || simplifier_resolution_ok=0
-done
+grep -Fq \
+  'Simplifier profile: exact research-code-simplifier; host-native resolver; resolved profile path; invoked' \
+  <<< "$simplifier_record_text" || simplifier_resolution_ok=0
 if ((simplifier_resolution_ok)); then
-  pass "delegated simplifier records exact host-native resolution and invocation"
+  pass "delegated simplifier adds exact host-native profile resolution and invocation"
 else
-  fail "delegated simplifier must record exact host-native resolution and invocation"
+  fail "delegated simplifier must add exact host-native profile resolution and invocation"
 fi
 
 # --- final ---

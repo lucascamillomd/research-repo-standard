@@ -131,12 +131,15 @@ removes the default sink and installs one console sink and one file sink under `
 
 ```python
 logger.remove()
-logger.add(sys.stderr, level=os.environ.get("LOG_LEVEL", "INFO"))
+logger.add(sys.stderr, level=stage_config.log_level)
 logger.add(paths.LOGS / "02_fit_{time}.log", level="DEBUG", rotation="20 MB")
 ```
 
-`LOG_LEVEL` is operational and may control verbosity; it never carries a scientific setting. Each
-stage logs resolved parameters, read inputs, written outputs, and skipped or failed units.
+`stage_config.log_level` is a stable operational setting owned by `config/analysis.yaml`. The
+validated value is passed explicitly after the entry point's single configuration load. When
+verbosity is genuine invocation-time variation, expose only a declared, validated CLI override and
+compose it through the same loader; never source logging verbosity from the environment. Each stage
+logs resolved parameters, read inputs, written outputs, and skipped or failed units.
 
 ## Ruff and type checking
 

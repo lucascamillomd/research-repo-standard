@@ -82,11 +82,12 @@ blocker rather than weakening one.
 7. **Outputs are written transactionally.** Build a temporary artifact, validate it, and only then
    replace the declared destination. A failed run must not leave output that looks complete.
 8. **Required skills are gates.** A missing skill blocks only its dependent work.
-9. **Configuration has one owner.** Stable researcher-editable scientific or result-affecting
-   settings live in versioned YAML, never hidden Python globals or defaults. Derived internal paths
-   stay in `paths.py`; secrets and machine-specific roots stay in environment variables. Unknown,
-   missing, or duplicate-owned values fail before computation, and an unrecorded result-affecting
-   override fails provenance verification. Non-setting implementation constants remain in code.
+9. **Configuration has one owner.** Stable researcher-editable scientific and operational settings
+   live in versioned YAML, including every result-affecting setting, and never in hidden Python
+   globals or defaults. Derived internal paths stay in `paths.py`; secrets and machine-specific
+   roots stay in environment variables. Unknown, missing, or duplicate-owned values fail before
+   computation, and an unrecorded result-affecting override fails provenance verification.
+   Non-setting implementation constants remain in code.
 
 ## Bootstrapping sequence
 
@@ -174,6 +175,16 @@ Assumptions and boundaries: every remaining assumption and manual or external bo
 
 ## Governed work
 
+### Governed-work invocation record
+
+Before classifying or changing a governed repository, resolve and invoke this skill by exact name
+through the host-native resolver. A prompt or repository that merely names the skill, and a file on
+disk, are not resolution or invocation evidence. Report:
+
+```text
+Standard skill: exact research-repo-standard; host-native resolver; source provenance; invoked
+```
+
 Before changing anything, discover and read the local instructions that apply from the repository
 root through the files in scope. Read the README, relevant project documents and configuration,
 nearby tests, and `git status`. Identify the scientific claim, pipeline stage, inputs, outputs, and
@@ -206,10 +217,9 @@ Re-run covering tests after any simplifier edit. If the profile cannot be resolv
 agent cannot be launched, dependent completion is blocked; do not substitute an unreviewed
 self-pass.
 
-Before inspecting the delegated diff, the reviewer reports this resolution record:
+Before inspecting the delegated diff, the reviewer reports this additional resolution record:
 
 ```text
-Standard skill: exact research-repo-standard; host-native resolver; source provenance; invoked
 Simplifier profile: exact research-code-simplifier; host-native resolver; resolved profile path;
 invoked
 ```
