@@ -135,14 +135,47 @@ else
   fail "adapter runtime must not contain target-policy or shared-profile logic"
 fi
 
-# --- 6. bootstrap delegates host prerequisites to their owner ---
+# --- 6. live bootstrap and README use the skill-native integration path ---
+integration_docs_ok=1
+readme_text="$(tr '\n' ' ' < "$ROOT/README.md")"
+bootstrap_text="$(tr '\n' ' ' < "$ROOT/references/bootstrap.md")"
+integration_text="$readme_text $bootstrap_text"
+for obsolete in 'vendor.sh' 'tests/vendor_test.sh' 'After core vendoring' '`SKILL.md` steps 7–8'; do
+  if grep -Fq "$obsolete" <<< "$integration_text"; then
+    integration_docs_ok=0
+  fi
+done
+for required in \
+  'Resolve `research-repo-standard` by exact name through the selected host' \
+  './adapters/codex.sh <target-repo>' \
+  './adapters/claude-code.sh <target-repo>' \
+  'host-native smoke test' \
+  'research-code-simplifier'; do
+  grep -Fq "$required" <<< "$readme_text" || integration_docs_ok=0
+done
+for required in \
+  'After the core scaffold is complete' \
+  './adapters/codex.sh <target-repo>' \
+  './adapters/claude-code.sh <target-repo>' \
+  'host-native smoke test' \
+  'research-repo-standard' \
+  'research-code-simplifier'; do
+  grep -Fq "$required" <<< "$bootstrap_text" || integration_docs_ok=0
+done
+if ((integration_docs_ok)); then
+  pass "bootstrap and README expose only the live skill-native integration path"
+else
+  fail "bootstrap and README must resolve the skill, run a direct adapter, and require host smoke testing"
+fi
+
+# --- 7. bootstrap delegates host prerequisites to their owner ---
 if grep -qs 'references/prerequisites\.md' "$ROOT/references/bootstrap.md"; then
   pass "bootstrap delegates host prerequisites"
 else
   fail "bootstrap delegates host prerequisites"
 fi
 
-# --- 7. bootstrap questions and runtime contracts remain explicit ---
+# --- 8. bootstrap questions and runtime contracts remain explicit ---
 bootstrap_contract_ok=1
 interview_section="$(awk '
     /^### Interview$/ { capture = 1; next }
@@ -165,7 +198,7 @@ else
   fail "bootstrap interview, placeholders, and runtime contracts are explicit"
 fi
 
-# --- 8. final-review ownership corrections remain aligned ---
+# --- 9. final-review ownership corrections remain aligned ---
 final_review_contract_ok=1
 if grep -Fq 'stop before repository mutations' "$ROOT/references/prerequisites.md"; then
   final_review_contract_ok=0
@@ -188,7 +221,7 @@ else
   fail "final-review ownership corrections stay aligned"
 fi
 
-# --- 9. detailed figure naming has one canonical owner ---
+# --- 10. detailed figure naming has one canonical owner ---
 figure_owner="$ROOT/references/figures.md"
 if grep -Fqs 'mf1_{short_descriptive_name}' "$figure_owner" &&
   grep -Fqs 'edf1_{short_descriptive_name}' "$figure_owner" &&
@@ -221,7 +254,7 @@ else
   printf '%s\n' "$figure_duplicates"
 fi
 
-# --- 10. simplifier profile delegates naming and configuration policy ---
+# --- 11. simplifier profile delegates naming and configuration policy ---
 if ! grep -Eq 'config/analysis\.yaml|random_seed:|test_[a-z]|datasets\.yaml' \
   "$ROOT/agents/research-code-simplifier.md"; then
   pass "simplifier profile contains no independent configuration or test-naming grammar"
@@ -229,7 +262,7 @@ else
   fail "simplifier profile must delegate configuration and test-naming grammar to repository authorities"
 fi
 
-# --- 11. deterministic workflows do not acquire unused seed settings ---
+# --- 12. deterministic workflows do not acquire unused seed settings ---
 if tr '\n' ' ' < "$ROOT/references/configuration.md" |
   grep -Fqs 'Do not invent a seed field for a fully deterministic workflow.'; then
   pass "configuration forbids unused deterministic-workflow seed fields"

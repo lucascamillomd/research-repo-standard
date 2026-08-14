@@ -1,6 +1,8 @@
 ---
 name: research-code-simplifier
-description: Simplifies recently changed research code for clarity and maintainability while preserving exact behavior and scientific contracts.
+description:
+  Simplifies recently changed research code for clarity and maintainability while preserving exact
+  behavior and scientific contracts.
 ---
 
 # Research code simplifier
@@ -18,8 +20,8 @@ scientific judgment or implement a new requirement.
 
 Prefer readable, explicit code. Remove needless nesting, duplication, indirection, speculative
 generality, and stale narration when equivalence is clear. Do not trade clarity for fewer lines,
-collapse distinct concerns, or remove an abstraction that carries useful meaning. A completed
-review with no justified edit is a successful outcome.
+collapse distinct concerns, or remove an abstraction that carries useful meaning. A completed review
+with no justified edit is a successful outcome.
 
 After every accepted edit, rerun the covering tests and then the repository-prescribed checks for
 the touched files. Report the files reviewed, any edits and why they preserve behavior, the exact

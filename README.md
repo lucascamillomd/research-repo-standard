@@ -9,47 +9,49 @@ The standard has two modes:
 
 - **Bootstrapping:** the `research-repo-standard` skill guides the design and creation of a new
   research repository.
-- **Governance:** an existing repository vendors `AGENTS.md`, the portable governed policy applied
-  by supported agent hosts.
+- **Governed work:** the skill applies modification gates, safety rules, and focused domain
+  references when an agent changes or reviews an existing research repository.
 
-`vendor.sh` writes only `AGENTS.md`. After vendoring, the selected adapter installs the canonical
-simplifier profile and host-specific integration. `SKILL.md` steps 7–8 own core vendoring and
-optional adapter integration. `references/prerequisites.md` owns host skill installation and
-verification only.
+Resolve `research-repo-standard` by exact name through the selected host's native skill listing or
+resolver. File presence alone is not resolution. The installation and recovery procedure lives in
+`references/prerequisites.md`.
+
+After the approved repository scaffold exists, install only the selected host profile directly from
+this source repository:
+
+```bash
+./adapters/codex.sh <target-repo>
+./adapters/claude-code.sh <target-repo>
+```
+
+Run only the command for the selected host. Codex creates
+`.codex/agents/research-code-simplifier.toml`; Claude Code creates
+`.claude/agents/research-code-simplifier.md`. Then run the host-native smoke test required by
+`SKILL.md` to confirm both skill provenance and the `research-code-simplifier` profile.
 
 ## Repository structure
 
 ```text
-AGENTS.md                  standard vendored into research repositories
-Makefile                   source-repo help/test/format wrapper
-SKILL.md                   skill entry point for bootstrap and on-demand guidance
-references/
-  analysis.md              analysis planning, reporting, and critique
-  bootstrap.md             initial tool configuration and scaffolding
-  configuration.md         configuration ownership, loading, and provenance
-  data.md                  data registry, schemas, validation, and dictionaries
-  figures.md               figure contracts, exports, and QA
-  prerequisites.md         required skills, installation, and verification
-agents/
-  code-simplifier.md       post-change simplification agent profile
-tests/
-  consistency_test.sh      checks links and cross-file consistency
-  vendor_test.sh           tests portable vendoring and replacement safety
-  adapter_test.sh          tests optional host integration
-adapters/                  installs optional host integration
-vendor.sh                  copies only AGENTS.md into a target repository
+AGENTS.md                              source-repository maintenance instructions
+Makefile                               source help, format, and test interface
+SKILL.md                               normative skill entry point
+references/                            focused scientific and repository procedures
+agents/research-code-simplifier.md     canonical host-neutral simplifier profile
+adapters/                              direct host-profile installers
+tests/adapter_test.sh                  normal adapter behavior
+tests/adapter_safety_test.sh           adapter fault and cleanup behavior
+tests/consistency_test.sh              documentation and ownership contracts
 ```
 
-This is not the generated-repository workflow interface.
+This is not the generated research-repository workflow interface.
 
-## Vendor into a project
+## Source maintenance
 
 ```bash
-~/research-repo-standard/vendor.sh /path/to/repo
+make help
+make format
+make test
 ```
 
-Then follow `SKILL.md` steps 7–8 to complete the vendored `AGENTS.md` repository section and install
-the selected adapter, if any.
-
-`make test` runs the source-repository vendor, adapter, and consistency checks. `make format` wraps
-the skill Markdown files.
+`make test` runs the adapter, adapter-safety, and consistency suites. `make format` formats the
+owned Markdown sources.

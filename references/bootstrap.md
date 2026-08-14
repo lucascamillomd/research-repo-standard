@@ -181,9 +181,19 @@ Do not create a dedicated R package by default. R code stays minimal and may liv
 
 ## Host adapter integration
 
-Do not copy the canonical simplifier profile during scaffolding. After core vendoring, the selected
-host adapter installs that profile and the host's supported independent-agent integration. When no
-host adapter was selected, install neither.
+Do not copy the canonical simplifier profile during scaffolding. After the core scaffold is
+complete, run exactly one selected host adapter directly from the `research-repo-standard` source:
+
+```bash
+./adapters/codex.sh <target-repo>
+./adapters/claude-code.sh <target-repo>
+```
+
+Run only the command for the host selected during the interview. When no host adapter was selected,
+install neither. After installation, run the required host-native smoke test from
+`references/prerequisites.md`: report the resolved provenance of `research-repo-standard` and
+confirm that `research-code-simplifier` resolves through the expected installed profile. If the
+selected host is unavailable, report that manual boundary rather than simulating the result.
 
 ## README
 
