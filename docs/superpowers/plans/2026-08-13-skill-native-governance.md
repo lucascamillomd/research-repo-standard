@@ -1293,7 +1293,9 @@ canonical_name="$(awk '$1 == "name:" { print $2; exit }' \
   agents/research-code-simplifier.md)"
 canonical_description="$(awk '
   /^description:/ { capture=1; sub(/^description:[[:space:]]*/, ""); text=$0; next }
-  capture && /^[[:space:]]+/ { sub(/^[[:space:]]+/, ""); text=text " " $0; next }
+  capture && /^[[:space:]]+/ {
+    sub(/^[[:space:]]+/, ""); text=text (text == "" ? "" : " ") $0; next
+  }
   capture { exit }
   END { print text }
 ' agents/research-code-simplifier.md)"
