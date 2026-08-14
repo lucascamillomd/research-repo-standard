@@ -221,7 +221,60 @@ else
   fail "final-review ownership corrections stay aligned"
 fi
 
-# --- 10. detailed figure naming has one canonical owner ---
+# --- 10. every reference owns one complete, focused domain contract ---
+if grep -Fq -- '--agent <codex|claude-code>' "$ROOT/references/prerequisites.md"; then
+  pass "prerequisite reference owns the portable selected-host installer form"
+else
+  fail "prerequisite reference must own the portable selected-host installer form"
+fi
+
+if grep -Fq 'src/<package_name>/' "$ROOT/references/bootstrap.md" &&
+  grep -Fq 'uv sync --locked' "$ROOT/references/bootstrap.md" &&
+  grep -Fq 'shortest reproduction path' "$ROOT/references/bootstrap.md"; then
+  pass "bootstrap reference owns scaffold, locked environment, and reproduction guidance"
+else
+  fail "bootstrap reference must own scaffold, locked environment, and reproduction guidance"
+fi
+
+if grep -Fq 'Do not invent a seed field for a fully deterministic workflow.' \
+  "$ROOT/references/configuration.md" &&
+  grep -Fq 'random_seed: 42' "$ROOT/references/configuration.md"; then
+  pass "configuration reference owns deterministic and stochastic seed decisions"
+else
+  fail "configuration reference must own deterministic and stochastic seed decisions"
+fi
+
+if grep -Fq 'SHA-256' "$ROOT/references/data.md" &&
+  grep -Fq 'machine-readable data dictionary' "$ROOT/references/data.md"; then
+  pass "data reference owns checksums and machine-readable dictionaries"
+else
+  fail "data reference must own checksums and machine-readable dictionaries"
+fi
+
+if grep -Fq '## Analysis-plan template' "$ROOT/references/analysis.md"; then
+  pass "analysis reference owns the complete analysis-plan template"
+else
+  fail "analysis reference must own the complete analysis-plan template"
+fi
+
+if grep -Fq 'Open and visually inspect both the rendered SVG and rendered PDF' \
+  "$ROOT/references/figures.md"; then
+  pass "figure reference owns rendered SVG and PDF inspection"
+else
+  fail "figure reference must require rendered SVG and PDF inspection"
+fi
+
+reference_ownership_ok=1
+for reference in "$ROOT"/references/*.md; do
+  if grep -Eqi 'AGENTS\.md owns|procedural expansion|floor items|post-vendor|adapter.*install[^.]*skill|skill.*install[^.]*adapter' \
+    "$reference"; then
+    fail "reference contains deferred ownership or adapter-owned skill installation: ${reference#"$ROOT/"}"
+    reference_ownership_ok=0
+  fi
+done
+((reference_ownership_ok)) && pass "references own focused procedures without deferred policy ownership"
+
+# --- 11. detailed figure naming has one canonical owner ---
 figure_owner="$ROOT/references/figures.md"
 if grep -Fqs 'mf1_{short_descriptive_name}' "$figure_owner" &&
   grep -Fqs 'edf1_{short_descriptive_name}' "$figure_owner" &&
@@ -254,20 +307,12 @@ else
   printf '%s\n' "$figure_duplicates"
 fi
 
-# --- 11. simplifier profile delegates naming and configuration policy ---
+# --- 12. simplifier profile delegates naming and configuration policy ---
 if ! grep -Eq 'config/analysis\.yaml|random_seed:|test_[a-z]|datasets\.yaml' \
   "$ROOT/agents/research-code-simplifier.md"; then
   pass "simplifier profile contains no independent configuration or test-naming grammar"
 else
   fail "simplifier profile must delegate configuration and test-naming grammar to repository authorities"
-fi
-
-# --- 12. deterministic workflows do not acquire unused seed settings ---
-if tr '\n' ' ' < "$ROOT/references/configuration.md" |
-  grep -Fqs 'Do not invent a seed field for a fully deterministic workflow.'; then
-  pass "configuration forbids unused deterministic-workflow seed fields"
-else
-  fail "configuration must forbid unused deterministic-workflow seed fields"
 fi
 
 # --- final ---

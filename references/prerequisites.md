@@ -1,99 +1,98 @@
 # Reference: agent-host prerequisites
 
-This is the authoritative host procedure for resolving and, when a required capability is missing,
-installing this standard and its required skills. Apply it for bootstrap preflight or recovery from
-a missing host capability. These are global agent-environment dependencies, not generated project
-packages or data.
+This procedure covers host-native skill discovery, authorized installation or recovery, source
+provenance, propagation to delegated agents, and the selected-host smoke test. Agent-host
+capabilities are separate from packages installed in a research repository.
 
-## Hard gate
+## Required capabilities
 
-All three skills must resolve by exact name before the bootstrap interview because bootstrap uses
-each one. In an established governed repository the requirement is scoped to the work that depends
-on each skill:
+Resolve these three hard-gate skills by exact name before a bootstrap interview. For governed work,
+resolve each skill before the work that depends on it.
 
-| Skill                          | Authoritative source                                    | Required before                                                              |
-| ------------------------------ | ------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `superpowers:brainstorming`    | <https://github.com/obra/superpowers>                   | Any user-requested modification that creates, edits, moves, or deletes files |
-| `scientific-critical-thinking` | <https://github.com/k-dense-ai/scientific-agent-skills> | Work meeting an independent-critique trigger in the analysis contract        |
-| `nature-figure`                | <https://github.com/Yuan1z0825/nature-skills>           | Work that writes or modifies plotting code or figure outputs                 |
+| Skill                          | Authoritative source                                    |
+| ------------------------------ | ------------------------------------------------------- |
+| `superpowers:brainstorming`    | <https://github.com/obra/superpowers>                   |
+| `scientific-critical-thinking` | <https://github.com/k-dense-ai/scientific-agent-skills> |
+| `nature-figure`                | <https://github.com/Yuan1z0825/nature-skills>           |
 
-A missing skill blocks exactly the work that depends on it and nothing else. If a task's scope
-expands to meet a trigger it did not start with, stop at that point and verify the newly required
-skill before continuing.
+Use the selected host's native skill listing or resolver. The result must contain the exact skill
+name and enough source information to verify that it came from the expected package or repository. A
+file on disk is not resolved, and a directory named after a skill does not prove that the host can
+invoke it. Successful invocation during the required workflow is the functional check.
 
-Executing an already approved workflow solely to regenerate declared outputs is not a new
-modification. Changes to code, configuration, or contracts are modifications.
+Resolve `research-repo-standard` itself by exact name through the same host-native mechanism and
+verify that its reported source or package provenance is the source approved for the project.
 
-Use the agent host's native skill listing or resolver as the lightweight discovery check. It must
-return each exact skill name. A directory or `SKILL.md` file alone does not prove the host can
-resolve the skill. Successful invocation during the required workflow is the functional
-verification.
+Never silently install a skill or change global agent configuration. When a required name or its
+expected provenance cannot be resolved, report the exact name, host, attempted resolver, and result;
+obtain authorization before recovery; and do not imitate or substitute another workflow. A missing
+capability blocks only the dependent work.
 
-Do not install these skills silently or modify global agent configuration without the user's
-authorization. If a skill is missing, stop before mutations that depend on it. Do not substitute
-another workflow for a missing required skill.
+## Authorized installation and recovery
 
-## Resolve this standard
+Use the installation mechanism documented by the authoritative source and selected host. Review a
+third-party package's source and provenance before installation.
 
-In Codex, install or expose this repository as the `research-repo-standard` skill under a discovered
-`.agents/skills/research-repo-standard/` location, then confirm the exact name appears in the host
-skill listing. Codex natively loads governed repository policy from `AGENTS.md`; no `CODEX.md`
-sidecar is used. Official discovery documentation: <https://learn.chatgpt.com/docs/build-skills> and
-<https://learn.chatgpt.com/docs/agent-configuration/agents-md>.
+Superpowers uses the host's plugin marketplace rather than the Agent Skills installer:
 
-In Claude Code, install or expose this repository as the `research-repo-standard` skill under a
-discovered `.claude/skills/research-repo-standard/` location, then confirm the exact name appears in
-the host skill listing. Claude Code can consume governed policy through the optional adapter's
-relative `CLAUDE.md -> AGENTS.md` alias; where symlinks are unavailable, use the documented
-`CLAUDE.md` file containing `@AGENTS.md` instead. Official discovery documentation:
-<https://code.claude.com/docs/en/skills> and <https://code.claude.com/docs/en/memory>.
+- In Codex, open **Plugins** in the Codex app or `/plugins` in Codex CLI, find **Superpowers**, and
+  install it from the Codex plugin marketplace.
+- In Claude Code, install Superpowers from Anthropic's official plugin marketplace with
+  `/plugin install superpowers@claude-plugins-official`.
 
-## Install Superpowers for Codex
-
-Install Superpowers from the Codex plugin marketplace: open **Plugins** in the Codex app, or
-`/plugins` in Codex CLI, search for **Superpowers**, and install it.
-
-## Install Superpowers for Claude Code
-
-Install Superpowers from Anthropic's official plugin marketplace:
+For Agent Skills packages, the documented portable form is:
 
 ```text
-/plugin install superpowers@claude-plugins-official
+npx skills add <package> --agent <codex|claude-code>
 ```
+
+Add `--global`, `--skill <exact-name>`, `--yes`, or `--copy` only when those options match the
+approved scope and the selected host. For the two scientific packages, authorized installations may
+use:
+
+```bash
+npx skills add K-Dense-AI/scientific-agent-skills --global --agent codex --skill scientific-critical-thinking --yes --copy
+npx skills add Yuan1z0825/nature-skills --global --agent codex --skill nature-figure --yes --copy
+```
+
+Replace `codex` with `claude-code` when that is the selected host. The commands require `npx` only
+when this recovery route is chosen; Node.js is not a universal research-repository prerequisite.
+Follow other hosts' authoritative installation instructions rather than guessing an equivalent.
 
 ## Shared planning companion
 
-At planning time, confirm the companion `superpowers:writing-plans` skill resolves from the selected
+At planning time, resolve the optional companion `superpowers:writing-plans` from the selected
 Superpowers installation. It is used after design approval and is not a fourth bootstrap hard gate.
 
-## Install the scientific skills
+After an authorized installation, restart or reload the agent session when the host requires it,
+rerun native discovery, verify the exact name and source provenance, and then resume from the
+blocked step. Do not repeat already approved design work solely because the session changed.
 
-Node.js 18 or later with npm/`npx` is required only when running the Agent Skills installer commands
-below. It is agent-host tooling and is not installed by project uv or Make. Set `agent_host` to the
-current agent host:
+## Delegated-agent propagation
 
-```bash
-agent_host=codex  # use claude-code when that is the selected host
-npx skills add K-Dense-AI/scientific-agent-skills --global --agent $agent_host --skill scientific-critical-thinking --yes --copy
-npx skills add Yuan1z0825/nature-skills --global --agent $agent_host --skill nature-figure --yes --copy
-npx skills list --global --agent $agent_host --json
-```
+Before launching an independent scientific reviewer or simplification reviewer, confirm that the
+delegated context can resolve every exact skill and profile assigned to it. Pass the applicable
+repository instructions and task scope through the host's supported delegation mechanism. The
+delegate must report what it resolved and from which source; the parent must not infer resolution
+from its own environment.
 
-Verify Superpowers through the selected host's plugin resolver or listing. Confirm the two
-scientific skill names in the Agent Skills listing and through the host-native resolver. Review
-third-party skill contents and provenance before installation.
+If the parent resolves a capability but the delegate cannot, dependent review remains blocked.
+Report that delegated-resolution boundary instead of replacing the independent review with a
+self-review.
 
-For other agent hosts, follow the installation instructions in each authoritative source and install
-only the required skill folders.
+## Selected-host smoke test
 
-## Verify and resume
+After the core scaffold and the one selected host integration are complete, run a real smoke test
+through that host. Publishing the delegated profile does not establish any skill's resolution. The
+result must:
 
-1. Restart or reload the agent session as directed by the host.
-2. Use the host-native skill listing or resolver to confirm all three exact names.
-3. Resume bootstrap from its single preflight step. Do not repeat completed design work when only
-   the agent session changed.
-4. Treat the first required invocation of each skill as functional verification.
+1. resolve `research-repo-standard` by exact name and report its resolved source or package
+   provenance;
+2. resolve `research-code-simplifier` through the host and report the expected installed host
+   profile path; and
+3. launch the profile far enough for the delegated reviewer to report that it resolved and invoked
+   `research-repo-standard` from the expected provenance, without requesting an implementation.
 
-If discovery or invocation still fails, report the exact missing name and host, then stop. Do not
-substitute generic brainstorming, informal self-critique, or a plotting workflow that does not use
-`nature-figure`.
+An unavailable host or resolver is a manual verification boundary, not a simulated success. Report
+the unavailable check and use the authorized recovery procedure before claiming that host
+integration is complete.

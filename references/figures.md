@@ -1,13 +1,13 @@
 # Reference: plot and figure contract
 
-`AGENTS.md` supplies normative figure requirements; this reference is the procedural expansion and
-sole owner of detailed atomic asset naming, export paths, assembly conventions, the contract
-template, and the QA checklist. Read this reference before: planning a figure; writing plotting
-code; modifying figure outputs; performing QA.
+This contract owns figure planning, the Python plotting implementation, source data, detailed atomic
+asset naming, export paths, assembly conventions, cross-figure encoding, and rendered-output QA.
+Load it and invoke exact `nature-figure` before planning a figure, writing plotting code, changing
+figure outputs, or performing QA.
 
 ## Pre-plot contract
 
-Record in `docs/FIGURE_CONTRACT.md` **before** writing plotting code:
+Record and approve the following complete template in `docs/FIGURE_CONTRACT.md` before plotting:
 
 ```text
 Figure identifier:
@@ -26,24 +26,38 @@ Reviewer risk:
 Required export formats:
 ```
 
-The core conclusion is one sentence with a verb. Every panel provides a unique piece of evidence —
-remove or merge a panel when hiding it would not weaken the argument. Classify the figure as a
-quantitative grid, schematic-led composite, image plate plus quantification, or asymmetric
-mixed-modality figure.
+The core conclusion is one sentence with a verb. Every panel provides unique evidence; remove or
+merge a panel when hiding it would not weaken the argument. Classify the figure as a quantitative
+grid, schematic-led composite, image plate plus quantification, or asymmetric mixed-modality figure.
 
-The panel map identifies atomic panels by their semantic asset names. It may record provisional
-manuscript letters separately, but those letters never become part of the atomic asset names or
-renders.
+The panel map identifies atomic panels by semantic asset names. It may record provisional manuscript
+letters separately, but those letters never become part of the atomic asset names or renders.
 
-## Atomic panels and source data
+## Python implementation and source data
 
-Publication figures use identifiers such as `main_figure_1` and `extended_data_figure_1`; their
-atomic assets use the corresponding deterministic semantic stems `mf1_{short_descriptive_name}` and
-`edf1_{short_descriptive_name}`. Each panel has an explicit function or specification, is
-independently reproducible, reads a declared validated input, omits manuscript panel letters from
-both filename and rendered plot, exposes the statistics shown, maps to a source-data file, and
-exports without depending on a previously mutated plotting session. Use the same atomic stem for
-SVG, PDF, TIFF, PNG, and the panel's source-data file.
+Python is the plotting backend. Do not switch languages or render a fallback preview in another
+runtime. Implement testable, importable functions under `src/<package_name>/figures/<figure_id>/`;
+keep stage scripts as thin orchestration entry points. Shared style, export, and validation
+utilities live under `src/<package_name>/figures/common/{style,export,validation}.py`.
+
+Each quantitative panel has traceable publication source data under
+`results/source_data/<figure_id>/`. Source data is tidy, documented, sufficient to recreate every
+quantitative mark, and exported as CSV or TSV with a README when interpretation needs explanation.
+
+## Atomic panels and naming
+
+Publication figures use identifiers such as `main_figure_1` and `extended_data_figure_1`. Their
+atomic assets use deterministic semantic stems `mf1_{short_descriptive_name}` and
+`edf1_{short_descriptive_name}`. Each panel:
+
+- has an explicit function or specification;
+- reads a declared, validated input;
+- is independently reproducible without a previously mutated plotting session;
+- exposes the statistics shown and maps to a source-data file;
+- omits manuscript panel letters from its filename and rendered plot; and
+- uses the same atomic stem for SVG, PDF, TIFF, PNG, and its source-data file.
+
+Use the same atomic stem for every format and the corresponding source-data file.
 
 ```text
 results/
@@ -57,52 +71,48 @@ results/
     └── README.md
 ```
 
-Source data is tidy, documented, and sufficient to recreate the quantitative panel.
-
-Assembly, when required, comes after all atomic panel exporters in Stage 07. It consumes existing
-panels and never redraws them or changes their scientific encoding. Panel letters are applied only
-at assembly and must not rename or alter the underlying assets.
+Export and validate atomic panels before assembly. Assembly, when required, runs after all atomic
+panel exporters, consumes existing panels, and never redraws them or changes their scientific
+encoding. Panel letters are applied only at assembly and must not rename or alter the underlying
+assets.
 
 ## Exports
 
-Editable SVG, editable PDF, 600 dpi TIFF, PNG preview. Each format in its own lowercase
+Export editable SVG and PDF, 600 dpi TIFF, and a PNG preview. Put each format in its own lowercase
 extension-named directory: `results/figures/<figure_id>/<format>/<asset>.<format>`. Never place
-exported files directly in `results/figures/<figure_id>/`. Journal-specific requirements may add
-delivery formats but do not remove the editable working exports.
+exports directly in `results/figures/<figure_id>/`. Journal requirements may add delivery formats
+but do not remove the editable working exports.
 
-## Shared style
+## Shared style and cross-figure encoding
 
 Centralize palettes, typography, dimensions, and export defaults in
-`src/<package_name>/figures/common/style.py`; export and validation contracts in the same `common/`
-package.
+`src/<package_name>/figures/common/style.py`. Use editable text in SVG and PDF, a consistent
+sans-serif, restrained semantic color families, non-color encodings wherever color alone may fail,
+no rainbow color maps, direct labels or one shared legend, readable final-size text, minimal
+non-data ink, and a panel hierarchy that reflects the evidence hierarchy.
 
-Use a consistent sans-serif with editable text in SVG and PDF; restrained, semantically consistent
-color families; a non-color encoding wherever red/green confusion is possible; no rainbow color
-maps; direct labels or one shared legend; text readable at final output size; minimal non-data ink;
-and panel hierarchy that reflects evidence hierarchy.
-
-The same condition, method, or cohort keeps the same encoding across panels and figures unless the
-contract documents a compelling exception.
+The same condition, method, cohort, control, and statistical meaning keeps the same color, marker,
+line, and ordering across panels and figures. A compelling exception must be documented in the
+figure contract before implementation.
 
 ## QA checklist
 
-Inspect the rendered outputs — open the SVG and PDF. A successful `savefig` call is not evidence of
-a correct export.
+Open and visually inspect both the rendered SVG and rendered PDF. File existence, a successful
+`savefig` call, or inspection of only the PNG preview is not evidence of correct editable exports.
+Inspect at final physical size and record the QA outcome in `docs/FIGURE_CONTRACT.md`.
 
-- the one-sentence conclusion and panel evidence map still hold
-- final physical dimensions are correct
-- text is readable at final size
-- SVG/PDF text is selectable and editable
-- fonts, colors, line widths, and method encodings are consistent
-- labels, legends, annotations, and error bars do not overlap or clip
-- atomic panels contain no manuscript panel letter
-- panel letters in an assembled figure are correct and consistently placed
-- axes that invite comparison use defensible scales
-- red/green is not the only distinction
-- grayscale interpretation remains possible where needed
-- `n`, replicate definitions, center, spread, tests, corrections, and comparisons are documented
-- source-data files reproduce all quantitative marks
-- raster resolution is sufficient
-- image panels have calibrated scale bars where applicable
-- crop, contrast, gamma, pseudo-color, stitching, and image reuse are documented
-- a skeptical reviewer's most likely challenge has been addressed or disclosed
+- the one-sentence conclusion and panel evidence map still hold;
+- final physical dimensions are correct;
+- text is readable, selectable, and editable where expected;
+- fonts, colors, line widths, and method encodings are consistent;
+- labels, legends, annotations, and error bars do not overlap or clip;
+- atomic panels contain no manuscript panel letter;
+- assembled panel letters are correct and consistently placed;
+- axes that invite comparison use defensible scales;
+- red/green is not the only distinction and grayscale interpretation remains possible where needed;
+- `n`, replicate definitions, center, spread, tests, corrections, and comparisons are documented;
+- source-data files reproduce every quantitative mark;
+- raster resolution is sufficient and TIFF output is 600 dpi;
+- image panels have calibrated scale bars where applicable;
+- crop, contrast, gamma, pseudo-color, stitching, and image reuse are documented; and
+- a skeptical reviewer's most likely challenge has been addressed or disclosed.

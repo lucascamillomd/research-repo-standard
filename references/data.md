@@ -1,55 +1,59 @@
 # Reference: data contract
 
-`AGENTS.md` owns the normative portable policy. This reference is its procedural expansion for
-registering datasets, defining schemas, and writing validation.
+This contract defines dataset registration, acquisition records, received-form descriptions,
+schemas, validation, checksums, and dataset-specific documentation.
 
 ## Registry
 
-`config/datasets.yaml` is mandatory. A reader must be able to answer, without reading code: what
-this data is, where it came from, which version, what one row means, and what may legally be done
-with it.
+`config/datasets.yaml` is mandatory. Without reading code, a reader must be able to determine what
+each dataset is, where it came from, which version was received, what one row represents, and what
+may legally be done with it.
 
-Fields that usually carry that weight:
+Record the fields needed to answer those questions, normally including:
 
-- stable identifier and human-readable title
-- citation or accession
-- registry identifier and received-form description; internal `data/raw/...` paths stay in
-  `paths.py`
-- acquisition method and the script responsible
-- source version or retrieval date
-- expected files and row grain
-- checksum, when appropriate and permitted
-- license or data-use restrictions
-- variable dictionary location
-- upstream and downstream pipeline stages
+- a stable machine-readable identifier and human-readable title;
+- citation, accession, registry identifier, or stable source URL;
+- a received-form description of the source material, without an internal repository path;
+- acquisition method and the script or documented manual boundary responsible;
+- source version, release, retrieval date, or other permitted stable identity;
+- expected received files and the row grain of derived datasets;
+- SHA-256 checksum for immutable downloads, models, and important resources when permitted;
+- license, consent, contractual, or other data-use restrictions;
+- machine-readable data dictionary or schema location; and
+- upstream source and downstream pipeline stages.
 
-Record whatever it takes to answer the five questions — not every field for its own sake, and not
-fewer than the questions require.
+Internal locations such as `data/raw/...` are derived in `paths.py`; do not encode those paths in a
+registry received-form description. Use programmatic acquisition when licensing and access controls
+permit it. Validate stable accessions or URLs and the expected SHA-256 digest before accepting an
+acquired artifact.
 
-For externally acquired data, provide programmatic acquisition when licensing permits. Use stable
-accessions or URLs, and verify SHA-256 checksums for immutable downloads, models, and important
-resources.
-
-A dataset-specific `README.md` may live inside its directory when local provenance or access
-instructions are unique. The registry remains the canonical index.
+A per-dataset `README.md` is optional when local access, provenance, manual acquisition, or data-use
+instructions are unique. It supplements the registry; `config/datasets.yaml` remains the canonical
+index.
 
 ## Validation
 
-Validate before analysis, not after. Check:
+Validate every dataset before analysis. The validation contract checks, as applicable:
 
-- required and unexpected columns
-- dtypes and category levels
-- units and valid ranges
-- row grain and identifier uniqueness
-- missingness assumptions
-- join cardinality
-- ordering invariants, when order matters
-- known cross-field constraints
+- required and unexpected columns;
+- dtypes, category levels, encodings, and units;
+- valid ranges and known cross-field constraints;
+- declared row grain and identifier uniqueness;
+- permitted nullability and sentinel values defined by the schema;
+- join cardinality and unmatched-key accounting;
+- ordering invariants when order has meaning; and
+- expected file inventory, stable identifiers, and checksums.
 
-`AGENTS.md` floor items 4–5 apply to validation and attrition.
+Fail with a precise dataset identifier and violated rule. Validation creates no implicit correction;
+cleaning, harmonization, and derivation belong in declared downstream stages with new outputs.
 
-## Data dictionary
+## Machine-readable data dictionary
 
-Record units, semantics, coding, provenance, and missing-value meanings in a machine-readable schema
-or dictionary linked from the corresponding `config/datasets.yaml` entry. Terse column names are not
-documentation.
+Every analysis-ready dataset has a machine-readable data dictionary or schema linked from its
+registry entry. For each field, record its name, scientific meaning, type, unit, coding or category
+levels, allowed range or values, missing-value representation, provenance, and derivation when
+applicable. Also record the dataset row grain, primary or candidate keys, and cross-field
+constraints.
+
+Terse column names are not documentation. Keep human explanation near the schema when needed, but
+make validation consume the same machine-readable definitions that readers inspect.

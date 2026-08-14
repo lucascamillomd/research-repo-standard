@@ -1,56 +1,70 @@
 # Reference: scientific analysis contract
 
-`AGENTS.md` owns the normative portable policy. This reference is its procedural expansion for
-planning and reporting confirmatory analyses.
+This contract defines confirmatory analysis planning, statistical reporting, and the independent
+scientific critique procedure.
 
-## Analysis plan
+## Analysis-plan template
 
-Before implementing a confirmatory analysis, create or update `docs/ANALYSIS_PLAN.md`:
+Before implementing a confirmatory analysis, create or update `docs/ANALYSIS_PLAN.md` with this
+complete template:
 
 ```text
 Research question and hypothesis:
+Analysis status (confirmatory or exploratory):
 Population and sampling frame:
 Exposure, intervention, predictor, or comparison:
-Outcome:
-Estimand:
+Outcome and measurement time:
+Estimand and unit:
 Inclusion and exclusion criteria:
 Covariates and rationale:
 Missing-data policy:
 Transformations and units:
-Primary model:
+Primary test or model:
 Diagnostics and assumption checks:
-Multiplicity strategy:
+Multiplicity strategy or justification for its absence:
 Sensitivity and subgroup analyses:
 Expected tables and figures:
+Decision log entries and authorization:
 ```
 
-Operationalize these fields in `config/analysis.yaml` under the configuration contract.
-
-`AGENTS.md` floor items 4–5 apply.
+Translate stable researcher-editable analysis decisions into `config/analysis.yaml`; keep the plan
+as the scientific explanation and the configuration as the validated executable values. When an
+approved post hoc change is made, update the plan and decision log before presenting the result and
+label its status honestly.
 
 ## Statistical reporting
 
-`AGENTS.md` defines required inferential reporting. Recommended additions, when applicable, are
-center and spread definitions and practical or scientific interpretation.
+For every inferential result, report the effect estimate and unit, uncertainty interval, sample size
+and analysis population, exact test or model, assumptions and diagnostics, and multiplicity strategy
+or a justification for its absence. A p-value alone is insufficient.
+
+When applicable, also report the definition of center and spread, missingness and attrition through
+the analysis population, practical or scientific interpretation, and the distinction between
+technical and biological replicates. Tie sensitivity and subgroup results back to their prespecified
+role.
+
+For predictive work, verify that preprocessing, normalization, imputation, feature selection, and
+tuning saw only the data permitted by the training design. Report the evaluation population,
+resampling or split strategy, metrics with uncertainty, and any external-validation boundary.
 
 ## Independent critique
 
-Where `AGENTS.md` requires an independent critique, obtain it before deciding or implementing work
-that depends on the judgment. One critique covers one design or coherent batch of decisions — do not
-open a separate critique per individual judgment, and during bootstrap the single design-stage
-critique is that batch. The critique may run concurrently with work that does not depend on the
-judgment under review; only dependent work waits for its findings.
+Obtain required critique before deciding or implementing work that depends on the scientific
+judgment under review. One critique covers one design or coherent batch of decisions. Do not launch
+a separate critique for every field in the same design. During bootstrap, the single design-stage
+critique covers the proposed question, claim, design, estimand, and major validity risks as one
+coherent batch.
 
-An independent review agent, separate from the implementing agent, applies
-`scientific-critical-thinking` (KDense `k-dense-ai/scientific-agent-skills`) to the proposed
-approach and the relevant repository context, and returns findings **without implementing the
-task**. A working agent's self-critique is not a substitute.
+An independent agent, separate from the implementing agent, invokes exact
+`scientific-critical-thinking` from KDense `k-dense-ai/scientific-agent-skills`, reads the relevant
+repository context, and returns findings without implementing the task. The critique may run beside
+work that does not depend on the judgment; dependent decisions wait for its findings. Material
+findings are incorporated into the design or explicitly dispositioned with rationale.
 
-If `scientific-critical-thinking` is missing, cannot be resolved, or cannot be invoked, stop the
-critique-triggering work and report the exact blocker; unrelated work may continue. If the skill
-resolves but an independent review agent is unavailable, stop before deciding or implementing the
-dependent judgment and report the exact blocker. Only work that depends on that judgment is blocked;
-unrelated work may continue.
+If `scientific-critical-thinking` is missing, cannot be resolved, or cannot be invoked, report the
+exact capability blocker and stop only the critique-dependent work. If the skill resolves but the
+host cannot provide an independent review agent, report the independent-agent blocker and stop only
+the dependent judgment. A self-critique does not replace either missing capability.
 
 A skill is guidance, not evidence. Validate code and results against primary documentation, known
-examples, scientific invariants, and the study design.
+analytical examples, scientific invariants, diagnostics, and the approved study design.
