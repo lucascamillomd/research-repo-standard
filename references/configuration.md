@@ -5,21 +5,25 @@ overrides, configuration provenance, migration, and focused tests.
 
 ## Ownership decision
 
-Classify each stable value in this order:
+Classify each value by the first matching bucket below. The buckets are mutually exclusive and their
+precedence is normative:
 
-1. If it is a stable researcher-editable scientific or operational setting, put it in
+1. Credentials, secrets, machine-specific absolute roots, and GPU selection use environment
+   variables, even when a researcher chooses them for a run.
+2. Values derived from repository structure or another setting are computed rather than configured.
+   Derived internal paths always live in `paths.py`; other derived configuration values may be
+   computed in `config.py`. Do not duplicate either in YAML.
+3. All remaining stable researcher-editable scientific or operational settings live in
    `config/analysis.yaml`. This includes every setting that can alter the dataset, estimate, model,
    figure, or scientific claim.
-2. If it is secret or machine-specific, supply it through an environment variable.
-3. If it is derived from repository structure or another setting, compute it in `paths.py` or
-   `config.py`; do not duplicate it in YAML.
-4. If it is an implementation choice rather than a researcher-editable scientific or operational
-   setting, keep it as a named Python constant.
+4. An implementation choice that is not a researcher-editable setting remains a named Python
+   constant.
 
 ## Configuration files
 
-`config/analysis.yaml` owns stable researcher-editable settings. `config/datasets.yaml` owns the
-dataset registry defined by the data contract.
+After environment-owned and derived values have been classified, `config/analysis.yaml` owns the
+remaining stable researcher-editable settings. `config/datasets.yaml` owns the dataset registry
+defined by the data contract.
 
 When randomness is used, declare `random_seed: 42` explicitly and propagate it to every stochastic
 component. Do not invent a seed field for a fully deterministic workflow.
@@ -74,9 +78,10 @@ setting:
 1. Inventory and classify the values using the ownership decision above.
 2. Obtain authorization before changing scientific meaning, an estimand, an inclusion rule, or a
    data contract.
-3. Move stable researcher-editable scientific or operational settings to `analysis.yaml`.
-4. Keep derived paths in `paths.py`, machine-specific values in environment variables, and
-   non-setting implementation constants in code.
+3. Move credentials, secrets, machine-specific roots, and GPU selection to environment variables;
+   move derived internal paths to `paths.py` and other derived configuration values to `config.py`.
+4. Move the remaining stable researcher-editable scientific or operational settings to
+   `analysis.yaml`, and keep non-setting implementation constants in code.
 5. Preserve existing behavior with focused tests before intentionally changing values.
 6. Record the migration and every authorized value change in `docs/lab_notebook.md`.
 
@@ -89,6 +94,8 @@ Configuration tests cover:
 - immutable typed return objects, one load per stage, and explicit parameter propagation;
 - absence of hidden result-affecting Python defaults and environment overrides of scientific
   settings;
+- precedence collisions, including researcher-selected secrets, machine roots, GPU selection, and
+  derived paths that must never fall through to YAML;
 - rejection of versioned secrets and YAML redirection of canonical paths;
 - repository containment and inability to redirect canonical raw-data locations;
 - propagation of `random_seed: 42` to every stochastic component when randomness is used;

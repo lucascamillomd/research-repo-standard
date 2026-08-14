@@ -155,8 +155,6 @@ for required in \
 done
 for required in \
   'After the core scaffold is complete' \
-  './adapters/codex.sh <target-repo>' \
-  './adapters/claude-code.sh <target-repo>' \
   'host-native smoke test' \
   'research-repo-standard' \
   'research-code-simplifier'; do
@@ -166,6 +164,30 @@ if ((integration_docs_ok)); then
   pass "bootstrap and README expose only the live skill-native integration path"
 else
   fail "bootstrap and README must resolve the skill, run a direct adapter, and require host smoke testing"
+fi
+
+bootstrap_integration_section="$(awk '
+    /^## Selected host integration$/ { capture = 1; next }
+    capture && /^## / { exit }
+    capture { print }
+' "$ROOT/references/bootstrap.md")"
+bootstrap_integration_text="$(tr '\n' ' ' <<< "$bootstrap_integration_section" | tr -s '[:space:]' ' ')"
+bootstrap_source_ok=1
+grep -Eqi 'provenance-verified.*(skill )?source.*(resolver|resolution)|resolver.*provenance-verified.*(skill )?source' \
+  <<< "$bootstrap_integration_text" || bootstrap_source_ok=0
+grep -Eq 'research_standard_source=' <<< "$bootstrap_integration_section" || bootstrap_source_ok=0
+grep -Eq 'target_repo=' <<< "$bootstrap_integration_section" || bootstrap_source_ok=0
+grep -Fq '"$research_standard_source/adapters/codex.sh" "$target_repo"' \
+  <<< "$bootstrap_integration_section" || bootstrap_source_ok=0
+grep -Fq '"$research_standard_source/adapters/claude-code.sh" "$target_repo"' \
+  <<< "$bootstrap_integration_section" || bootstrap_source_ok=0
+if grep -Eq '^\./adapters/(codex|claude-code)\.sh' <<< "$bootstrap_integration_section"; then
+  bootstrap_source_ok=0
+fi
+if ((bootstrap_source_ok)); then
+  pass "bootstrap invokes only provenance-verified skill-source adapters against the target"
+else
+  fail "bootstrap must resolve the standard source and invoke its selected adapter against the target"
 fi
 
 # --- 7. bootstrap delegates host prerequisites to their owner ---
@@ -190,6 +212,8 @@ for required in 'adapters/codex.sh' 'adapters/claude-code.sh' 'smoke test'; do
 done
 grep -Fq 'target-version = "py3XY"' "$ROOT/references/bootstrap.md" || bootstrap_contract_ok=0
 grep -Fq 'python-version = "3.XY"' "$ROOT/references/bootstrap.md" || bootstrap_contract_ok=0
+grep -Fq 'uv init --package --build-backend hatch' "$ROOT/references/bootstrap.md" ||
+  bootstrap_contract_ok=0
 grep -Fq 'coverage' "$ROOT/references/bootstrap.md" && bootstrap_contract_ok=0
 grep -Eq '^test-r:' "$ROOT/references/bootstrap.md" && bootstrap_contract_ok=0
 if ((bootstrap_contract_ok)); then
@@ -242,6 +266,24 @@ if grep -Fq 'Do not invent a seed field for a fully deterministic workflow.' \
   pass "configuration reference owns deterministic and stochastic seed decisions"
 else
   fail "configuration reference must own deterministic and stochastic seed decisions"
+fi
+
+configuration_decision_section="$(awk '
+    /^## Ownership decision$/ { capture = 1; next }
+    capture && /^## / { exit }
+    capture { print }
+' "$ROOT/references/configuration.md")"
+configuration_decision_text="$(tr '\n' ' ' <<< "$configuration_decision_section" |
+  tr -s '[:space:]' ' ')"
+configuration_precedence_ok=1
+grep -Eqi 'first matching.*mutually exclusive|mutually exclusive.*first matching' \
+  <<< "$configuration_decision_text" || configuration_precedence_ok=0
+grep -Eqi 'credentials.*secrets.*machine-specific.*GPU selection.*environment variable.*derived.*paths\.py.*researcher-editable.*scientific.*operational.*analysis\.yaml.*implementation.*constant' \
+  <<< "$configuration_decision_text" || configuration_precedence_ok=0
+if ((configuration_precedence_ok)); then
+  pass "configuration classifier uses exclusive environment-paths-YAML-code precedence"
+else
+  fail "configuration classifier must keep sensitive, derived, editable, and code buckets exclusive"
 fi
 
 if grep -Fq 'SHA-256' "$ROOT/references/data.md" &&

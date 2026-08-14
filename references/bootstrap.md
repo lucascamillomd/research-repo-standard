@@ -72,11 +72,15 @@ design records another PEP 517 backend.
 uv manages ordinary Python environments, dependencies, builds, and commands:
 
 ```bash
-uv init
+uv init --package --build-backend hatch --vcs none --python 3.XY --name <repo-name> <target-repo>
 uv add <package>          uv remove <package>
 uv lock                   uv sync --locked
 uv run --locked <command> uv build
 ```
+
+The explicit initialization options create a package using the `src/` layout and Hatchling, with uv
+normalizing the approved hyphenated repository name to the import-package name. Run it against the
+approved target path; do not rely on the current directory or uv's application defaults.
 
 Commit `uv.lock` and never hand-edit it. After project metadata changes, run `uv lock`, then
 `uv sync --locked`. CI runs both checks in this order:
@@ -107,14 +111,15 @@ Load `references/configuration.md` before creating YAML, `config.py`, `paths.py`
 configuration provenance. Create `config/datasets.yaml` and `config/analysis.yaml`; TOML remains the
 owner of packaging and tool configuration.
 
-All stable researcher-editable scientific or result-affecting settings belong explicitly in
-versioned YAML, as do stable researcher-editable operational settings.
+Credentials, secrets, permitted machine-specific roots, and GPU selection use environment variables.
+Derived internal paths live in `paths.py`; other derived configuration values may be computed in
+`config.py`. Classify those buckets before considering YAML.
 
-Non-setting implementation constants remain in code.
+All stable researcher-editable scientific or result-affecting settings that remain belong explicitly
+in versioned YAML, as do remaining stable researcher-editable operational settings.
 
-`config.py` uses strict typed schemas and contains no hidden project values or result-affecting
-defaults. `paths.py` derives internal paths. Secrets and permitted machine-specific roots use
-environment variables.
+Non-setting implementation constants remain in code. `config.py` uses strict typed schemas and
+contains no hidden project values or result-affecting defaults.
 
 Create `.env.example` only when the project consumes environment variables. List safe variable names
 and placeholders, never values. Ignore the real `.env`.
@@ -235,14 +240,22 @@ The project README records:
 
 ## Selected host integration
 
-After the core scaffold is complete, run only the adapter selected in the approved interview:
+After the core scaffold is complete, take the absolute, provenance-verified skill source directory
+reported by the successful host-native resolver and assign it to `research_standard_source`. Do not
+infer this location from the current directory or use an unrelated target-local `adapters/` path.
+Assign the approved absolute target repository path to `target_repo`:
 
 ```bash
-./adapters/codex.sh <target-repo>
-./adapters/claude-code.sh <target-repo>
+research_standard_source=/absolute/path/reported-by-host-resolver
+target_repo=/absolute/path/to/approved-target-repository
+
+"$research_standard_source/adapters/codex.sh" "$target_repo"
+"$research_standard_source/adapters/claude-code.sh" "$target_repo"
 ```
 
-The commands are alternatives, not a sequence. When no host adapter was selected, run neither. Then
-follow `references/prerequisites.md` for the real host-native smoke test of the resolved
-`research-repo-standard` provenance and the `research-code-simplifier` host profile. Report an
-unavailable selected host as a manual boundary instead of simulating success.
+Confirm that `research_standard_source` is the source location whose `research-repo-standard`
+provenance was approved before invoking either command. The commands are alternatives, not a
+sequence: run only the selected host's adapter against `target_repo`. When no host adapter was
+selected, run neither. Then follow `references/prerequisites.md` for the real host-native smoke test
+of the resolved `research-repo-standard` provenance and the `research-code-simplifier` host profile.
+Report an unavailable selected host as a manual boundary instead of simulating success.
