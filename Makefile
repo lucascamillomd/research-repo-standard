@@ -7,8 +7,7 @@ help: ## Show this help
 format: ## Wrap Markdown files
 	npx --yes prettier@3.9.6 --write --prose-wrap always --print-width 100 AGENTS.md README.md SKILL.md references/*.md agents/*.md
 
-test: ## Run vendoring, adapter, and documentation-contract tests
-	bash tests/vendor_test.sh
+test: ## Run adapter and documentation-contract tests
 	bash tests/adapter_test.sh
 	bash tests/adapter_safety_test.sh
 	bash tests/consistency_test.sh

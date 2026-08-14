@@ -32,19 +32,58 @@ done < <(grep -rho 'research-repo-standard/blob/main/[A-Za-z0-9/._-]*' \
   sed 's|research-repo-standard/blob/main/||' | sort -u)
 ((urls_ok)) && pass "GitHub blob URLs resolve to repository files"
 
-# --- 3. bootstrap owns post-vendor host adapter integration ---
-adapter_owner_ok=1
-for adapter in './adapters/claude-code.sh' './adapters/codex.sh'; do
-  grep -Fqs "$adapter" "$ROOT/SKILL.md" || adapter_owner_ok=0
-done
-if grep -Eq '^## (Install the selected project host adapter|Delegated-agent verification)' \
-  "$ROOT/references/prerequisites.md"; then
-  adapter_owner_ok=0
-fi
-if ((adapter_owner_ok)); then
-  pass "bootstrap owns post-vendor host adapter integration"
+# --- 3. source instructions are local and the skill owns portable policy ---
+agents_lines="$(wc -l < "$ROOT/AGENTS.md" | tr -d ' ')"
+if [[ "$agents_lines" -le 35 ]] &&
+  grep -Fq 'SKILL.md is the maintained product' "$ROOT/AGENTS.md" &&
+  ! grep -Eq 'data/raw/|Repository layout|Seed 42|portable governed policy' "$ROOT/AGENTS.md"; then
+  pass "AGENTS.md contains only concise source-repository instructions"
 else
-  fail "bootstrap must own post-vendor host adapter integration"
+  fail "AGENTS.md must be concise source-only guidance with SKILL.md as the product"
+fi
+
+skill_core_ok=1
+for heading in \
+  '## Applicability and precedence' \
+  '## Required skills and modification gates' \
+  '## Safety floor' \
+  '## Bootstrapping sequence' \
+  '## Governed work' \
+  '## Completion'; do
+  grep -Fqx "$heading" "$ROOT/SKILL.md" || skill_core_ok=0
+done
+for required in \
+  'superpowers:brainstorming' \
+  'scientific-critical-thinking' \
+  'nature-figure' \
+  'research-code-simplifier' \
+  'data/raw/' \
+  'Seed 42' \
+  'docs/lab_notebook.md' \
+  'transactionally'; do
+  grep -Fq "$required" "$ROOT/SKILL.md" || skill_core_ok=0
+done
+if ((skill_core_ok)); then
+  pass "SKILL.md owns the normative core and required gates"
+else
+  fail "SKILL.md must own every normative heading, safety invariant, and required skill"
+fi
+
+skill_text="$(tr '\n' ' ' < "$ROOT/SKILL.md" | tr -s '[:space:]' ' ')"
+routing_ok=1
+for trigger in \
+  'a required capability is unresolved, installation or recovery is requested, or host integration must be verified' \
+  'creating repository structure, tool configuration, CI, the Make interface, or initial project documentation' \
+  'classifying, loading, using, changing, or overriding settings, paths, or provenance' \
+  'acquiring, registering, preprocessing, describing, validating, or contracting data' \
+  'scientific planning, estimands, design, inclusion, missingness, modeling, implementation, interpretation, or reporting' \
+  'planning a figure, writing plotting code, changing figure outputs, or performing QA'; do
+  grep -Fq "$trigger" <<< "$skill_text" || routing_ok=0
+done
+if ((routing_ok)); then
+  pass "SKILL.md routes all six domain references by semantic trigger"
+else
+  fail "SKILL.md must preserve every approved reference trigger group"
 fi
 
 # --- 4. canonical simplifier profile has the collision-safe identity ---
@@ -96,115 +135,37 @@ else
   fail "adapter runtime must not contain target-policy or shared-profile logic"
 fi
 
-policy_ok=1
-if ! tr '\n' ' ' < "$ROOT/AGENTS.md" | grep -qs 'independent code-simplification pass'; then
-  fail "AGENTS.md must require an independent code-simplification pass"
-  policy_ok=0
-fi
-if grep -Eq '\.claude/agents/' "$ROOT/AGENTS.md"; then
-  fail "AGENTS.md must resolve the simplifier through the current host adapter"
-  policy_ok=0
-fi
-((policy_ok)) && pass "AGENTS.md routes an independent host-neutral simplification pass"
-
-# --- 6. policy documents the source-repository role and required invariants ---
-if grep -q 'This repository distributes the portable standard' "$ROOT/AGENTS.md" &&
-  grep -q 'agents/' "$ROOT/AGENTS.md"; then
-  pass "source role and canonical agent-profile path are documented"
-else
-  fail "source role and canonical agent-profile path are documented"
-fi
-
-if grep -q 'preprocessing, normalization, imputation, feature selection, and tuning' \
-  "$ROOT/AGENTS.md"; then
-  pass "predictive leakage policy names normalization"
-else
-  fail "predictive leakage policy names normalization"
-fi
-
-if grep -q 'Required skills are gates\. A missing skill blocks only its dependent work\.' \
-  "$ROOT/AGENTS.md"; then
-  pass "required-skill floor is concise"
-else
-  fail "required-skill floor is concise"
-fi
-
-# --- 7. consequential decisions use the lab notebook ---
-if grep -qs 'docs/lab_notebook\.md' "$ROOT/AGENTS.md" &&
-  grep -Rqs 'docs/lab_notebook\.md' "$ROOT/references/analysis.md" \
-    "$ROOT/references/configuration.md" "$ROOT/references/prerequisites.md"; then
-  pass "lab notebook owns consequential decision records"
-else
-  fail "lab notebook owns consequential decision records"
-fi
-
-# --- 8. policy routing and figure procedure use the same triggers ---
-figure_trigger_ok=1
-for file in "$ROOT/AGENTS.md" "$ROOT/references/figures.md"; do
-  for trigger in 'planning a figure' 'writing plotting code' 'modifying figure outputs' 'performing QA'; do
-    if ! grep -Fq "$trigger" "$file"; then
-      fail "missing figure trigger in ${file#"$ROOT"/}: $trigger"
-      figure_trigger_ok=0
-    fi
-  done
-done
-if ((figure_trigger_ok)); then
-  pass "figure procedure triggers stay aligned"
-fi
-
-# --- 9. bootstrap delegates host prerequisites to their owner ---
+# --- 6. bootstrap delegates host prerequisites to their owner ---
 if grep -qs 'references/prerequisites\.md' "$ROOT/references/bootstrap.md"; then
   pass "bootstrap delegates host prerequisites"
 else
   fail "bootstrap delegates host prerequisites"
 fi
 
-# --- 10. bootstrap questions and integration order require explicit runtime answers ---
+# --- 7. bootstrap questions and runtime contracts remain explicit ---
 bootstrap_contract_ok=1
 interview_section="$(awk '
-    /^## Interview$/ { capture = 1; next }
+    /^### Interview$/ { capture = 1; next }
     capture && /^## / { exit }
     capture { print }
 ' "$ROOT/SKILL.md")"
 for required in 'currently supported Python minor' 'host adapter'; do
   grep -Fq "$required" <<< "$interview_section" || bootstrap_contract_ok=0
 done
-bootstrap_sequence="$(awk '
-    /^## Bootstrapping sequence$/ { capture = 1; next }
-    /^## Interview$/ { exit }
-    capture { print }
-' "$ROOT/SKILL.md")"
-vendor_step_line="$(grep -n '^7\.' <<< "$bootstrap_sequence" | cut -d: -f1)"
-adapter_step_line="$(grep -n '^8\.' <<< "$bootstrap_sequence" | cut -d: -f1)"
-if [[ -z "$vendor_step_line" || -z "$adapter_step_line" ]] ||
-  ((vendor_step_line >= adapter_step_line)); then
-  bootstrap_contract_ok=0
-fi
-vendor_step="$(awk '
-    /^7\./ { capture = 1 }
-    /^8\./ { exit }
-    capture { print }
-' <<< "$bootstrap_sequence")"
-adapter_step="$(awk '
-    /^8\./ { capture = 1 }
-    capture { print }
-' <<< "$bootstrap_sequence")"
-adapter_step_text="$(tr '\n' ' ' <<< "$adapter_step" | tr -s '[:space:]' ' ')"
-grep -Fq 'vendor.sh' <<< "$vendor_step" || bootstrap_contract_ok=0
 for required in 'adapters/codex.sh' 'adapters/claude-code.sh' 'smoke test'; do
-  grep -Fq "$required" <<< "$adapter_step" || bootstrap_contract_ok=0
+  grep -Fq "$required" <<< "$skill_text" || bootstrap_contract_ok=0
 done
 grep -Fq 'target-version = "py3XY"' "$ROOT/references/bootstrap.md" || bootstrap_contract_ok=0
 grep -Fq 'python-version = "3.XY"' "$ROOT/references/bootstrap.md" || bootstrap_contract_ok=0
 grep -Fq 'coverage' "$ROOT/references/bootstrap.md" && bootstrap_contract_ok=0
 grep -Eq '^test-r:' "$ROOT/references/bootstrap.md" && bootstrap_contract_ok=0
 if ((bootstrap_contract_ok)); then
-  pass "bootstrap interview, placeholders, and integration order are explicit"
+  pass "bootstrap interview, placeholders, and runtime contracts are explicit"
 else
-  fail "bootstrap interview, placeholders, and integration order are explicit"
+  fail "bootstrap interview, placeholders, and runtime contracts are explicit"
 fi
 
-# --- 11. final-review ownership corrections remain aligned ---
+# --- 8. final-review ownership corrections remain aligned ---
 final_review_contract_ok=1
 if grep -Fq 'stop before repository mutations' "$ROOT/references/prerequisites.md"; then
   final_review_contract_ok=0
@@ -218,8 +179,8 @@ grep -Eq '^## Shared planning companion$' "$ROOT/references/prerequisites.md" ||
 if grep -Eq 'data[^[:space:]]*.*fixtures|data reference.*fixtures' "$ROOT/README.md"; then
   final_review_contract_ok=0
 fi
-for required in 'independently resolve the canonical simplifier profile' 'future code changes will block'; do
-  grep -Fq "$required" <<< "$adapter_step_text" || final_review_contract_ok=0
+for required in 'independently resolve' 'future code changes' 'blocked'; do
+  grep -Fq "$required" <<< "$skill_text" || final_review_contract_ok=0
 done
 if ((final_review_contract_ok)); then
   pass "final-review ownership corrections stay aligned"
@@ -227,32 +188,7 @@ else
   fail "final-review ownership corrections stay aligned"
 fi
 
-# --- 12. README routes simplifier and adapter ownership correctly ---
-readme_text="$(tr '\n' ' ' < "$ROOT/README.md")"
-if grep -Eqs 'selected adapter[^.]*canonical simplifier' <<< "$readme_text" &&
-  ! grep -Eqs 'bootstrap[^.]*seed[^.]*simplifier' <<< "$readme_text"; then
-  pass "README assigns simplifier installation to the selected adapter"
-else
-  fail "README must assign simplifier installation only to the selected adapter"
-fi
-
-if grep -Fqs '`SKILL.md` steps 7–8' "$ROOT/README.md" &&
-  grep -Fqs '`references/prerequisites.md`' "$ROOT/README.md" &&
-  grep -Eqs 'host skill[^.]*install[^.]*verif' <<< "$readme_text" &&
-  ! grep -Eqs 'adapter[^.]*references/prerequisites' <<< "$readme_text"; then
-  pass "README routes vendor integration to SKILL.md and host skills to prerequisites"
-else
-  fail "README must route vendor integration to SKILL.md and host skills to prerequisites"
-fi
-
-# --- 13. portable policy does not prescribe a specific host integration ---
-if ! grep -Eq 'CLAUDE\.md.*symlink|\.claude/agents' "$ROOT/AGENTS.md"; then
-  pass "AGENTS.md is host neutral"
-else
-  fail "AGENTS.md is host neutral"
-fi
-
-# --- 14. detailed figure naming has one canonical owner ---
+# --- 9. detailed figure naming has one canonical owner ---
 figure_owner="$ROOT/references/figures.md"
 if grep -Fqs 'mf1_{short_descriptive_name}' "$figure_owner" &&
   grep -Fqs 'edf1_{short_descriptive_name}' "$figure_owner" &&
@@ -285,24 +221,7 @@ else
   printf '%s\n' "$figure_duplicates"
 fi
 
-if grep -Fqs 'main_figure_1' "$ROOT/AGENTS.md" &&
-  grep -Fqs 'extended_data_figure_2' "$ROOT/AGENTS.md"; then
-  pass "AGENTS.md keeps general publication identifiers"
-else
-  fail "AGENTS.md must keep general publication identifiers"
-fi
-
-# --- 15. domain references declare the policy/procedure boundary ---
-for reference in configuration data analysis; do
-  if grep -Fqs "\`AGENTS.md\` owns the normative portable policy" "$ROOT/references/$reference.md" &&
-    grep -Fqs 'procedural expansion' "$ROOT/references/$reference.md"; then
-    pass "$reference reference declares normative policy and procedural ownership"
-  else
-    fail "$reference reference must identify AGENTS.md as policy owner and itself as procedural expansion"
-  fi
-done
-
-# --- 16. simplifier profile delegates naming and configuration policy ---
+# --- 10. simplifier profile delegates naming and configuration policy ---
 if ! grep -Eq 'config/analysis\.yaml|random_seed:|test_[a-z]|datasets\.yaml' \
   "$ROOT/agents/research-code-simplifier.md"; then
   pass "simplifier profile contains no independent configuration or test-naming grammar"
@@ -310,7 +229,7 @@ else
   fail "simplifier profile must delegate configuration and test-naming grammar to repository authorities"
 fi
 
-# --- 17. deterministic workflows do not acquire unused seed settings ---
+# --- 11. deterministic workflows do not acquire unused seed settings ---
 if tr '\n' ' ' < "$ROOT/references/configuration.md" |
   grep -Fqs 'Do not invent a seed field for a fully deterministic workflow.'; then
   pass "configuration forbids unused deterministic-workflow seed fields"
