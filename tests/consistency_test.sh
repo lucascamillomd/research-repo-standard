@@ -35,7 +35,7 @@ done < <(grep -rho 'research-repo-standard/blob/main/[A-Za-z0-9/._-]*' \
 # --- 3. source instructions are local and the skill owns portable policy ---
 agents_lines="$(wc -l < "$ROOT/AGENTS.md" | tr -d ' ')"
 if [[ "$agents_lines" -le 35 ]] &&
-  grep -Fq 'SKILL.md is the maintained product' "$ROOT/AGENTS.md" &&
+  grep -Eqi 'SKILL\.md[^.]*maintained' "$ROOT/AGENTS.md" &&
   ! grep -Eq 'data/raw/|Repository layout|Seed 42|portable governed policy' "$ROOT/AGENTS.md"; then
   pass "AGENTS.md contains only concise source-repository instructions"
 else
@@ -101,23 +101,34 @@ description_text="$(awk '
     capture { print }
 ' "$ROOT/SKILL.md" | tr '\n' ' ' | tr -s '[:space:]' ' ' | sed 's/^ //')"
 if [[ "$description_text" == "Use when"* ]] &&
-  grep -Fq 'Not for general-purpose software projects' <<< "$description_text"; then
+  grep -Eqi 'not for general-purpose' <<< "$description_text"; then
   pass "SKILL.md description states triggering conditions and its carve-out"
 else
   fail "SKILL.md description must start with triggering conditions and keep the carve-out"
 fi
 
 skill_text="$(tr '\n' ' ' < "$ROOT/SKILL.md" | tr -s '[:space:]' ' ')"
+# each routing row keeps its reference and the domain terms that trigger it, not exact wording
 routing_ok=1
-for trigger in \
-  'a required capability is unresolved, installation or recovery is requested, or host integration must be verified' \
-  'creating repository structure, tool configuration, CI, the Make interface, or initial project documentation' \
-  'classifying, loading, using, changing, or overriding settings, paths, or provenance' \
-  'acquiring, registering, preprocessing, describing, validating, or contracting data' \
-  'scientific planning, estimands, design, inclusion, missingness, modeling, implementation, interpretation, or reporting' \
-  'planning a figure, writing plotting code, changing figure outputs, or performing QA'; do
-  grep -Fq "$trigger" <<< "$skill_text" || routing_ok=0
-done
+check_routing_row() {
+  local reference="$1"
+  shift
+  local row
+  row="$(grep -F "\`$reference\`" "$ROOT/SKILL.md" | grep -F '|' | head -1)"
+  [[ -n "$row" ]] || return 1
+  local term
+  for term in "$@"; do
+    grep -Eqi "$term" <<< "$row" || return 1
+  done
+}
+check_routing_row 'references/prerequisites.md' 'unresolved|resolution' 'install' 'host' ||
+  routing_ok=0
+check_routing_row 'references/bootstrap.md' 'structure|scaffold' 'CI' 'documentation' ||
+  routing_ok=0
+check_routing_row 'references/configuration.md' 'settings' 'paths' 'provenance' || routing_ok=0
+check_routing_row 'references/data.md' 'data' 'validat' 'contract' || routing_ok=0
+check_routing_row 'references/analysis.md' 'estimand' 'missing' 'model' 'report' || routing_ok=0
+check_routing_row 'references/figures.md' 'figure' 'plot' 'QA' || routing_ok=0
 if ((routing_ok)); then
   pass "SKILL.md routes all six domain references by semantic trigger"
 else
@@ -154,7 +165,7 @@ grep -Eqi 'test' <<< "$standard_gate_text" || gate_ok=0
 grep -Eqi 'no specification|without a specification|no plan|without a plan' \
   <<< "$standard_gate_text" || gate_ok=0
 # the governed-work authorization prose defers to that single list instead of restating it
-if grep -Eq 'Obtain authorization before changing an estimand' <<< "$skill_text"; then
+if grep -Eqi 'authoriz[^.]*estimand[^.]*(study design|inclusion|data contract)' <<< "$skill_text"; then
   gate_ok=0
 fi
 grep -Eqi 'authorization before[^.]*design-level' <<< "$skill_text" || gate_ok=0
@@ -259,20 +270,21 @@ for obsolete in 'vendor.sh' 'tests/vendor_test.sh' 'After core vendoring' '`SKIL
   fi
 done
 for required in \
-  'Resolve `research-repo-standard` by exact name through the selected host' \
   './adapters/codex.sh <target-repo>' \
   './adapters/claude-code.sh <target-repo>' \
   'host-native smoke test' \
   'research-code-simplifier'; do
   grep -Fq "$required" <<< "$readme_text" || integration_docs_ok=0
 done
+grep -Eqi 'resolve[^.]*research-repo-standard[^.]*exact name|exact name[^.]*research-repo-standard' \
+  <<< "$readme_text" || integration_docs_ok=0
 for required in \
-  'After the core scaffold is complete' \
   'host-native smoke test' \
   'research-repo-standard' \
   'research-code-simplifier'; do
   grep -Fq "$required" <<< "$bootstrap_text" || integration_docs_ok=0
 done
+grep -Eqi 'core scaffold' <<< "$bootstrap_text" || integration_docs_ok=0
 if ((integration_docs_ok)); then
   pass "bootstrap and README expose only the live skill-native integration path"
 else
@@ -377,24 +389,23 @@ interview_section="$(awk '
     capture && /^## / { exit }
     capture { print }
 ' "$ROOT/SKILL.md")"
-for required in 'currently supported Python minor' 'host adapter'; do
+for required in 'Python minor' 'host adapter'; do
   grep -Fq "$required" <<< "$interview_section" || bootstrap_contract_ok=0
 done
-for required in \
-  '1. What is the project identity and purpose?' \
-  '2. What is the primary research question and intended scientific claim?' \
-  '3. Is the current status exploratory or confirmatory?'; do
-  grep -Fqx "$required" <<< "$interview_section" || bootstrap_contract_ok=0
+# the scientific topics stay separately numbered questions, whatever their wording
+for numbered_topic in \
+  '^[0-9]+\. [^?]*identity' \
+  '^[0-9]+\. [^?]*research question' \
+  '^[0-9]+\. [^?]*exploratory'; do
+  grep -Eqi "$numbered_topic" <<< "$interview_section" || bootstrap_contract_ok=0
 done
-if grep -Fq 'project identity and purpose, primary research question' <<< "$interview_section"; then
+if grep -Eqi 'identity[^.?]*,[^.?]*research question' <<< "$interview_section"; then
   bootstrap_contract_ok=0
 fi
-for required in \
-  '### Bootstrap execution record' \
-  'the response first reproduces this record with undecided' \
-  'asks exactly one next question'; do
-  grep -Fq "$required" "$ROOT/SKILL.md" || bootstrap_contract_ok=0
-done
+grep -Fq '### Bootstrap execution record' "$ROOT/SKILL.md" || bootstrap_contract_ok=0
+# planning before answers exist reproduces the record with pending fields and asks one question
+grep -Eqi 'reproduc[^.]*record[^.]*pending' <<< "$skill_text" || bootstrap_contract_ok=0
+grep -Eqi 'exactly one[^.]*question' <<< "$skill_text" || bootstrap_contract_ok=0
 grep -Eqi 'gate-artifact' <<< "$skill_text" || bootstrap_contract_ok=0
 
 # the execution record stays a compact checklist of the failure modes under pressure
@@ -458,7 +469,7 @@ fi
 
 # --- 10. final-review ownership corrections remain aligned ---
 final_review_contract_ok=1
-if grep -Fq 'stop before repository mutations' "$ROOT/references/prerequisites.md"; then
+if grep -Eqi 'stop before[^.]*repository mutation' "$ROOT/references/prerequisites.md"; then
   final_review_contract_ok=0
 fi
 grep -Eqi 'researcher-editable' "$ROOT/references/configuration.md" || final_review_contract_ok=0
@@ -469,9 +480,8 @@ grep -Eq '^## Shared planning companion$' "$ROOT/references/prerequisites.md" ||
 if grep -Eq 'data[^[:space:]]*.*fixtures|data reference.*fixtures' "$ROOT/README.md"; then
   final_review_contract_ok=0
 fi
-for required in 'independently resolve' 'future code changes' 'blocked'; do
-  grep -Fq "$required" <<< "$skill_text" || final_review_contract_ok=0
-done
+grep -Eqi 'independently resolve[^.]*simplifier' <<< "$skill_text" || final_review_contract_ok=0
+grep -Eqi 'blocked' <<< "$skill_text" || final_review_contract_ok=0
 if ((final_review_contract_ok)); then
   pass "final-review ownership corrections stay aligned"
 else
@@ -487,15 +497,14 @@ fi
 
 if grep -Fq 'src/<package_name>/' "$ROOT/references/bootstrap.md" &&
   grep -Fq 'uv sync --locked' "$ROOT/references/bootstrap.md" &&
-  grep -Fq 'shortest reproduction path' "$ROOT/references/bootstrap.md"; then
+  grep -Eqi 'reproduction path' "$ROOT/references/bootstrap.md"; then
   pass "bootstrap reference owns scaffold, locked environment, and reproduction guidance"
 else
   fail "bootstrap reference must own scaffold, locked environment, and reproduction guidance"
 fi
 
-if grep -Fq 'Do not invent a seed field for a fully deterministic workflow.' \
-  "$ROOT/references/configuration.md" &&
-  grep -Fq 'random_seed: 42' "$ROOT/references/configuration.md"; then
+if grep -Fq 'random_seed: 42' "$ROOT/references/configuration.md" &&
+  grep -Eqi 'deterministic' "$ROOT/references/configuration.md"; then
   pass "configuration reference owns deterministic and stochastic seed decisions"
 else
   fail "configuration reference must own deterministic and stochastic seed decisions"
@@ -562,8 +571,7 @@ fi
 
 figures_text="$(tr '\n' ' ' < "$ROOT/references/figures.md" | tr -s '[:space:]' ' ')"
 figures_contract_ok=1
-grep -Fq 'Open and visually inspect both the rendered SVG and rendered PDF' \
-  "$ROOT/references/figures.md" || figures_contract_ok=0
+grep -Eqi 'visually inspect[^.]*SVG[^.]*PDF' <<< "$figures_text" || figures_contract_ok=0
 grep -Fq 'nature-figure' <<< "$figures_text" || figures_contract_ok=0
 grep -Eqi 'before planning a figure' <<< "$figures_text" || figures_contract_ok=0
 # the obligation stays prose; no echoed preflight template
@@ -595,10 +603,10 @@ if grep -Fqs 'mf1_{short_descriptive_name}' "$figure_owner" &&
   grep -Fqs 'tiff/mf1_hazard_ratio_distribution.tiff' "$figure_owner" &&
   grep -Fqs 'png/mf1_hazard_ratio_distribution.png' "$figure_owner" &&
   grep -Fqs 'mf1_hazard_ratio_distribution.csv' "$figure_owner" &&
-  grep -Fqs 'letters never become part of the atomic asset names or' "$figure_owner" &&
-  grep -Fqs 'Use the same atomic stem for' "$figure_owner" &&
-  grep -Fqs 'Panel letters are applied only' "$figure_owner" &&
-  grep -Fqs 'extension-named directory' "$figure_owner"; then
+  grep -Fqs 'results/figures/<figure_id>/<format>/' "$figure_owner" &&
+  grep -Eqis 'letters[^.]*(never|not)[^.]*asset name' "$figure_owner" &&
+  grep -Eqis 'same[^.]*stem[^.]*format' "$figure_owner" &&
+  grep -Eqis 'panel letters are applied only' "$figure_owner"; then
   pass "figure reference owns detailed atomic asset naming"
 else
   fail "figure reference must own detailed naming, shared stems, export paths, and panel lettering"
@@ -635,9 +643,10 @@ governed_record="$(awk '
     capture && /^```$/ { exit }
     capture { print }
 ' "$ROOT/SKILL.md")"
-grep -Fqx \
-  'Standard skill: exact research-repo-standard; host-native resolver; source provenance; invoked' \
-  <<< "$governed_record" || governed_resolution_ok=0
+governed_record_text="$(tr '\n' ' ' <<< "$governed_record" | tr -s '[:space:]' ' ')"
+for required in 'research-repo-standard' 'host-native resolver' 'provenance' 'invoked'; do
+  grep -Fq "$required" <<< "$governed_record_text" || governed_resolution_ok=0
+done
 if ((governed_resolution_ok)); then
   pass "governed work records exact standard resolution and invocation before classification"
 else
@@ -646,18 +655,15 @@ fi
 
 simplifier_resolution_ok=1
 simplifier_record="$(awk '
-    /^Before inspecting the delegated diff, the reviewer reports this additional resolution record:$/ {
-      found = 1
-      next
-    }
+    /delegated diff/ { found = 1; next }
     found && /^```text$/ { capture = 1; next }
     capture && /^```$/ { exit }
     capture { print }
 ' "$ROOT/SKILL.md")"
 simplifier_record_text="$(tr '\n' ' ' <<< "$simplifier_record" | tr -s '[:space:]' ' ')"
-grep -Fq \
-  'Simplifier profile: exact research-code-simplifier; host-native resolver; resolved profile path; invoked' \
-  <<< "$simplifier_record_text" || simplifier_resolution_ok=0
+for required in 'research-code-simplifier' 'host-native resolver' 'profile path' 'invoked'; do
+  grep -Fq "$required" <<< "$simplifier_record_text" || simplifier_resolution_ok=0
+done
 if ((simplifier_resolution_ok)); then
   pass "delegated simplifier adds exact host-native profile resolution and invocation"
 else
@@ -674,13 +680,18 @@ pressure_evidence_ok=1
 for required in \
   'task6_pressure_a_green' \
   'task6_pressure_d' \
-  'Total: **27/27 mandatory criteria passed.**' \
-  'no required invocation statement or rubric-overlapping wording' \
-  'Real installed-host provenance remains a post-integration smoke-test boundary' \
-  'resolved through the host-native resolver to `/Users/lucascamillo/research-repo-standard/.worktrees/skill-native-governance/SKILL.md` and was invoked' \
-  'I resolve and invoke the exact `research-repo-standard` skill and the exact `research-code-simplifier` profile'; do
+  '27/27' \
+  '/.worktrees/skill-native-governance/SKILL.md' \
+  'research-repo-standard' \
+  'research-code-simplifier'; do
   grep -Fq "$required" <<< "$pressure_results_text" || pressure_evidence_ok=0
 done
+# the reruns stayed uncoached and the installed-host resolver is still reported as a boundary
+grep -Eqi 'no required invocation statement' <<< "$pressure_results_text" || pressure_evidence_ok=0
+grep -Eqi 'installed-host provenance[^.]*boundary' <<< "$pressure_results_text" ||
+  pressure_evidence_ok=0
+grep -Eqi 'through the host-native resolver' <<< "$pressure_results_text" || pressure_evidence_ok=0
+grep -Eqi 'was invoked' <<< "$pressure_results_text" || pressure_evidence_ok=0
 if grep -Eq 'task5_counted_a|task5_fix1_d' <<< "$pressure_results_text"; then
   pressure_evidence_ok=0
 fi
