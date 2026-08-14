@@ -437,3 +437,37 @@ If no simplification is unambiguously safe, success is a completed review with n
 that the changed code was reviewed, no justified behavior-preserving simplification was found, and
 which verification evidence supports that conclusion.
 ```
+
+### Re-evaluation 2026-08-14 (post-consolidation)
+
+After the 2026-08-14 consolidation and reconciliation commits, all four stored scenarios were re-run
+blind with fresh agents against byte-verbatim stored prompts and scored against the current rubrics.
+
+| Scenario                       | Score | Result                                                   |
+| ------------------------------ | ----: | -------------------------------------------------------- |
+| A — governed scientific change |   6/6 | GREEN on the first re-run                                |
+| B — exploratory figure         |   7/7 | GREEN on the first re-run                                |
+| D — delegated simplification   |   4/4 | GREEN; criterion 1 met via unresolvable-profile boundary |
+| C — deterministic bootstrap    | 10/10 | GREEN after two RED/GREEN iterations                     |
+
+Total: **27/27 mandatory criteria passed** against the current working-tree contract.
+
+Scenario D criterion 1 was satisfied by an honest unresolvable-profile boundary: the
+`research-code-simplifier` host profile is not installed in the evaluation environment, and the
+agent reported that limit rather than claiming resolution. Installed-host provenance remains a
+post-integration smoke-test boundary.
+
+Scenario C required two RED/GREEN iterations. The first re-run lost the gate-sequence, artifact-
+inspection, and no-R-support slots; the second still omitted the adapter-installation ordering step.
+Restoring those slots and adding bootstrap step 10 (inspect actual generated artifacts and report
+assumptions and external boundaries) produced all ten criteria met: exact skill resolution and
+`superpowers:brainstorming` preflight (1); one-at-a-time scientific interview (2); brainstorming,
+independent critique, and figure strategy (3); integrated design approval with minimal gate-artifact
+initialization (4); post-gate scaffold using uv, Make, configuration, and data registry/raw safety
+(5); no target `AGENTS.md`, `CLAUDE.md`, `CODEX.md`, or shared top-level simplifier (6); no
+`random_seed` for the deterministic workflow (7); README provenance, recovery, and shortest
+reproduction path (8); selected-adapter-only installation after the core scaffold followed by the
+resolver smoke test (9); and actual artifact inspection with assumptions and boundaries reported
+(10).
+
+No global skill configuration was changed for this re-evaluation.
