@@ -316,18 +316,37 @@ if grep -Fq 'project identity and purpose, primary research question' <<< "$inte
 fi
 for required in \
   '### Bootstrap execution record' \
-  'minimal gate-artifact initialization' \
-  'Forbidden target artifacts: no AGENTS.md, CLAUDE.md, CODEX.md' \
-  'deterministic workflow has no seed setting' \
   'the response first reproduces this record with undecided' \
-  'asks exactly one next question' \
-  'shortest reproduction path' \
-  'honest unavailable-host boundary' \
-  'success is never' \
-  'actual artifacts inspected' \
-  'every remaining assumption and manual or external boundary reported'; do
+  'asks exactly one next question'; do
   grep -Fq "$required" "$ROOT/SKILL.md" || bootstrap_contract_ok=0
 done
+grep -Eqi 'gate-artifact' <<< "$skill_text" || bootstrap_contract_ok=0
+
+# the execution record stays a compact checklist of the failure modes under pressure
+bootstrap_record="$(awk '
+    /^### Bootstrap execution record$/ { found = 1; next }
+    found && /^```text$/ { capture = 1; next }
+    capture && /^```$/ { exit }
+    capture { print }
+' "$ROOT/SKILL.md")"
+bootstrap_record_text="$(tr '\n' ' ' <<< "$bootstrap_record" | tr -s '[:space:]' ' ')"
+record_slots="$(grep -c . <<< "$bootstrap_record")"
+[[ "$record_slots" -ge 1 && "$record_slots" -le 6 ]] || bootstrap_contract_ok=0
+for required_pattern in \
+  'AGENTS\.md.*CLAUDE\.md.*CODEX\.md' \
+  'shared top-level simplifier' \
+  'Seed 42' \
+  'deterministic' \
+  'smoke test' \
+  'boundar' \
+  'artifacts inspected'; do
+  grep -Eqi "$required_pattern" <<< "$bootstrap_record_text" || bootstrap_contract_ok=0
+done
+# the numbered interview above owns topic coverage; the record must not restate it
+if grep -Eqi 'identity/purpose|research question/intended claim|supported Python minor' \
+  <<< "$bootstrap_record_text"; then
+  bootstrap_contract_ok=0
+fi
 for required in 'adapters/codex.sh' 'adapters/claude-code.sh' 'smoke test'; do
   grep -Fq "$required" <<< "$skill_text" || bootstrap_contract_ok=0
 done
@@ -439,14 +458,20 @@ else
   fail "analysis reference must own the complete analysis-plan template"
 fi
 
-if grep -Fq 'Open and visually inspect both the rendered SVG and rendered PDF' \
-  "$ROOT/references/figures.md" &&
-  grep -Fq 'Figure contract source loaded: references/figures.md' \
-    "$ROOT/references/figures.md" &&
-  grep -Fq 'Figure skill invoked: nature-figure' "$ROOT/references/figures.md"; then
-  pass "figure reference owns rendered SVG and PDF inspection"
+figures_text="$(tr '\n' ' ' < "$ROOT/references/figures.md" | tr -s '[:space:]' ' ')"
+figures_contract_ok=1
+grep -Fq 'Open and visually inspect both the rendered SVG and rendered PDF' \
+  "$ROOT/references/figures.md" || figures_contract_ok=0
+grep -Fq 'nature-figure' <<< "$figures_text" || figures_contract_ok=0
+grep -Eqi 'before planning a figure' <<< "$figures_text" || figures_contract_ok=0
+# the obligation stays prose; no echoed preflight template
+if grep -Eqi 'Figure contract source loaded|Figure skill invoked' <<< "$figures_text"; then
+  figures_contract_ok=0
+fi
+if ((figures_contract_ok)); then
+  pass "figure reference requires its own load and nature-figure without an echo template"
 else
-  fail "figure reference must require explicit preflight plus rendered SVG and PDF inspection"
+  fail "figure reference must require loading itself and nature-figure in prose, with no preflight echo"
 fi
 
 reference_ownership_ok=1

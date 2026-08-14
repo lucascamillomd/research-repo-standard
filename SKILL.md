@@ -140,31 +140,16 @@ Ask these one at a time:
 
 Maintain the following required reporting slots throughout bootstrap. When asked to explain or plan
 a bootstrap before the answers exist, the response first reproduces this record with undecided
-fields marked pending, then asks exactly one next question. Saying only that the required topics
-will be completed, or listing only the first question, does not satisfy the record. This is a
-checklist, not a new repository file:
+fields marked pending, then asks exactly one next question. This is a checklist, not a new
+repository file:
 
 ```text
-Skill preflight: exact research-repo-standard provenance; exact three hard-gate skills resolved
-before interview; authorized recovery or blocker
-Interview decisions: identity/purpose; research question/intended claim; exploratory/confirmatory
-status; data/access; supported Python minor; R/container need; host adapter; license; outputs;
-automation, CI, and external boundaries
-Design reviews: brainstorming outcome; independent scientific critique and dispositions; figure
-strategy or explicit no-figure strategy
-Gate state: integrated design approval; minimal gate-artifact initialization; committed and reviewed
-specification; implementation plan ready
-Core scaffold: uv and Make; configuration; data registry and raw-data safety; analysis; provenance;
-verification; no unapproved R support
-Forbidden target artifacts: no AGENTS.md, CLAUDE.md, CODEX.md, or shared top-level simplifier
-Randomness: deterministic workflow has no seed setting; otherwise explicit Seed 42 and boundaries
-README: expected skill source/provenance and recovery; shortest reproduction path
-Host integration: only selected adapter, after core scaffold; real profile/provenance smoke test or
-honest unavailable-host boundary
-Host verification boundary: unavailable host or resolver is reported honestly; success is never
-simulated
-Completion: actual artifacts inspected
-Assumptions and boundaries: every remaining assumption and manual or external boundary reported
+Preflight: research-repo-standard + three hard-gate skills resolved before interview
+Gate: approved committed specification and plan before implementation
+Forbidden artifacts: no target AGENTS.md/CLAUDE.md/CODEX.md, no shared top-level simplifier
+Randomness: no seed for a deterministic workflow; otherwise explicit Seed 42
+Host: only the selected adapter, after core scaffold; real smoke test or honest boundary
+Boundaries: assumptions and manual/external boundaries reported; actual artifacts inspected
 ```
 
 ## Governed work
