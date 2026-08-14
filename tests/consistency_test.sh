@@ -75,11 +75,36 @@ safety_floor_section="$(awk '
     capture { print }
 ' "$ROOT/SKILL.md")"
 safety_floor_text="$(tr '\n' ' ' <<< "$safety_floor_section" | tr -s '[:space:]' ' ')"
-if grep -Fq 'Stable researcher-editable scientific and operational settings live in versioned YAML' \
-  <<< "$safety_floor_text"; then
-  pass "safety floor assigns stable scientific and operational settings to versioned YAML"
+safety_floor_ok=1
+grep -Eqi 'result-affecting setting[^.]*one[^.]*owner|one[^.]*owner[^.]*result-affecting setting' \
+  <<< "$safety_floor_text" || safety_floor_ok=0
+grep -Fq 'before computation' <<< "$safety_floor_text" || safety_floor_ok=0
+grep -Eqi 'Seed 42' <<< "$safety_floor_text" || safety_floor_ok=0
+grep -Eqi 'deterministic' <<< "$safety_floor_text" || safety_floor_ok=0
+# ownership bucket mechanics belong to references/configuration.md, not the floor
+if grep -Eq 'paths\.py|versioned YAML|environment variable' <<< "$safety_floor_text"; then
+  safety_floor_ok=0
+fi
+# the required-skills section owns skill gating; the floor must not restate it
+if grep -Eqi 'Required skills are gates' <<< "$safety_floor_text"; then
+  safety_floor_ok=0
+fi
+if ((safety_floor_ok)); then
+  pass "safety floor keeps scientific invariants and defers configuration mechanics"
 else
-  fail "safety floor must assign stable scientific and operational settings to versioned YAML"
+  fail "safety floor must state one-owner and seed invariants without restating configuration mechanics or skill gating"
+fi
+
+description_text="$(awk '
+    /^description:/ { capture = 1; sub(/^description:[[:space:]]*/, ""); }
+    capture && /^---$/ { exit }
+    capture { print }
+' "$ROOT/SKILL.md" | tr '\n' ' ' | tr -s '[:space:]' ' ' | sed 's/^ //')"
+if [[ "$description_text" == "Use when"* ]] &&
+  grep -Fq 'Not for general-purpose software projects' <<< "$description_text"; then
+  pass "SKILL.md description states triggering conditions and its carve-out"
+else
+  fail "SKILL.md description must start with triggering conditions and keep the carve-out"
 fi
 
 skill_text="$(tr '\n' ' ' < "$ROOT/SKILL.md" | tr -s '[:space:]' ' ')"

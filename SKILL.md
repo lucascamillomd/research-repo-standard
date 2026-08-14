@@ -1,11 +1,11 @@
 ---
 name: research-repo-standard
 description:
-  The operating standard for repositories that support a scientific analysis, study, or paper. Use
-  when bootstrapping such a repository or when planning, changing, reviewing, or reporting its
-  scientific data, configuration, analysis, figures, code, workflow, or reproducibility contracts.
-  Not for general-purpose software projects or scratch work that will never support a scientific
-  claim.
+  Use when bootstrapping a repository that supports a scientific analysis, study, or paper; when
+  adopting this standard in an existing repository or checking whether one complies; or when
+  planning, changing, reviewing, or reporting such a repository's scientific data, configuration,
+  analysis, figures, code, workflow, or reproducibility work. Not for general-purpose software
+  projects or scratch work that will never support a scientific claim.
 ---
 
 # Research repository standard
@@ -75,19 +75,13 @@ blocker rather than weakening one.
    their rationale in `docs/lab_notebook.md` before presenting the result as planned.
 5. **No silent complete-case filtering.** Report missingness before exclusions or imputation.
    Inclusion and exclusion criteria are code, not prose.
-6. **Use Seed 42 only when randomness is unavoidable.** Propagate it explicitly and record it in
-   configuration. Prefer deterministic algorithms when scientifically equivalent, and declare
-   nondeterministic boundaries honestly. Do not invent a seed field for a fully deterministic
-   workflow.
+6. **Randomness is declared, never invented.** When randomness is unavoidable, the seed is explicit,
+   recorded configuration — Seed 42 — and never invented for a deterministic workflow.
 7. **Outputs are written transactionally.** Build a temporary artifact, validate it, and only then
    replace the declared destination. A failed run must not leave output that looks complete.
-8. **Required skills are gates.** A missing skill blocks only its dependent work.
-9. **Configuration has one owner.** Stable researcher-editable scientific and operational settings
-   live in versioned YAML, including every result-affecting setting, and never in hidden Python
-   globals or defaults. Derived internal paths stay in `paths.py`; secrets and machine-specific
-   roots stay in environment variables. Unknown, missing, or duplicate-owned values fail before
-   computation, and an unrecorded result-affecting override fails provenance verification.
-   Non-setting implementation constants remain in code.
+8. **Configuration has one owner.** Every result-affecting setting has exactly one declared owner.
+   Unknown, missing, duplicate-owned, or unrecorded result-affecting values fail loudly before
+   computation rather than defaulting silently.
 
 ## Bootstrapping sequence
 
