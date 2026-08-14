@@ -490,6 +490,7 @@ stage_replacement_before_render_is_preserved() {
   [[ "$status" -ne 0 ]] &&
     assert_marker "$marker" ls 2 "$(marker_value "$marker" ppid)" &&
     [[ -L "$stage_path" ]] && [[ "$(readlink "$stage_path")" == "$outside" ]] &&
+    ! path_exists "$stage_path.anchor" &&
     [[ "$(inode_of "$outside")" == "$outside_inode" ]] &&
     [[ "$(checksum_of "$outside")" == "$outside_checksum" ]] &&
     ! path_exists "$destination" &&
