@@ -125,20 +125,21 @@ blocker rather than weakening one.
 
 Ask these one at a time:
 
-1. What is the project identity and purpose, primary research question, intended scientific claim,
-   and current exploratory or confirmatory status?
-2. Which currently supported Python minor should the project use?
-3. Which host adapter should be installed: `codex`, `claude-code`, or none?
-4. Should the license be MIT, or should the repository remain unlicensed or proprietary?
-5. Which datasets and access or data-use constraints are expected?
-6. Which workflow stages are needed, and which processed-data checkpoint can be shared?
-7. Are R or other non-Python tools required, and can they run in a pinned container? If yes, which
+1. What is the project identity and purpose?
+2. What is the primary research question and intended scientific claim?
+3. Is the current status exploratory or confirmatory?
+4. Which currently supported Python minor should the project use?
+5. Which host adapter should be installed: `codex`, `claude-code`, or none?
+6. Should the license be MIT, or should the repository remain unlicensed or proprietary?
+7. Which datasets and access or data-use constraints are expected?
+8. Which workflow stages are needed, and which processed-data checkpoint can be shared?
+9. Are R or other non-Python tools required, and can they run in a pinned container? If yes, which
    runtime, version, system dependencies, and tests must it support?
-8. Which tables, plots, reports, and publication targets are expected?
-9. Which steps cannot be automated because of licensing, compute, or external-environment limits?
-10. What can public CI verify, and what requires external inputs or tools? What is the smallest
+10. Which tables, plots, reports, and publication targets are expected?
+11. Which steps cannot be automated because of licensing, compute, or external-environment limits?
+12. What can public CI verify, and what requires external inputs or tools? What is the smallest
     permitted fixture or checkpoint for each external boundary?
-11. Which journal and publication type is the repository expected to support?
+13. Which journal and publication type is the repository expected to support?
 
 ### Bootstrap execution record
 
@@ -151,8 +152,9 @@ checklist, not a new repository file:
 ```text
 Skill preflight: exact research-repo-standard provenance; exact three hard-gate skills resolved
 before interview; authorized recovery or blocker
-Interview decisions: identity/purpose/claim/status; data/access; supported Python minor;
-R/container need; host adapter; license; outputs; automation, CI, and external boundaries
+Interview decisions: identity/purpose; research question/intended claim; exploratory/confirmatory
+status; data/access; supported Python minor; R/container need; host adapter; license; outputs;
+automation, CI, and external boundaries
 Design reviews: brainstorming outcome; independent scientific critique and dispositions; figure
 strategy or explicit no-figure strategy
 Gate state: integrated design approval; minimal gate-artifact initialization; committed and reviewed

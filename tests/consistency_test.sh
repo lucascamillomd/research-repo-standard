@@ -268,6 +268,15 @@ for required in 'currently supported Python minor' 'host adapter'; do
   grep -Fq "$required" <<< "$interview_section" || bootstrap_contract_ok=0
 done
 for required in \
+  '1. What is the project identity and purpose?' \
+  '2. What is the primary research question and intended scientific claim?' \
+  '3. Is the current status exploratory or confirmatory?'; do
+  grep -Fqx "$required" <<< "$interview_section" || bootstrap_contract_ok=0
+done
+if grep -Fq 'project identity and purpose, primary research question' <<< "$interview_section"; then
+  bootstrap_contract_ok=0
+fi
+for required in \
   '### Bootstrap execution record' \
   'minimal gate-artifact initialization' \
   'Forbidden target artifacts: no AGENTS.md, CLAUDE.md, CODEX.md' \
@@ -436,12 +445,20 @@ fi
 
 # --- 14. delegated simplifier resolution is explicit and host-native ---
 simplifier_resolution_ok=1
+simplifier_record="$(awk '
+    /^Before inspecting the delegated diff, the reviewer reports this resolution record:$/ {
+      found = 1
+      next
+    }
+    found && /^```text$/ { capture = 1; next }
+    capture && /^```$/ { exit }
+    capture { print }
+' "$ROOT/SKILL.md")"
+simplifier_record_text="$(tr '\n' ' ' <<< "$simplifier_record" | tr -s '[:space:]' ' ')"
 for required in \
-  'Before inspecting the delegated diff, the reviewer reports this resolution record:' \
   'Standard skill: exact research-repo-standard; host-native resolver; source provenance; invoked' \
-  'Simplifier profile: exact research-code-simplifier; host-native resolver; resolved profile path;' \
-  'invoked'; do
-  grep -Fq "$required" "$ROOT/SKILL.md" || simplifier_resolution_ok=0
+  'Simplifier profile: exact research-code-simplifier; host-native resolver; resolved profile path; invoked'; do
+  grep -Fq "$required" <<< "$simplifier_record_text" || simplifier_resolution_ok=0
 done
 if ((simplifier_resolution_ok)); then
   pass "delegated simplifier records exact host-native resolution and invocation"
