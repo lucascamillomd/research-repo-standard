@@ -56,10 +56,10 @@ critique covers the proposed question, claim, design, estimand, and major validi
 coherent batch.
 
 An independent agent, separate from the implementing agent, invokes exact
-`scientific-critical-thinking` from KDense `k-dense-ai/scientific-agent-skills`, reads the relevant
-repository context, and returns findings without implementing the task. The critique may run beside
-work that does not depend on the judgment; dependent decisions wait for its findings. Material
-findings are incorporated into the design or explicitly dispositioned with rationale.
+`scientific-critical-thinking`, reads the relevant repository context, and returns findings without
+implementing the task. The critique may run beside work that does not depend on the judgment;
+dependent decisions wait for its findings. Material findings are incorporated into the design or
+explicitly dispositioned with rationale.
 
 If `scientific-critical-thinking` is missing, cannot be resolved, or cannot be invoked, report the
 exact capability blocker and stop only the critique-dependent work. If the skill resolves but the

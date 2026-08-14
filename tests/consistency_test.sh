@@ -461,10 +461,9 @@ final_review_contract_ok=1
 if grep -Fq 'stop before repository mutations' "$ROOT/references/prerequisites.md"; then
   final_review_contract_ok=0
 fi
-grep -Fq 'stable researcher-editable scientific or result-affecting settings' \
-  "$ROOT/references/bootstrap.md" || final_review_contract_ok=0
-grep -Fq 'Non-setting implementation constants remain in code' \
-  "$ROOT/references/bootstrap.md" || final_review_contract_ok=0
+grep -Eqi 'researcher-editable' "$ROOT/references/configuration.md" || final_review_contract_ok=0
+grep -Eqi 'named Python constant|not a researcher-editable setting' \
+  "$ROOT/references/configuration.md" || final_review_contract_ok=0
 grep -Eq '^## Shared planning companion$' "$ROOT/references/prerequisites.md" ||
   final_review_contract_ok=0
 if grep -Eq 'data[^[:space:]]*.*fixtures|data reference.*fixtures' "$ROOT/README.md"; then
@@ -518,6 +517,34 @@ if ((configuration_precedence_ok)); then
   pass "configuration classifier uses exclusive environment-paths-YAML-code precedence"
 else
   fail "configuration classifier must keep sensitive, derived, editable, and code buckets exclusive"
+fi
+
+# each contract keeps one owner: bootstrap and analysis defer instead of restating
+dedupe_ok=1
+bootstrap_configuration_section="$(awk '
+    /^## Configuration$/ { capture = 1; next }
+    capture && /^## / { exit }
+    capture { print }
+' "$ROOT/references/bootstrap.md")"
+bootstrap_configuration_text="$(tr '\n' ' ' <<< "$bootstrap_configuration_section" |
+  tr -s '[:space:]' ' ')"
+grep -Fq 'references/configuration.md' <<< "$bootstrap_configuration_text" || dedupe_ok=0
+grep -Fq '.env.example' <<< "$bootstrap_configuration_text" || dedupe_ok=0
+# the ownership buckets themselves belong to references/configuration.md
+if grep -Eqi 'versioned YAML|implementation constants|classify those buckets|remain in code' \
+  <<< "$bootstrap_configuration_text"; then
+  dedupe_ok=0
+fi
+# references/prerequisites.md owns skill provenance; analysis.md names only the exact skill
+grep -Fq 'scientific-critical-thinking' "$ROOT/references/analysis.md" || dedupe_ok=0
+if grep -Eqi 'k-dense-ai|scientific-agent-skills' "$ROOT/references/analysis.md"; then
+  dedupe_ok=0
+fi
+grep -Eqi 'scientific-agent-skills' "$ROOT/references/prerequisites.md" || dedupe_ok=0
+if ((dedupe_ok)); then
+  pass "bootstrap defers configuration ownership and analysis defers skill provenance"
+else
+  fail "bootstrap must defer configuration ownership and analysis must defer skill provenance"
 fi
 
 if grep -Fq 'SHA-256' "$ROOT/references/data.md" &&

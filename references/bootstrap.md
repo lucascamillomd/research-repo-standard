@@ -108,18 +108,9 @@ dev = ["pre-commit", "pytest", "ruff", "ty"]
 ## Configuration
 
 Load `references/configuration.md` before creating YAML, `config.py`, `paths.py`, CLI overrides, or
-configuration provenance. Create `config/datasets.yaml` and `config/analysis.yaml`; TOML remains the
-owner of packaging and tool configuration.
-
-Credentials, secrets, permitted machine-specific roots, and GPU selection use environment variables.
-Derived internal paths live in `paths.py`; other derived configuration values may be computed in
-`config.py`. Classify those buckets before considering YAML.
-
-All stable researcher-editable scientific or result-affecting settings that remain belong explicitly
-in versioned YAML, as do remaining stable researcher-editable operational settings.
-
-Non-setting implementation constants remain in code. `config.py` uses strict typed schemas and
-contains no hidden project values or result-affecting defaults.
+configuration provenance; it owns where each value belongs and how the loader validates it. Create
+`config/datasets.yaml` and `config/analysis.yaml`; TOML remains the owner of packaging and tool
+configuration.
 
 Create `.env.example` only when the project consumes environment variables. List safe variable names
 and placeholders, never values. Ignore the real `.env`.
