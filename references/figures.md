@@ -5,6 +5,13 @@ asset naming, export paths, assembly conventions, cross-figure encoding, and ren
 Load it and invoke exact `nature-figure` before planning a figure, writing plotting code, changing
 figure outputs, or performing QA.
 
+Begin every figure-work plan or report with this completed preflight record:
+
+```text
+Figure contract source loaded: references/figures.md
+Figure skill invoked: nature-figure
+```
+
 ## Pre-plot contract
 
 Record and approve the following complete template in `docs/FIGURE_CONTRACT.md` before plotting:

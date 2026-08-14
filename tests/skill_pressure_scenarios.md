@@ -107,3 +107,21 @@ All four are required:
    unrelated work unchanged.
 4. Rerun covering/repository-prescribed tests after edits and accept "reviewed; no safe edit" as a
    successful result.
+
+## GREEN results
+
+Evaluated 2026-08-14 with fresh `fork_turns="none"` agents. The neutral harness bound the exact
+`research-repo-standard` name to the staged worktree `SKILL.md`; rubrics remained hidden and stored
+scenario prompts were byte-verbatim.
+
+| Scenario                       | Final agent       | Score | Result                                            |
+| ------------------------------ | ----------------- | ----: | ------------------------------------------------- |
+| A — governed scientific change | `task5_counted_a` |   6/6 | GREEN                                             |
+| B — exploratory figure         | `task5_retry_b`   |   7/7 | GREEN after one focused figure-preflight cycle    |
+| C — deterministic bootstrap    | `task5_retry_c3`  | 10/10 | GREEN after three focused bootstrap-record cycles |
+| D — delegated simplification   | `task5_retry_d`   |   4/4 | GREEN after one focused resolution-record cycle   |
+
+Total: **27/27 mandatory criteria passed.** The initially installed host resolution pointed to the
+old main checkout, so those four runs were retained only as provenance-invalid baseline evidence and
+were not counted as GREEN. Real installed-host provenance remains a post-integration smoke-test
+boundary; no global skill configuration was changed for this evaluation.

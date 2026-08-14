@@ -94,7 +94,9 @@ blocker rather than weakening one.
    `scientific-critical-thinking`, and `nature-figure` through the current host. Use
    `references/prerequisites.md` for authorized recovery. Repeat only if the agent session changes.
 2. **Interview one question at a time.** Ask the questions below, pursue conditional follow-ups, and
-   do not silently choose a Python version, seed, adapter, license, or scientific default.
+   do not silently choose a Python version, seed, adapter, license, or scientific default. A request
+   to keep the interview short changes the cadence, not the required coverage: never bundle the
+   numbered topics or stop after only the answers described as "essential."
 3. **Design with the full gate.** Invoke `superpowers:brainstorming`, explore alternatives, and keep
    implementation blocked while the design is unsettled.
 4. **Critique the science independently.** Launch a separate review agent that applies
@@ -103,8 +105,10 @@ blocker rather than weakening one.
 5. **Define the figure strategy.** Load `references/figures.md` and invoke `nature-figure` before
    planning figures. Define source data, outputs, exports, and QA. If no figures are planned, record
    an explicit no-figure strategy.
-6. **Approve and document.** Present the integrated design for approval. Write and self-review the
-   specification, commit it, and obtain user review before implementation.
+6. **Approve and document.** Present the integrated design for approval. In an empty directory,
+   initialize only version control and the gate-artifact path needed to write the specification.
+   Write and self-review the specification, commit it, and obtain user review before implementation.
+   Do not create target `AGENTS.md`, `CLAUDE.md`, `CODEX.md`, or a shared top-level simplifier.
 7. **Plan, scaffold, and configure.** Invoke `superpowers:writing-plans`, then load every applicable
    reference, including `references/bootstrap.md`, and create only the approved repository. Seed 42
    is configured only when the workflow actually uses randomness.
@@ -135,6 +139,36 @@ Ask these one at a time:
 10. What can public CI verify, and what requires external inputs or tools? What is the smallest
     permitted fixture or checkpoint for each external boundary?
 11. Which journal and publication type is the repository expected to support?
+
+### Bootstrap execution record
+
+Maintain the following required reporting slots throughout bootstrap. When asked to explain or plan
+a bootstrap before the answers exist, the response first reproduces this record with undecided
+fields marked pending, then asks exactly one next question. Saying only that the required topics
+will be completed, or listing only the first question, does not satisfy the record. This is a
+checklist, not a new repository file:
+
+```text
+Skill preflight: exact research-repo-standard provenance; exact three hard-gate skills resolved
+before interview; authorized recovery or blocker
+Interview decisions: identity/purpose/claim/status; data/access; supported Python minor;
+R/container need; host adapter; license; outputs; automation, CI, and external boundaries
+Design reviews: brainstorming outcome; independent scientific critique and dispositions; figure
+strategy or explicit no-figure strategy
+Gate state: integrated design approval; minimal gate-artifact initialization; committed and reviewed
+specification; implementation plan ready
+Core scaffold: uv and Make; configuration; data registry and raw-data safety; analysis; provenance;
+verification; no unapproved R support
+Forbidden target artifacts: no AGENTS.md, CLAUDE.md, CODEX.md, or shared top-level simplifier
+Randomness: deterministic workflow has no seed setting; otherwise explicit Seed 42 and boundaries
+README: expected skill source/provenance and recovery; shortest reproduction path
+Host integration: only selected adapter, after core scaffold; real profile/provenance smoke test or
+honest unavailable-host boundary
+Host verification boundary: unavailable host or resolver is reported honestly; success is never
+simulated
+Completion: actual artifacts inspected
+Assumptions and boundaries: every remaining assumption and manual or external boundary reported
+```
 
 ## Governed work
 
@@ -169,6 +203,14 @@ changed code, preserve behavior, and return or apply only simplifications within
 Re-run covering tests after any simplifier edit. If the profile cannot be resolved or an independent
 agent cannot be launched, dependent completion is blocked; do not substitute an unreviewed
 self-pass.
+
+Before inspecting the delegated diff, the reviewer reports this resolution record:
+
+```text
+Standard skill: exact research-repo-standard; host-native resolver; source provenance; invoked
+Simplifier profile: exact research-code-simplifier; host-native resolver; resolved profile path;
+invoked
+```
 
 ## Completion
 

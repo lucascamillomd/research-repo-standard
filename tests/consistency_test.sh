@@ -267,6 +267,20 @@ interview_section="$(awk '
 for required in 'currently supported Python minor' 'host adapter'; do
   grep -Fq "$required" <<< "$interview_section" || bootstrap_contract_ok=0
 done
+for required in \
+  '### Bootstrap execution record' \
+  'minimal gate-artifact initialization' \
+  'Forbidden target artifacts: no AGENTS.md, CLAUDE.md, CODEX.md' \
+  'deterministic workflow has no seed setting' \
+  'the response first reproduces this record with undecided' \
+  'asks exactly one next question' \
+  'shortest reproduction path' \
+  'honest unavailable-host boundary' \
+  'success is never' \
+  'actual artifacts inspected' \
+  'every remaining assumption and manual or external boundary reported'; do
+  grep -Fq "$required" "$ROOT/SKILL.md" || bootstrap_contract_ok=0
+done
 for required in 'adapters/codex.sh' 'adapters/claude-code.sh' 'smoke test'; do
   grep -Fq "$required" <<< "$skill_text" || bootstrap_contract_ok=0
 done
@@ -360,10 +374,13 @@ else
 fi
 
 if grep -Fq 'Open and visually inspect both the rendered SVG and rendered PDF' \
-  "$ROOT/references/figures.md"; then
+  "$ROOT/references/figures.md" &&
+  grep -Fq 'Figure contract source loaded: references/figures.md' \
+    "$ROOT/references/figures.md" &&
+  grep -Fq 'Figure skill invoked: nature-figure' "$ROOT/references/figures.md"; then
   pass "figure reference owns rendered SVG and PDF inspection"
 else
-  fail "figure reference must require rendered SVG and PDF inspection"
+  fail "figure reference must require explicit preflight plus rendered SVG and PDF inspection"
 fi
 
 reference_ownership_ok=1
@@ -415,6 +432,21 @@ if ! grep -Eq 'config/analysis\.yaml|random_seed:|test_[a-z]|datasets\.yaml' \
   pass "simplifier profile contains no independent configuration or test-naming grammar"
 else
   fail "simplifier profile must delegate configuration and test-naming grammar to repository authorities"
+fi
+
+# --- 14. delegated simplifier resolution is explicit and host-native ---
+simplifier_resolution_ok=1
+for required in \
+  'Before inspecting the delegated diff, the reviewer reports this resolution record:' \
+  'Standard skill: exact research-repo-standard; host-native resolver; source provenance; invoked' \
+  'Simplifier profile: exact research-code-simplifier; host-native resolver; resolved profile path;' \
+  'invoked'; do
+  grep -Fq "$required" "$ROOT/SKILL.md" || simplifier_resolution_ok=0
+done
+if ((simplifier_resolution_ok)); then
+  pass "delegated simplifier records exact host-native resolution and invocation"
+else
+  fail "delegated simplifier must record exact host-native resolution and invocation"
 fi
 
 # --- final ---
