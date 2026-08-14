@@ -489,8 +489,10 @@ bootstrap_record="$(awk '
     capture { print }
 ' "$ROOT/SKILL.md")"
 bootstrap_record_text="$(tr '\n' ' ' <<< "$bootstrap_record" | tr -s '[:space:]' ' ')"
-record_slots="$(grep -c . <<< "$bootstrap_record")"
-[[ "$record_slots" -ge 1 && "$record_slots" -le 6 ]] || bootstrap_contract_ok=0
+# slots are counted by their labels, so a wrapped continuation line is not a separate slot
+record_slots="$(grep -cE '^[A-Za-z][A-Za-z ]*:' <<< "$bootstrap_record")"
+[[ "$record_slots" -ge 1 && "$record_slots" -le 10 ]] || bootstrap_contract_ok=0
+grep -Eqi 'does not satisfy the record' <<< "$skill_text" || bootstrap_contract_ok=0
 for required_pattern in \
   'AGENTS\.md.*CLAUDE\.md.*CODEX\.md' \
   'shared top-level simplifier' \
@@ -498,7 +500,11 @@ for required_pattern in \
   'deterministic' \
   'smoke test' \
   'boundar' \
-  'artifacts inspected'; do
+  'artifacts inspected' \
+  'critique' \
+  'figure strategy' \
+  'core contracts' \
+  'README'; do
   grep -Eqi "$required_pattern" <<< "$bootstrap_record_text" || bootstrap_contract_ok=0
 done
 # the numbered interview above owns topic coverage; the record must not restate it
@@ -769,6 +775,10 @@ grep -Eqi 'installed-host provenance[^.]*boundary' <<< "$pressure_results_text" 
   pressure_evidence_ok=0
 grep -Eqi 'through the host-native resolver' <<< "$pressure_results_text" || pressure_evidence_ok=0
 grep -Eqi 'was invoked' <<< "$pressure_results_text" || pressure_evidence_ok=0
+# stored transcripts are dated against the contract they were scored under
+grep -Eqi 'Archive note \(2026-08-14\)' <<< "$pressure_results_text" || pressure_evidence_ok=0
+grep -Eqi 'working-tree .?SKILL\.md.? is the current contract' <<< "$pressure_results_text" ||
+  pressure_evidence_ok=0
 if grep -Eq 'task5_counted_a|task5_fix1_d' <<< "$pressure_results_text"; then
   pressure_evidence_ok=0
 fi

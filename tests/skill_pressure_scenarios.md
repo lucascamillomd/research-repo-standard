@@ -112,6 +112,11 @@ All four are required:
 
 ## GREEN results
 
+Archive note (2026-08-14): transcripts recorded before this date were scored against the
+pre-consolidation bootstrap execution record and interview wording and predate the standard-gate and
+simplifier-waiver changes. The working-tree `SKILL.md` is the current contract; these transcripts
+are retained as historical evidence, not as a restatement of it.
+
 Evaluated 2026-08-14 with fresh scenario agents and byte-verbatim stored prompts. Scenarios A and D
 used a staged-binding/path-echo protocol: the harness supplied the exact staged paths as provenance,
 kept the rubrics hidden, and required path echoes only. There was no required invocation statement

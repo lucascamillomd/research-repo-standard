@@ -156,15 +156,21 @@ Ask these, following the cadence rules in step 2:
 Maintain the following required reporting slots throughout bootstrap. When asked to explain or plan
 a bootstrap before the answers exist, the response first reproduces this record with undecided
 fields marked pending, then asks exactly one next question. This is a checklist, not a new
-repository file:
+repository file. Saying only that the required topics will be completed, or listing only the first
+question, does not satisfy the record:
 
 ```text
 Preflight: research-repo-standard + three hard-gate skills resolved before interview
+Reviews: brainstorming outcome; independent scientific critique and dispositions; figure strategy
+or explicit no-figure strategy
 Gate: approved committed specification and plan before implementation
+Scaffold: core contracts — uv and Make, configuration, data registry and raw-data safety, analysis,
+provenance, verification; no unapproved runtimes
 Forbidden artifacts: no target AGENTS.md/CLAUDE.md/CODEX.md, no shared top-level simplifier
 Randomness: no seed for a deterministic workflow; otherwise explicit Seed 42
+README: expected skill source/provenance, recovery, shortest reproduction path
 Host: only the selected adapter, after core scaffold; real smoke test or honest boundary
-Boundaries: assumptions and manual/external boundaries reported; actual artifacts inspected
+Boundaries: assumptions and manual or external boundaries reported; actual artifacts inspected
 ```
 
 ## Adopting an existing repository
