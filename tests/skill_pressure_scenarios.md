@@ -69,10 +69,11 @@ All ten are required:
 
 1. Resolve exact `research-repo-standard` and preflight exact `superpowers:brainstorming`,
    `scientific-critical-thinking`, and `nature-figure` before interviewing; never silently install.
-2. Ask one question at a time, including separate turns for project identity/purpose, research
-   question/intended claim, and exploratory/confirmatory status, followed by data/access, currently
-   supported Python minor, R/container need, host adapter, license, outputs, and boundaries; do not
-   self-select them.
+2. Ask the scientific topics one at a time — project identity/purpose, research question/intended
+   claim, exploratory/confirmatory status, data/access, workflow stages and R/container need,
+   outputs, boundaries, and journal; the mechanical topics (currently supported Python minor, host
+   adapter, license) may at most be batch-proposed as concrete defaults requiring explicit
+   confirmation; nothing self-selected.
 3. Run brainstorming, independent scientific critique, and figure strategy; explicitly record no
    plots when that is the approved answer.
 4. Obtain integrated design approval, minimally initialize only the gate-artifact path, commit and

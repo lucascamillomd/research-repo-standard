@@ -31,18 +31,25 @@ alone is not resolution. Do not silently install, imitate, or substitute a requi
 or unverifiable skill blocks only the work that depends on it. Load `references/prerequisites.md`
 when resolution, installation, recovery, or host verification is in scope.
 
-Classify every requested file modification into one path. When uncertain, use the full gate.
+Classify every requested file modification into one path. Ceremony scales with what the change can
+break, so when the path is unclear, use the next stricter one.
 
-- **Full gate:** Result-affecting or contract-affecting changes, including scientific decisions,
-  analysis configuration, data contracts, pipeline structure, figures, features, and this standard's
-  rules. Invoke `superpowers:brainstorming`. Do not implement until the approved specification is
-  committed and reviewed and the plan is ready. Direct and delegated implementation inherits the
-  completed gate; reopen it at design if scope expands.
+- **Full gate:** Design-level changes — estimands, study design, statistical methodology, inclusion
+  or exclusion rules, missing-data policy, causal interpretation, data contracts, pipeline
+  structure, claim scope, and this standard's rules. Invoke `superpowers:brainstorming`. Do not
+  implement until the approved specification is committed and reviewed and the plan is ready. Direct
+  and delegated implementation inherits the completed gate; reopen it at design if scope expands.
+- **Standard gate:** Result-affecting changes below design level, such as analysis configuration
+  values, figure changes, and feature additions within the already approved design. Obtain explicit
+  authorization for the change and append the decision, rationale, and authorization source to
+  `docs/lab_notebook.md` before the results are presented. Cover the change with tests. No
+  specification or plan artifact is required; escalate to the full gate the moment a design-level
+  item is in play.
 - **Light path:** Mechanical, non-result-affecting changes such as documentation, comments,
   formatting, behavior-preserving renames or tested refactors, and tests that do not change
   behavior. State the intent, files, and why the change is non-result-affecting; obtain one
-  confirmation, then implement without specification or plan artifacts. Escalate to the full gate if
-  results, interfaces, or contracts may change.
+  confirmation, then implement without specification or plan artifacts. Escalate to the standard
+  gate if results may change, and to the full gate if interfaces or contracts may change.
 - **No gate:** Read-only explanation, inspection, diagnosis, status reporting, and regeneration of
   declared outputs from an already approved workflow. Questions ask for answers, not edits; answer
   first and wait for an explicit change request.
@@ -89,9 +96,12 @@ blocker rather than weakening one.
    `scientific-critical-thinking`, and `nature-figure` through the current host. Use
    `references/prerequisites.md` for authorized recovery. Repeat only if the agent session changes.
 2. **Interview one question at a time.** Ask the questions below, pursue conditional follow-ups, and
-   do not silently choose a Python version, seed, adapter, license, or scientific default. A request
-   to keep the interview short changes the cadence, not the required coverage: never bundle the
-   numbered topics or stop after only the answers described as "essential."
+   do not silently choose a Python version, seed, adapter, license, or scientific default. When the
+   user explicitly asks for brevity, the mechanical topics — Python minor, host adapter, license —
+   may be presented together as concrete proposed defaults that still require explicit confirmation.
+   The scientific topics — identity and purpose, question and claim, status, data and access,
+   workflow stages, outputs, boundaries, and journal — stay one at a time. Nothing is ever chosen
+   silently.
 3. **Design with the full gate.** Invoke `superpowers:brainstorming`, explore alternatives, and keep
    implementation blocked while the design is unsettled.
 4. **Critique the science independently.** Launch a separate review agent that applies
@@ -173,11 +183,10 @@ scientific meaning, interfaces, data safety, or scope.
 Use the routing table above broadly. Apply every loaded domain contract before dependent decisions.
 Do not avoid a contract through narrower task wording.
 
-Obtain authorization before changing an estimand, study design, statistical method or model,
-inclusion or exclusion rule, missing-data policy, causal interpretation, data contract, or claim
-scope. Before results are presented, append the decision, rationale and evidence, authorization
-source, affected work, and any superseded entry to `docs/lab_notebook.md`. A separate review agent
-must apply `scientific-critical-thinking` to those scientific judgments and return findings without
+Obtain authorization before any design-level change listed under the full gate above. Before results
+are presented, append the decision, rationale and evidence, authorization source, affected work, and
+any superseded entry to `docs/lab_notebook.md`. A separate review agent must apply
+`scientific-critical-thinking` to those scientific judgments and return findings without
 implementing them.
 
 Keep changes narrow and follow the repository's declared interfaces. Tests and documentation change
@@ -190,11 +199,14 @@ resolve the exact narrow targets and state what would be destroyed and whether i
 either is unclear, stop and ask.
 
 After changing code or tests, launch an independent review agent through the current host's exact
-`research-code-simplifier` profile. It must invoke this skill, load the references relevant to the
-changed code, preserve behavior, and return or apply only simplifications within the approved scope.
-Re-run covering tests after any simplifier edit. If the profile cannot be resolved or an independent
-agent cannot be launched, dependent completion is blocked; do not substitute an unreviewed
-self-pass.
+`research-code-simplifier` profile. Run it once per coherent unit of delegated work rather than
+after every individual edit, so review effort tracks the change rather than the edit count. It must
+invoke this skill, load the references relevant to the changed code, preserve behavior, and return
+or apply only simplifications within the approved scope. Re-run covering tests after any simplifier
+edit. If the profile cannot be resolved or an independent agent cannot be launched, dependent
+completion is blocked by default; the user may explicitly waive or defer the pass, in which case
+record the waiver and its scope in the completion report so it is never silent. A self-pass never
+substitutes for the independent review.
 
 Before inspecting the delegated diff, the reviewer reports this additional resolution record:
 

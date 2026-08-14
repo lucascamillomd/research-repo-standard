@@ -124,6 +124,81 @@ else
   fail "SKILL.md must preserve every approved reference trigger group"
 fi
 
+# --- 3b. modification gates stay proportionate to what a change can break ---
+gate_section="$(awk '
+    /^## Required skills and modification gates$/ { capture = 1; next }
+    capture && /^## Safety floor$/ { exit }
+    capture { print }
+' "$ROOT/SKILL.md")"
+gate_text="$(tr '\n' ' ' <<< "$gate_section" | tr -s '[:space:]' ' ')"
+gate_ok=1
+for path_label in '**Full gate:**' '**Standard gate:**' '**Light path:**' '**No gate:**'; do
+  grep -Fq "$path_label" <<< "$gate_text" || gate_ok=0
+done
+# the full gate is scoped to design-level decisions and owns their list
+grep -Eqi 'design-level' <<< "$gate_text" || gate_ok=0
+for design_item in 'estimand' 'study design' 'data contract' 'pipeline structure' 'claim scope'; do
+  grep -Fqi "$design_item" <<< "$gate_text" || gate_ok=0
+done
+# an unclear classification escalates upward rather than defaulting to the loosest path
+grep -Eqi 'stricter' <<< "$gate_text" || gate_ok=0
+standard_gate_text="$(awk '
+    /^- \*\*Standard gate:\*\*/ { capture = 1; print; next }
+    capture && /^- \*\*/ { exit }
+    capture { print }
+' <<< "$gate_section" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
+grep -Eqi 'authoriz' <<< "$standard_gate_text" || gate_ok=0
+grep -Fq 'docs/lab_notebook.md' <<< "$standard_gate_text" || gate_ok=0
+grep -Eqi 'test' <<< "$standard_gate_text" || gate_ok=0
+# the middle notch deliberately carries no specification or plan ceremony
+grep -Eqi 'no specification|without a specification|no plan|without a plan' \
+  <<< "$standard_gate_text" || gate_ok=0
+# the governed-work authorization prose defers to that single list instead of restating it
+if grep -Eq 'Obtain authorization before changing an estimand' <<< "$skill_text"; then
+  gate_ok=0
+fi
+grep -Eqi 'authorization before[^.]*design-level' <<< "$skill_text" || gate_ok=0
+if ((gate_ok)); then
+  pass "SKILL.md classifies changes into four proportionate paths with one design-level list"
+else
+  fail "SKILL.md must offer full, standard, light, and no-gate paths that escalate upward from one design-level list"
+fi
+
+# --- 3c. independent review and interview cadence scale with the work ---
+proportion_ok=1
+# the simplifier pass batches per unit of work and any skip is explicit and recorded
+grep -Eqi 'once per coherent unit' <<< "$skill_text" || proportion_ok=0
+grep -Eqi 'waive|waiver' <<< "$skill_text" || proportion_ok=0
+grep -Fq 'completion report' <<< "$skill_text" || proportion_ok=0
+grep -Eqi 'self-pass' <<< "$skill_text" || proportion_ok=0
+# brevity may batch only the mechanical interview topics, and only with confirmation
+bootstrap_step_two="$(awk '
+    /^2\. \*\*Interview one question at a time\.\*\*/ { capture = 1 }
+    capture && /^3\. / { exit }
+    capture { print }
+' "$ROOT/SKILL.md" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
+grep -Eqi 'brevity|keep the interview short' <<< "$bootstrap_step_two" || proportion_ok=0
+grep -Eqi 'mechanical' <<< "$bootstrap_step_two" || proportion_ok=0
+grep -Eqi 'explicit confirmation' <<< "$bootstrap_step_two" || proportion_ok=0
+grep -Eqi 'one at a time' <<< "$bootstrap_step_two" || proportion_ok=0
+grep -Eqi 'silent' <<< "$bootstrap_step_two" || proportion_ok=0
+# the scenario rubric must score the same relaxed cadence, not the old never-bundle rule
+scenario_c_rubric="$(awk '
+    /^## Scenario C — deterministic bootstrap$/ { found = 1 }
+    found && /^### Evaluator rubric/ { capture = 1; next }
+    capture && /^## / { exit }
+    capture { print }
+' "$ROOT/tests/skill_pressure_scenarios.md" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
+grep -Eqi 'scientific topics one at a time' <<< "$scenario_c_rubric" || proportion_ok=0
+grep -Eqi 'mechanical topics' <<< "$scenario_c_rubric" || proportion_ok=0
+grep -Eqi 'explicit confirmation' <<< "$scenario_c_rubric" || proportion_ok=0
+grep -Eqi 'self-select' <<< "$scenario_c_rubric" || proportion_ok=0
+if ((proportion_ok)); then
+  pass "simplifier review batches per unit of work and brevity relaxes only mechanical interview topics"
+else
+  fail "simplifier review must batch with a recorded waiver and brevity must batch only mechanical interview topics"
+fi
+
 # --- 4. canonical simplifier profile has the collision-safe identity ---
 if [[ -f "$ROOT/agents/research-code-simplifier.md" ]] &&
   grep -Fqx 'name: research-code-simplifier' "$ROOT/agents/research-code-simplifier.md" &&
