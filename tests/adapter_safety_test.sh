@@ -23,6 +23,7 @@ failure_exit_status() {
   printf '%s\n' "$failure_count"
 }
 inode_of() { LC_ALL=C ls -di "$1" | awk '{ print $1 }'; }
+checksum_of() { cksum "$1" | awk '{ print $1 ":" $2 }'; }
 path_exists() { [[ -e "$1" || -L "$1" ]]; }
 
 test_root="$(mktemp -d)"
@@ -78,8 +79,52 @@ case "$mode" in
     esac
     exit 75
     ;;
+  replace-recorded-stage)
+    recorded="$(cat "${RRS_STAGE_RECORD:?}")"
+    /bin/rm -f "$recorded" || exit 80
+    printf 'foreign stage replacement\n' > "$recorded"
+    replacement_inode="$(LC_ALL=C ls -di "$recorded" | awk '{ print $1 }')"
+    source_inode="$(LC_ALL=C ls -di "$1" | awk '{ print $1 }')"
+    /bin/ln "$1" "$2" || exit 81
+    effect_inode="$(LC_ALL=C ls -di "$2" | awk '{ print $1 }')"
+    write_marker "$1" "$2" "$effect_inode" 0
+    {
+      printf 'replaced_stage=%s\nreplacement_inode=%s\n' "$recorded" "$replacement_inode"
+      printf 'source_inode=%s\n' "$source_inode"
+    } >> "$marker"
+    exit 0
+    ;;
   *) exec /bin/ln "$@" ;;
 esac
+DOUBLE
+
+cat > "$fault_bin/ls" <<'DOUBLE'
+#!/usr/bin/env bash
+set -u
+mode=${RRS_LS_MODE-none}
+recorded=''
+[[ -f "${RRS_STAGE_RECORD-}" ]] && recorded="$(cat "$RRS_STAGE_RECORD")"
+listed_path=''
+for argument in "$@"; do listed_path=$argument; done
+if [[ "$mode" != replace-stage-after-report || -z "$recorded" ||
+  "$listed_path" != "$recorded" ]]; then
+  exec /bin/ls "$@"
+fi
+count_file=${RRS_LS_COUNT:?}
+count=1
+[[ -f "$count_file" ]] && count=$(($(cat "$count_file") + 1))
+printf '%s\n' "$count" > "$count_file"
+listing="$(/bin/ls "$@")" || exit $?
+if [[ "$count" -eq 2 ]]; then
+  /bin/rm -f "$recorded" || exit 82
+  /bin/ln -s "${RRS_OUTSIDE_SENTINEL:?}" "$recorded" || exit 83
+  {
+    printf 'operation=ls\ncount=%s\npid=%s\nppid=%s\npath=%s\n' \
+      "$count" "$$" "${RRS_ADAPTER_PID:?}" "$recorded"
+    printf 'replacement=%s\nreturn_status=0\n' "$RRS_OUTSIDE_SENTINEL"
+  } > "${RRS_LS_MARKER:?}"
+fi
+printf '%s\n' "$listing"
 DOUBLE
 
 cat > "$fault_bin/mktemp" <<'DOUBLE'
@@ -172,7 +217,7 @@ case "$mode" in
   *) exec /bin/rm "$@" ;;
 esac
 DOUBLE
-chmod +x "$fault_bin/ln" "$fault_bin/mktemp" "$fault_bin/rm"
+chmod +x "$fault_bin/ln" "$fault_bin/ls" "$fault_bin/mktemp" "$fault_bin/rm"
 
 adapter_for() {
   case "$1" in
@@ -185,6 +230,34 @@ destination_for() {
     claude-code) printf '%s/.claude/agents/research-code-simplifier.md\n' "$2" ;;
     codex) printf '%s/.codex/agents/research-code-simplifier.toml\n' "$2" ;;
   esac
+}
+extract_canonical_body() {
+  awk 'delimiters < 2 && /^---$/ { delimiters++; next } delimiters >= 2 { print }' \
+    "$ROOT/agents/research-code-simplifier.md"
+}
+extract_rendered_body() {
+  rendered_host=$1 rendered_path=$2
+  case "$rendered_host" in
+    claude-code)
+      awk 'delimiters < 2 && /^---$/ { delimiters++; next } delimiters >= 2 { print }' \
+        "$rendered_path"
+      ;;
+    codex)
+      awk -v quote="'''" '
+        $0 == "developer_instructions = " quote { capture=1; next }
+        capture && $0 == quote { closed=1; next }
+        capture && !closed { print }
+        END { if (!capture || !closed) exit 1 }
+      ' "$rendered_path"
+      ;;
+  esac
+}
+assert_rendered_profile() {
+  rendered_host=$1 rendered_path=$2
+  [[ -f "$rendered_path" && ! -L "$rendered_path" ]] &&
+    grep -Fq 'research-code-simplifier' "$rendered_path" &&
+    cmp -s <(extract_canonical_body) \
+      <(extract_rendered_body "$rendered_host" "$rendered_path")
 }
 assert_marker() {
   marker=$1 operation=$2 count=$3 adapter_pid=$4
@@ -232,7 +305,9 @@ run_fault_case() {
   assert_marker "$marker" ln 1 "$adapter_pid" || return 1
   stage_path="$(cat "$stage_record")"
   destination="$(destination_for "$host" "$fixture")"
-  [[ "$(marker_value "$marker" source)" == "$stage_path" ]] || return 1
+  publication_source="$(marker_value "$marker" source)"
+  [[ "$publication_source" == "$stage_path" || "$publication_source" == "$stage_path.anchor" ]] ||
+    return 1
   [[ "$(marker_value "$marker" destination)" == "$destination" ]] || return 1
   case "$mode" in
     pre-fail)
@@ -342,7 +417,9 @@ run_cleanup_fault_case() {
   destination="$(destination_for "$host" "$fixture")"
   if [[ "$phase" == before ]]; then
     assert_marker "$ln_marker" ln 1 "$adapter_pid" || return 1
-    [[ "$(marker_value "$ln_marker" source)" == "$stage_path" ]] || return 1
+    publication_source="$(marker_value "$ln_marker" source)"
+    [[ "$publication_source" == "$stage_path" || \
+      "$publication_source" == "$stage_path.anchor" ]] || return 1
     [[ "$(marker_value "$ln_marker" destination)" == "$destination" ]] || return 1
     [[ "$(marker_value "$ln_marker" return_status)" == 71 ]] || return 1
     ! path_exists "$destination" || return 1
@@ -388,6 +465,71 @@ PROFILE
     assert_stage_absent "$copy_root/target"
 }
 
+stage_replacement_before_render_is_preserved() {
+  host=$1
+  fixture="$test_root/render-replacement-$host"
+  output="$test_root/render-replacement-$host.output"
+  stage_record="$test_root/render-replacement-$host.stage"
+  marker="$test_root/render-replacement-$host.marker"
+  count_file="$test_root/render-replacement-$host.count"
+  outside="$test_root/render-replacement-$host.outside"
+  mkdir "$fixture"
+  printf 'outside sentinel\n' > "$outside"
+  outside_inode="$(inode_of "$outside")"
+  outside_checksum="$(checksum_of "$outside")"
+  set +e
+  PATH="$fault_bin:$ORIGINAL_PATH" REAL_MKTEMP="$REAL_MKTEMP" \
+    RRS_FAULT_OPERATION=render-replacement RRS_LS_MODE=replace-stage-after-report \
+    RRS_LS_MARKER="$marker" RRS_LS_COUNT="$count_file" RRS_STAGE_RECORD="$stage_record" \
+    RRS_OUTSIDE_SENTINEL="$outside" \
+    "$(adapter_for "$host")" "$fixture" > "$output" 2>&1
+  status=$?
+  set -e
+  stage_path="$(cat "$stage_record")"
+  destination="$(destination_for "$host" "$fixture")"
+  [[ "$status" -ne 0 ]] &&
+    assert_marker "$marker" ls 2 "$(marker_value "$marker" ppid)" &&
+    [[ -L "$stage_path" ]] && [[ "$(readlink "$stage_path")" == "$outside" ]] &&
+    [[ "$(inode_of "$outside")" == "$outside_inode" ]] &&
+    [[ "$(checksum_of "$outside")" == "$outside_checksum" ]] &&
+    ! path_exists "$destination" &&
+    grep -Fq 'staging file changed before rendering' "$output" &&
+    assert_no_old_transaction_artifacts "$fixture"
+}
+
+stage_replacement_during_publish_keeps_only_valid_destination() {
+  host=$1
+  fixture="$test_root/publish-replacement-$host"
+  output="$test_root/publish-replacement-$host.output"
+  stage_record="$test_root/publish-replacement-$host.stage"
+  marker="$test_root/publish-replacement-$host.marker"
+  count_file="$test_root/publish-replacement-$host.count"
+  mkdir "$fixture"
+  set +e
+  PATH="$fault_bin:$ORIGINAL_PATH" REAL_MKTEMP="$REAL_MKTEMP" \
+    RRS_FAULT_OPERATION=ln RRS_FAULT_MODE=replace-recorded-stage \
+    RRS_FAULT_MARKER="$marker" RRS_FAULT_COUNT="$count_file" \
+    RRS_STAGE_RECORD="$stage_record" \
+    "$(adapter_for "$host")" "$fixture" > "$output" 2>&1
+  status=$?
+  set -e
+  stage_path="$(cat "$stage_record")"
+  destination="$(destination_for "$host" "$fixture")"
+  source_path="$(marker_value "$marker" source)"
+  [[ "$status" -ne 0 ]] &&
+    assert_marker "$marker" ln 1 "$(marker_value "$marker" ppid)" &&
+    [[ "$source_path" == "$stage_path.anchor" ]] &&
+    [[ ! -e "$source_path" && ! -L "$source_path" ]] &&
+    [[ "$(marker_value "$marker" replaced_stage)" == "$stage_path" ]] &&
+    [[ "$(marker_value "$marker" replacement_inode)" == "$(inode_of "$stage_path")" ]] &&
+    [[ "$(cat "$stage_path")" == 'foreign stage replacement' ]] &&
+    [[ "$(marker_value "$marker" source_inode)" == \
+      "$(marker_value "$marker" effect_inode)" ]] &&
+    assert_rendered_profile "$host" "$destination" &&
+    grep -Fq 'staging file changed during publication; validated destination retained' "$output" &&
+    assert_no_old_transaction_artifacts "$fixture"
+}
+
 for host in claude-code codex; do
   adapter="$(adapter_for "$host")"
   run_case "$host rejects a malformed copied canonical profile" \
@@ -398,6 +540,11 @@ for host in claude-code codex; do
     run_mktemp_fault_case "$host-mktemp-post" "$adapter" post-fail 76 "$host"
   run_case "$host honors TERM after mktemp post-effect failure" \
     run_mktemp_fault_case "$host-mktemp-post-term" "$adapter" post-TERM 143 "$host"
+
+  run_case "$host does not overwrite a stage replacement before rendering" \
+    stage_replacement_before_render_is_preserved "$host"
+  run_case "$host publishes only validated bytes when the stage changes during publication" \
+    stage_replacement_during_publish_keeps_only_valid_destination "$host"
 
   run_case "$host handles pre-effect link failure" \
     run_fault_case "$host-ln-pre-fail" "$adapter" pre-fail 71 "$host"

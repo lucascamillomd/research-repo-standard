@@ -2,10 +2,12 @@
 
 rrs_stage=''
 rrs_stage_inode=''
+rrs_anchor=''
 rrs_destination=''
 rrs_pending_signal=0
 rrs_committed=0
 rrs_in_transition=0
+rrs_render_fd_open=0
 RRS_ADAPTER_PID=$$
 export RRS_ADAPTER_PID
 
@@ -35,7 +37,11 @@ rrs_on_exit() {
   rrs_status=$?
   trap - EXIT HUP INT TERM
   ((rrs_pending_signal != 0)) && rrs_status=$rrs_pending_signal
+  rrs_close_render_handle
   rrs_refresh_commit
+  if ! rrs_cleanup_anchor; then
+    ((rrs_status == 0)) && rrs_status=1
+  fi
   if ! rrs_cleanup_stage; then
     ((rrs_status == 0)) && rrs_status=1
   fi
@@ -71,6 +77,33 @@ rrs_cleanup_stage() {
   fi
   printf '%s: unable to remove owned staging file: %s (rm status %s)\n' \
     "${0##*/}" "$rrs_stage" "$rrs_rm_status" >&2
+  return 1
+}
+rrs_cleanup_anchor() {
+  rrs_current_inode=''
+  rrs_rm_status=0
+  [[ -n "$rrs_anchor" ]] || return 0
+  rrs_path_exists "$rrs_anchor" || return 0
+  rrs_current_inode="$(rrs_inode_of "$rrs_anchor")" || rrs_current_inode=''
+  if [[ -z "$rrs_stage_inode" || -z "$rrs_current_inode" ||
+    "$rrs_current_inode" != "$rrs_stage_inode" ]]; then
+    printf '%s: refusing to remove changed staging anchor: %s\n' \
+      "${0##*/}" "$rrs_anchor" >&2
+    return 1
+  fi
+  rm -f "$rrs_anchor" 2>/dev/null || rrs_rm_status=$?
+  if ! rrs_path_exists "$rrs_anchor"; then
+    rrs_anchor=''
+    return 0
+  fi
+  rrs_current_inode="$(rrs_inode_of "$rrs_anchor")" || rrs_current_inode=''
+  if [[ -z "$rrs_current_inode" || "$rrs_current_inode" != "$rrs_stage_inode" ]]; then
+    printf '%s: staging anchor changed during cleanup; preserving replacement: %s\n' \
+      "${0##*/}" "$rrs_anchor" >&2
+    return 1
+  fi
+  printf '%s: unable to remove owned staging anchor: %s (rm status %s)\n' \
+    "${0##*/}" "$rrs_anchor" "$rrs_rm_status" >&2
   return 1
 }
 
@@ -139,7 +172,7 @@ rrs_render_claude() {
     printf 'description: %s\n' "$rrs_description"
     printf '%s\n' '---'
     rrs_extract_body "$rrs_source_profile"
-  } > "$rrs_stage"
+  } >&3
 }
 rrs_render_codex() {
   rrs_escaped_name="$(printf '%s\n' "$rrs_name" | rrs_toml_escape)"
@@ -150,21 +183,21 @@ rrs_render_codex() {
     printf '%s\n' "developer_instructions = '''"
     rrs_extract_body "$rrs_source_profile"
     printf '%s\n' "'''"
-  } > "$rrs_stage"
+  } >&3
 }
 rrs_validate_render() {
   rrs_host=$1
-  [[ -s "$rrs_stage" ]] || return 1
+  [[ -s "$rrs_anchor" ]] || return 1
   case "$rrs_host" in
     claude-code)
-      [[ "$(rrs_extract_name "$rrs_stage")" == "$rrs_name" ]] &&
-        [[ "$(rrs_extract_description "$rrs_stage")" == "$rrs_description" ]] &&
-        cmp -s <(rrs_extract_body "$rrs_source_profile") <(rrs_extract_body "$rrs_stage")
+      [[ "$(rrs_extract_name "$rrs_anchor")" == "$rrs_name" ]] &&
+        [[ "$(rrs_extract_description "$rrs_anchor")" == "$rrs_description" ]] &&
+        cmp -s <(rrs_extract_body "$rrs_source_profile") <(rrs_extract_body "$rrs_anchor")
       ;;
     codex)
-      [[ "$(sed -n '1p' "$rrs_stage")" == "name = \"$rrs_escaped_name\"" ]] &&
-        [[ "$(sed -n '2p' "$rrs_stage")" == "description = \"$rrs_escaped_description\"" ]] &&
-        cmp -s <(rrs_extract_body "$rrs_source_profile") <(rrs_extract_toml_body "$rrs_stage")
+      [[ "$(sed -n '1p' "$rrs_anchor")" == "name = \"$rrs_escaped_name\"" ]] &&
+        [[ "$(sed -n '2p' "$rrs_anchor")" == "description = \"$rrs_escaped_description\"" ]] &&
+        cmp -s <(rrs_extract_body "$rrs_source_profile") <(rrs_extract_toml_body "$rrs_anchor")
       ;;
   esac
 }
@@ -199,6 +232,28 @@ rrs_stage_is_owned() {
   [[ -n "$rrs_stage_inode" && -f "$rrs_stage" && ! -L "$rrs_stage" ]] &&
     [[ "$(rrs_inode_of "$rrs_stage")" == "$rrs_stage_inode" ]]
 }
+rrs_anchor_is_owned() {
+  [[ -n "$rrs_stage_inode" && -f "$rrs_anchor" && ! -L "$rrs_anchor" ]] &&
+    [[ "$(rrs_inode_of "$rrs_anchor")" == "$rrs_stage_inode" ]]
+}
+rrs_close_render_handle() {
+  if ((rrs_render_fd_open)); then
+    exec 3>&-
+    rrs_render_fd_open=0
+  fi
+}
+rrs_open_render_handle() {
+  rrs_handle_inode=''
+  if ! exec 3>> "$rrs_anchor"; then
+    rrs_fail_status 1 'unable to open staging anchor for rendering'
+  fi
+  rrs_render_fd_open=1
+  rrs_handle_inode="$(rrs_inode_of /dev/fd/3)" || rrs_handle_inode=''
+  if [[ -z "$rrs_handle_inode" || "$rrs_handle_inode" != "$rrs_stage_inode" ]]; then
+    rrs_close_render_handle
+    rrs_fail_status 1 'staging anchor changed before rendering'
+  fi
+}
 rrs_create_stage() {
   rrs_parent=$1
   rrs_candidate=''
@@ -223,9 +278,26 @@ rrs_create_stage() {
   [[ -n "$rrs_stage" && -n "$rrs_stage_inode" ]] ||
     rrs_fail_status 1 'mktemp returned an unsafe or unverifiable staging file'
 }
+rrs_create_anchor() {
+  rrs_link_status=0
+  rrs_anchor="$rrs_stage.anchor"
+  rrs_path_exists "$rrs_anchor" &&
+    rrs_fail_status 1 'refusing pre-existing staging anchor'
+  rrs_in_transition=1
+  /bin/ln "$rrs_stage" "$rrs_anchor" 2>/dev/null || rrs_link_status=$?
+  rrs_in_transition=0
+  rrs_honor_signal
+  ((rrs_link_status == 0)) || rrs_fail_status "$rrs_link_status" 'failed to bind staging anchor'
+  rrs_anchor_is_owned || rrs_fail_status 1 'staging file changed while binding render anchor'
+}
+# Apple Bash and portable macOS utilities cannot hard-link from an open file descriptor. This
+# verified hard-link anchor keeps replacement of the recorded stage from changing published bytes.
+# A same-user process that deliberately replaces the anchor itself in the remaining check-to-ln
+# interval is an operating-system boundary; the adjacent identity checks detect, but cannot make
+# that out-of-band pathname mutation impossible.
 rrs_destination_is_exact() {
   [[ -f "$rrs_destination" && ! -L "$rrs_destination" ]] &&
-    cmp -s "$rrs_stage" "$rrs_destination"
+    cmp -s "$rrs_anchor" "$rrs_destination"
 }
 rrs_publish_stage() {
   rrs_link_status=0
@@ -237,7 +309,7 @@ rrs_publish_stage() {
     return
   fi
   rrs_in_transition=1
-  ln "$rrs_stage" "$rrs_destination" 2>/dev/null || rrs_link_status=$?
+  ln "$rrs_anchor" "$rrs_destination" 2>/dev/null || rrs_link_status=$?
   rrs_refresh_commit
   rrs_in_transition=0
   rrs_honor_signal
@@ -282,14 +354,29 @@ install_research_code_simplifier() {
   rrs_destination="$rrs_parent/research-code-simplifier.$rrs_extension"
   [[ ! -L "$rrs_destination" ]] || rrs_fail_status 1 'refusing destination symlink'
   rrs_create_stage "$rrs_parent"
+  rrs_create_anchor
   rrs_stage_is_owned || rrs_fail_status 1 'staging file changed before rendering'
+  rrs_open_render_handle
+  rrs_stage_is_owned || {
+    rrs_close_render_handle
+    rrs_fail_status 1 'staging file changed before rendering'
+  }
+  rrs_render_status=0
   case "$rrs_host" in
-    claude-code) rrs_render_claude ;;
-    codex) rrs_render_codex ;;
+    claude-code) rrs_render_claude || rrs_render_status=$? ;;
+    codex) rrs_render_codex || rrs_render_status=$? ;;
   esac
+  rrs_close_render_handle
+  ((rrs_render_status == 0)) || rrs_fail_status "$rrs_render_status" 'failed to render profile'
   rrs_stage_is_owned || rrs_fail_status 1 'staging file changed during rendering'
+  rrs_anchor_is_owned || rrs_fail_status 1 'staging anchor changed during rendering'
   rrs_validate_render "$rrs_host" || rrs_fail_status 1 'rendered profile failed validation'
   rrs_verify_directory "$rrs_target_root" "$rrs_parent"
+  rrs_stage_is_owned || rrs_fail_status 1 'staging file changed after validation'
+  rrs_anchor_is_owned || rrs_fail_status 1 'staging anchor changed after validation'
   rrs_publish_stage
+  rrs_anchor_is_owned || rrs_fail_status 1 'staging anchor changed during publication'
+  rrs_stage_is_owned ||
+    rrs_fail_status 1 'staging file changed during publication; validated destination retained'
   exit 0
 }
