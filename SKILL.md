@@ -130,6 +130,8 @@ blocker rather than weakening one.
    provenance of this skill and confirm that `research-code-simplifier` resolves from the expected
    installed profile. Do not simulate an unavailable resolver; report it as a manual boundary and
    follow `references/prerequisites.md` recovery guidance.
+10. **Inspect and report.** Inspect the actual generated artifacts — not exit codes — then report
+    every remaining assumption and manual or external boundary.
 
 ### Interview
 
@@ -166,13 +168,13 @@ or explicit no-figure strategy
 Gate: integrated design approval; minimal gate-artifact initialization; committed and reviewed
 specification; implementation plan ready
 Scaffold: core contracts — uv and Make, configuration, data registry and raw-data safety, analysis,
-provenance, verification; no unapproved runtimes
+provenance, verification; no unapproved R support
 Forbidden artifacts: no target AGENTS.md/CLAUDE.md/CODEX.md, no shared top-level simplifier
 Randomness: no seed for a deterministic workflow; otherwise explicit Seed 42
 README: expected skill source/provenance, recovery, shortest reproduction path
 Host: only the selected adapter, after core scaffold; real smoke test or honest boundary
-Boundaries: assumptions and manual or external boundaries reported; actual generated artifacts
-inspected before completion is claimed
+Boundaries: assumptions and manual or external boundaries reported
+Completion: actual generated artifacts inspected before completion is claimed
 ```
 
 ## Adopting an existing repository

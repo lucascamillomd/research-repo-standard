@@ -525,16 +525,45 @@ for gate_slot_pattern in \
   'plan'; do
   grep -Eqi "$gate_slot_pattern" <<< "$record_gate_slot" || bootstrap_contract_ok=0
 done
-# the boundaries slot binds inspecting real generated artifacts to claiming completion
+# the boundaries slot owns reporting assumptions and manual or external boundaries
 record_boundaries_slot="$(awk '
     /^Boundaries:/ { capture = 1; print; next }
     capture && /^[A-Za-z][A-Za-z ]*:/ { exit }
     capture { print }
 ' <<< "$bootstrap_record" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
 grep -Eqi 'boundar' <<< "$record_boundaries_slot" || bootstrap_contract_ok=0
-grep -Eqi 'inspect' <<< "$record_boundaries_slot" || bootstrap_contract_ok=0
-grep -Eqi 'inspect[a-z]*[^;]*complet|complet[^;]*inspect' <<< "$record_boundaries_slot" ||
+grep -Eqi 'assumption' <<< "$record_boundaries_slot" || bootstrap_contract_ok=0
+# a separate completion slot binds inspecting real generated artifacts to claiming completion
+record_completion_slot="$(awk '
+    /^Completion:/ { capture = 1; print; next }
+    capture && /^[A-Za-z][A-Za-z ]*:/ { exit }
+    capture { print }
+' <<< "$bootstrap_record" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
+grep -Eqi 'inspect' <<< "$record_completion_slot" || bootstrap_contract_ok=0
+grep -Eqi 'inspect[a-z]*[^;]*complet|complet[^;]*inspect' <<< "$record_completion_slot" ||
   bootstrap_contract_ok=0
+# the scaffold slot names R explicitly rather than a generic runtime category
+record_scaffold_slot="$(awk '
+    /^Scaffold:/ { capture = 1; print; next }
+    capture && /^[A-Za-z][A-Za-z ]*:/ { exit }
+    capture { print }
+' <<< "$bootstrap_record" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
+grep -Eq 'no unapproved R support' <<< "$record_scaffold_slot" || bootstrap_contract_ok=0
+# the numbered sequence itself ends with the artifact-inspection and reporting step
+bootstrap_sequence_section="$(awk '
+    /^## Bootstrapping sequence$/ { capture = 1; next }
+    capture && /^### / { exit }
+    capture { print }
+' "$ROOT/SKILL.md")"
+bootstrap_step_ten="$(awk '
+    /^10\. / { capture = 1; print; next }
+    capture && /^[0-9]+\. / { exit }
+    capture { print }
+' <<< "$bootstrap_sequence_section" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
+grep -Eqi 'inspect' <<< "$bootstrap_step_ten" || bootstrap_contract_ok=0
+grep -Eqi 'generated artifacts' <<< "$bootstrap_step_ten" || bootstrap_contract_ok=0
+grep -Eqi 'exit codes' <<< "$bootstrap_step_ten" || bootstrap_contract_ok=0
+grep -Eqi 'boundar' <<< "$bootstrap_step_ten" || bootstrap_contract_ok=0
 # the numbered interview above owns topic coverage; the record must not restate it
 if grep -Eqi 'identity/purpose|research question/intended claim|supported Python minor' \
   <<< "$bootstrap_record_text"; then
