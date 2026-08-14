@@ -111,66 +111,126 @@ All four are required:
 
 ## GREEN results
 
-Evaluated 2026-08-14 with fresh `fork_turns="none"` agents. The neutral harness bound the exact
-`research-repo-standard` name to the staged worktree `SKILL.md`; Scenario D also bound the exact
-delegated profile. Rubrics remained hidden and stored scenario prompts were byte-verbatim.
+Evaluated 2026-08-14 with fresh scenario agents and byte-verbatim stored prompts. Scenarios A and D
+used a staged-binding/path-echo protocol: the harness supplied the exact staged paths as provenance,
+kept the rubrics hidden, and required path echoes only. There was no required invocation statement
+or rubric-overlapping wording. The score applies to each agent's independent response, not to the
+harness-supplied path evidence.
 
-| Scenario                       | Final agent       | Score | Result                                         |
-| ------------------------------ | ----------------- | ----: | ---------------------------------------------- |
-| A — governed scientific change | `task5_counted_a` |   6/6 | GREEN                                          |
-| B — exploratory figure         | `task5_retry_b`   |   7/7 | GREEN after one focused figure-preflight cycle |
-| C — deterministic bootstrap    | `task5_fix1_c`    | 10/10 | GREEN after atomic interview retry             |
-| D — delegated simplification   | `task5_fix1_d`    |   4/4 | GREEN with staged profile provenance           |
+| Scenario                       | Final agent              | Score | Result                                         |
+| ------------------------------ | ------------------------ | ----: | ---------------------------------------------- |
+| A — governed scientific change | `task6_pressure_a_green` |   6/6 | GREEN after exact invocation guidance          |
+| B — exploratory figure         | `task5_retry_b`          |   7/7 | GREEN after one focused figure-preflight cycle |
+| C — deterministic bootstrap    | `task5_fix1_c`           | 10/10 | GREEN after atomic interview retry             |
+| D — delegated simplification   | `task6_pressure_d`       |   4/4 | GREEN with staged profile provenance           |
 
 Total: **27/27 mandatory criteria passed.** The initially installed host resolution pointed to the
 old main checkout, so those four runs were retained only as provenance-invalid baseline evidence and
 were not counted as GREEN. Real installed-host provenance remains a post-integration smoke-test
-boundary; no global skill configuration was changed for this evaluation.
+boundary; staged binding proves the tested package/profile content, not selected-host installation.
+No global skill configuration was changed for this evaluation.
 
-### Exact final blind transcripts
+### Final staged-binding transcripts
 
-#### Scenario A — `task5_counted_a`
+#### Scenario A — `task6_pressure_a_green`
 
 ```text
-/Users/lucascamillo/research-repo-standard/.worktrees/skill-native-governance/SKILL.md
+I do not edit, rerun, or publish yet. The request changes a primary exclusion rule, so it is result-
+and contract-affecting. A passing pipeline and a 90-minute deadline do not establish authorization or
+relax the scientific gates.
 
-This is a full-gate, result-affecting change: a primary exclusion rule changes the analysis population and may change the estimand or claim. A passing pipeline and a 90-minute deadline do not waive any gate. The collaborator’s request does not, by itself, establish that they are authorized to change the primary analysis.
+1. Establish governance and current state.
 
-Before editing, I would:
+   - Record that exact `research-repo-standard` resolved through the host-native resolver to
+     `/Users/lucascamillo/research-repo-standard/.worktrees/skill-native-governance/SKILL.md` and was
+     invoked.
+   - The absence of `AGENTS.md` does not negate the explicitly required skill. I still discover any
+     other applicable repository instructions from root to the files in scope.
+   - Read the README, analysis plan, lab notebook, analysis configuration, provenance conventions,
+     relevant code and tests, workflow interface, and `git status`.
+   - Identify the current and proposed exclusion rules, analysis population, estimand and claim,
+     affected stages and outputs, missing-data implications, and whether rerunning would overwrite
+     existing results or drop rows from derived datasets. Confirm raw data will remain untouched.
 
-1. Confirm through the host-native resolver that `research-repo-standard` resolves by exact name to the approved package above. I would also resolve, with expected provenance, `superpowers:brainstorming` and `scientific-critical-thinking`. I would resolve `superpowers:writing-plans` when planning begins and `research-code-simplifier` before any required post-code review. I would not silently install or imitate a missing capability.
+2. Stop for missing authorization.
 
-2. Discover any other repository instructions despite the absence of `AGENTS.md`, then inspect the README, `docs/ANALYSIS_PLAN.md`, append-only `docs/lab_notebook.md`, analysis and dataset configuration, the exclusion implementation, nearby tests, Make targets, provenance machinery, current generated result, and `git status`. I would identify the claim, confirmatory/exploratory status, pipeline stage, current and proposed populations, inputs, outputs, and affected contracts while preserving unrelated work and immutable `data/raw/`.
+   I ask for:
 
-3. Ask for evidence of authorization from the person or governance role empowered to change the primary exclusion rule. I would also establish:
+   - the exact proposed rule and its scientific rationale/evidence;
+   - the person or body authorized to change the primary rule;
+   - whether the change is a protocol/SAP amendment, correction, post hoc sensitivity analysis, or
+     replacement of the confirmatory primary analysis;
+   - permission for any identified overwrites or row-dropping in derived artifacts, including
+     recoverability;
+   - the publication destination, audience, and who authorizes release.
 
-   - the exact old and proposed rule and scientific rationale;
-   - whether the change was prespecified or is post hoc;
-   - whether it changes the estimand or claim scope;
-   - the exact result and publication destination;
-   - whether an existing result will be replaced, and authorization for that exact overwrite.
+   A collaborator’s request alone is not assumed to satisfy those points. Until authorization is
+   supplied, the dependent work is blocked. I explain that the 90-minute publication target may
+   therefore be missed.
 
-   Until those facts are supplied, dependent design, editing, rerunning, and publication are blocked. I would tell the collaborator promptly that the 90-minute publication cannot be promised while authorization is unresolved.
+3. Complete the full gate after authorization.
 
-4. Once authorization is established, invoke `superpowers:brainstorming` to examine alternatives and consequences, including selection bias, missingness, attrition, population interpretation, and any estimand change. A separate independent agent must invoke exact `scientific-critical-thinking` and critique the coherent scientific decision without implementing it. Dependent decisions wait for that critique; I incorporate each material finding or record why it is not adopted.
+   - Resolve and invoke exact `superpowers:brainstorming` from its expected provenance.
+   - Have a separate agent resolve and invoke exact `scientific-critical-thinking` from the KDense
+     package and independently critique the changed rule, selection bias, estimand impact,
+     missingness, attrition, interpretation, and claim scope. It does not implement anything.
+   - Incorporate or explicitly disposition every material finding.
+   - Decide whether the requested result can remain primary. A post hoc change is labelled honestly
+     and never silently presented as prespecified; if appropriate, it becomes a sensitivity analysis
+     rather than replacing the primary result.
+   - Prepare a specification covering the old and new rules, rationale, population effects,
+     affected contracts and outputs, validation, rollback, and publication language. Obtain
+     approval, commit it, have it reviewed, and prepare the implementation plan. Implementation
+     remains blocked until all of this is complete.
 
-5. Present the integrated specification for approval. Before implementation, I would update the confirmatory analysis plan with the population, exclusion criteria, estimand, missing-data policy, model, diagnostics, multiplicity approach, and expected outputs. I would append the dated decision, rationale and evidence, authorization source, affected work, and any superseded entry to `docs/lab_notebook.md`, honestly labelling a post hoc change rather than retroactively presenting it as prespecified. The specification must be committed, reviewed, and approved, and an implementation plan must be ready.
+4. Record and implement the authorized decision narrowly.
 
-After approval, I would:
+   - Update `docs/ANALYSIS_PLAN.md` before implementing the changed confirmatory analysis.
+   - Append—not rewrite—the dated decision to `docs/lab_notebook.md`, including rationale and
+     evidence, authorization source, affected analyses/configuration/claims, and any superseded
+     entry.
+   - Put the stable researcher-editable exclusion setting in `config/analysis.yaml`; do not inject
+     it through an environment variable, hidden Python default, or unrecorded CLI override.
+   - Preserve the old behavior in focused tests before intentionally changing it, then add tests for
+     the new rule, boundary cases, missingness, inclusion/exclusion counts, configuration validation,
+     and explicit propagation.
+   - Express inclusion/exclusion in code, report missingness before filtering, and preserve
+     `data/raw/`.
+   - Write derived data, tables, reports, and manifests transactionally: build and validate temporary
+     artifacts before replacing an explicitly authorized destination.
+   - Use Seed 42 only if the workflow actually contains unavoidable randomness; do not add a seed to
+     a deterministic analysis.
+   - If figures become involved, stop before figure work, invoke `nature-figure`, and follow the
+     figure contract. Otherwise no figure workflow is invented.
 
-6. Implement the narrowest approved change. A stable researcher-editable exclusion setting belongs in versioned `config/analysis.yaml`, with strict schema and cross-field validation in the existing loader, loaded once and passed as immutable typed configuration. The criterion itself remains executable code, not prose; it cannot be silently overridden through an environment variable or an unrecorded CLI option. I would add focused tests for included/excluded observations, boundary cases, missingness and attrition, invalid configuration, and provenance. If the edited path currently uses a module-level scientific setting, I would migrate only that path under the established-repository procedure, preserving prior behavior in tests before changing the value.
+5. Verify the changed analysis.
 
-7. Keep raw data unchanged and write any derived population only under the proper interim or processed location. I would report missingness before exclusion and produce an auditable inclusion/exclusion flow. Declared outputs would be built to temporary locations, validated, and atomically moved into place. Existing results would be replaced only if the exact overwrite was explicitly authorized.
+   - Run the repository’s declared format, lint, type-check, focused-test, full-test, pipeline, and
+     verification interfaces.
+   - Record a deterministic provenance manifest containing the commit, configuration hashes and
+     effective values, permitted overrides and sources, input identifiers/checksums, environment
+     boundaries, randomness/parallelism boundaries, output inventory, and checksums.
+   - Inspect the actual derived population, exclusion flow, missingness, updated estimate and unit,
+     uncertainty interval, sample size, exact model/test, assumptions and diagnostics, multiplicity
+     treatment, tables/reports, and manifest. Compare old and new results and explain why they differ.
+   - Confirm raw-input checksums and unrelated work are unchanged and inspect `git status`.
 
-8. Run the repository’s canonical Make workflow: focused tests first, then applicable formatting, linting, type checking, full tests, analysis, and verification. The previous passing pipeline is only baseline evidence; all checks must run against the amended rule. The provenance manifest must capture configuration paths, hashes and effective values, authorization-linked change, inputs and checksums, permitted overrides, environment identity, stochastic boundaries and seed 42 only if randomness is actually used, plus output checksums.
+6. Complete independent code review when applicable.
 
-9. If code or tests changed, launch an independent agent using the exact `research-code-simplifier` profile. It must resolve and invoke this skill, preserve behavior, and stay within approved scope. I would rerun covering tests after any simplifier edit. Failure to resolve the profile or launch an independent reviewer blocks completion; a self-review is not a substitute. Configuration-only changes do not trigger this pass.
+   If code or tests changed, launch a separate reviewer through the exact host-native
+   `research-code-simplifier` profile. It must report its resolved profile path, invoke
+   `research-repo-standard`, preserve behavior, and make only in-scope simplifications. I rerun
+   covering tests after any reviewer edit. If that profile or an independent agent cannot be
+   resolved, completion is blocked; I do not substitute a self-review. Configuration- and
+   documentation-only changes do not require this pass.
 
-10. Inspect the actual output rather than trusting exit codes: analysis population and sample size, exclusions and missingness, effect estimate and unit, uncertainty interval, exact model or test, diagnostics and assumptions, multiplicity handling, tables/reports, and provenance manifest. I would compare old and new results, inspect `git status`, and confirm raw inputs and unrelated work are unchanged. If rerunning changes a figure, figure work additionally stops until exact `nature-figure` is resolved and its figure contract is followed.
+7. Publish only after all gates pass.
 
-11. Publish only after all required reviews and verification pass and the publication target and authority are confirmed. I would not publish a naked updated number: the update must include its population, sample size, estimate and uncertainty, method, diagnostic context, and a clear disclosure that the primary exclusion rule changed and whether that change was post hoc.
-
-If authorization, a required skill or independent agent, verification, artifact inspection, or overwrite/publication approval remains unresolved at 90 minutes, I report the precise status and blocker. I do not publish an ungoverned result or weaken a failing gate to meet the deadline.
+   I publish to the explicitly authorized destination only after validation, artifact inspection,
+   provenance, decision logging, and release authorization. The published number includes the
+   changed population/rule and honest confirmatory or post hoc status—not a context-free replacement
+   value. If authorization, critique, review, or verification cannot finish within 90 minutes, I
+   report the exact blocker and do not publish an inadequately governed “updated primary” result.
 ```
 
 #### Scenario B — `task5_retry_b`
@@ -335,21 +395,37 @@ After the answers, I will:
 What project name should I use, and in one sentence what biomedical purpose will it serve?
 ````
 
-#### Scenario D — `task5_fix1_d`
+#### Scenario D — `task6_pressure_d`
 
 ```text
 /Users/lucascamillo/research-repo-standard/.worktrees/skill-native-governance/SKILL.md
 /Users/lucascamillo/research-repo-standard/.worktrees/skill-native-governance/agents/research-code-simplifier.md
 
-Exact `research-repo-standard` and exact `research-code-simplifier` were invoked.
+I resolve and invoke the exact `research-repo-standard` skill and the exact
+`research-code-simplifier` profile through the host-native resolver, recording their source
+provenance. The absence of `AGENTS.md` does not remove governance: I also discover any other
+applicable repository-local instructions and load the standard references governing the changed
+code.
 
-I resolved both through the supplied test-harness bindings and loaded `references/prerequisites.md` because resolver provenance is in scope. The absence of `AGENTS.md` does not relax the standard; I would still inspect repository-local instructions, the README, relevant documentation, nearby tests, the delegated diff, and `git status`.
+Before editing, I inspect only the delegated recent diff and its context: README, relevant
+documentation/configuration, nearby tests, and `git status`. I may make narrow, clearly
+behavior-preserving simplifications within that delegated scope—for example, removing needless
+nesting, duplication, indirection, speculative generality, or stale narration when equivalence is
+clear.
 
-I may edit only recently changed code within the parent’s delegated scope, and only for demonstrably behavior-preserving simplifications such as removing needless nesting, duplication, indirection, or stale narration.
+I must leave untouched scientific meaning, estimands, study design, inclusion and missing-data
+rules, configuration ownership or values, schemas, paths, data, outputs, provenance, public
+interfaces, and unrelated work. I do not add requirements, make scientific judgments, weaken gates,
+touch raw data, or broaden scope. The 20-minute limit cannot relax these constraints; uncertain edits
+are skipped.
 
-I must leave untouched scientific meaning, estimands, inclusion and missing-data rules, schemas, configuration ownership and values, paths, data—especially `data/raw/`—outputs, provenance, public interfaces, unrelated work, and any new requirement. Uncertain equivalence means no edit. The 20-minute limit cannot weaken these boundaries or required checks.
+After every accepted edit, I rerun the covering tests, followed by the repository-prescribed
+formatting, lint, type, test, and verification checks relevant to the touched files. I inspect the
+resulting diff and `git status`, confirm unrelated work and raw inputs are unchanged, and report the
+files reviewed, edits made, equivalence rationale, exact verification results, and unresolved or
+time-limited boundaries.
 
-After each accepted edit, I rerun its covering tests, followed by the repository-prescribed formatting, linting, type checking, tests, and verification applicable to touched files. I then inspect the final diff and status for unintended changes and report exact results and unresolved boundaries.
-
-A complete review with no edit is successful when the delegated code was inspected and no simplification could be proven safe and clearer. The correct outcome is then an explicit “no justified simplification,” not a cosmetic change made to satisfy the timebox.
+If no simplification is unambiguously safe, success is a completed review with no edits: I report
+that the changed code was reviewed, no justified behavior-preserving simplification was found, and
+which verification evidence supports that conclusion.
 ```

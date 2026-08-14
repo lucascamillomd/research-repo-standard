@@ -512,6 +512,32 @@ else
   fail "delegated simplifier must add exact host-native profile resolution and invocation"
 fi
 
+# --- 15. pressure evidence uses the independently scored Task 6 A/D reruns ---
+pressure_results="$(awk '
+    /^## GREEN results$/ { capture = 1 }
+    capture { print }
+' "$ROOT/tests/skill_pressure_scenarios.md")"
+pressure_results_text="$(tr '\n' ' ' <<< "$pressure_results" | tr -s '[:space:]' ' ')"
+pressure_evidence_ok=1
+for required in \
+  'task6_pressure_a_green' \
+  'task6_pressure_d' \
+  'Total: **27/27 mandatory criteria passed.**' \
+  'no required invocation statement or rubric-overlapping wording' \
+  'Real installed-host provenance remains a post-integration smoke-test boundary' \
+  'resolved through the host-native resolver to `/Users/lucascamillo/research-repo-standard/.worktrees/skill-native-governance/SKILL.md` and was invoked' \
+  'I resolve and invoke the exact `research-repo-standard` skill and the exact `research-code-simplifier` profile'; do
+  grep -Fq "$required" <<< "$pressure_results_text" || pressure_evidence_ok=0
+done
+if grep -Eq 'task5_counted_a|task5_fix1_d' <<< "$pressure_results_text"; then
+  pressure_evidence_ok=0
+fi
+if ((pressure_evidence_ok)); then
+  pass "pressure evidence records uncoached Task 6 A/D reruns and the installed-host boundary"
+else
+  fail "pressure evidence must use the Task 6 A/D reruns without overstating host resolution"
+fi
+
 # --- final ---
 if ((FAILS > 0)); then
   echo "$FAILS test(s) failed"
