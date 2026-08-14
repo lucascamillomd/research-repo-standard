@@ -21,9 +21,9 @@ precedence is normative:
 
 ## Configuration files
 
-After environment-owned and derived values have been classified, `config/analysis.yaml` owns the
-remaining stable researcher-editable settings. `config/datasets.yaml` owns the dataset registry
-defined by the data contract.
+`config/datasets.yaml` owns the dataset registry defined by the data contract;
+`config/analysis.yaml` owns the stable researcher-editable settings that remain after the
+classification above.
 
 When randomness is used, declare `random_seed: 42` explicitly and propagate it to every stochastic
 component. Do not invent a seed field for a fully deterministic workflow.
@@ -55,9 +55,9 @@ containment checks, and raw-data protections. Internal layout paths such as `dat
 `results/figures/` never live in YAML, and configuration cannot redirect canonical paths outside
 their repository contract.
 
-Credentials, secrets, machine-specific absolute roots, and GPU selection use environment variables.
-Validate permitted external roots and record the effective machine boundary without recording secret
-values. Versioned files contain variable names and safe placeholders, never credentials.
+For environment-owned values (ownership bucket 1), validate permitted external roots and record the
+effective machine boundary without recording secret values. Versioned files contain variable names
+and safe placeholders, never credentials.
 
 ## Configuration provenance
 

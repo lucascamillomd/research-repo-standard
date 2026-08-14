@@ -59,8 +59,8 @@ change can break, so when uncertain, use the full gate.
 
 ## Reference routing
 
-This routing table serves every mode. Load every reference whose semantic trigger matches the
-requested work. Read the selected reference completely before dependent decisions or edits.
+In every mode, load each reference whose trigger matches the requested work and read it completely
+before dependent decisions or edits.
 
 | Reference                     | Load when                                                                                                              |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -87,10 +87,9 @@ blocker rather than weakening one.
    their rationale in `docs/LAB_NOTEBOOK.md` before presenting the result as planned.
 5. **No silent complete-case filtering.** Report missingness before exclusions or imputation.
    Inclusion and exclusion criteria are code, not prose.
-6. **Randomness is declared, never invented.** When randomness is unavoidable, the seed is explicit,
-   recorded configuration — Seed 42 — and never invented for a deterministic workflow. Prefer
-   deterministic algorithms when scientifically equivalent, and declare nondeterministic boundaries
-   honestly.
+6. **Randomness is declared, never invented.** When randomness is unavoidable, the seed is explicit
+   recorded configuration — Seed 42. A deterministic workflow gets no seed. Prefer deterministic
+   algorithms when scientifically equivalent, and declare nondeterministic boundaries honestly.
 7. **Outputs are written transactionally.** Build a temporary artifact, validate it, and only then
    replace the declared destination. A failed run must not leave output that looks complete.
 8. **Configuration has one owner.** Every result-affecting setting has exactly one declared owner.
@@ -123,8 +122,7 @@ blocker rather than weakening one.
    Write and self-review the specification, commit it, and obtain user review before implementation.
    Do not create target `AGENTS.md`, `CLAUDE.md`, `CODEX.md`, or a shared top-level simplifier.
 7. **Plan, scaffold, and configure.** Invoke `superpowers:writing-plans`, then load every applicable
-   reference, including `references/bootstrap.md`, and create only the approved repository. Seed 42
-   is configured only when the workflow actually uses randomness.
+   reference, including `references/bootstrap.md`, and create only the approved repository.
 8. **Integrate the selected host.** If the user selected Codex or Claude Code, run
    `./adapters/codex.sh <target-repo>` or `./adapters/claude-code.sh <target-repo>` respectively. If
    none was selected, install no adapter and first establish that the host can independently resolve
@@ -252,8 +250,8 @@ either is unclear, stop and ask.
 ### Simplifier review
 
 After changing code or tests, launch an independent review agent through the current host's exact
-`research-code-simplifier` profile. Run it once per coherent unit of delegated work rather than
-after every individual edit, so review effort tracks the change rather than the edit count. It must
+`research-code-simplifier` profile. Run it once per coherent unit of delegated work, not after
+every individual edit. It must
 invoke this skill, load the references relevant to the changed code, preserve behavior, and return
 or apply only simplifications within the approved scope. Re-run covering tests after any simplifier
 edit. Only when the profile cannot be resolved or an independent agent cannot be launched may the

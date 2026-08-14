@@ -61,9 +61,7 @@ atomic assets use deterministic semantic stems `mf1_{short_descriptive_name}` an
 - is independently reproducible without a previously mutated plotting session;
 - exposes the statistics shown and maps to a source-data file;
 - omits manuscript panel letters from its filename and rendered plot; and
-- uses the same atomic stem for SVG, PDF, TIFF, PNG, and its source-data file.
-
-Use the same atomic stem for every format and the corresponding source-data file.
+- uses the same atomic stem for every format — SVG, PDF, TIFF, PNG — and its source-data file.
 
 ```text
 results/

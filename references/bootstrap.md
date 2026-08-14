@@ -79,9 +79,8 @@ uv lock                   uv sync --locked
 uv run --locked <command> uv build
 ```
 
-The explicit initialization options create a package using the `src/` layout and Hatchling, with uv
-normalizing the approved hyphenated repository name to the import-package name. Run it against the
-approved target path; do not rely on the current directory or uv's application defaults.
+uv normalizes the approved hyphenated repository name to the import-package name. Run the command
+against the approved target path; do not rely on the current directory or uv's application defaults.
 
 Commit `uv.lock` and never hand-edit it. After project metadata changes, run `uv lock`, then
 `uv sync --locked`. CI runs both checks in this order:
@@ -248,9 +247,7 @@ target_repo=/absolute/path/to/approved-target-repository
 "$research_standard_source/adapters/claude-code.sh" "$target_repo"
 ```
 
-Confirm that `research_standard_source` is the source location whose `research-repo-standard`
-provenance was approved before invoking either command. The commands are alternatives, not a
-sequence: run only the selected host's adapter against `target_repo`. When no host adapter was
-selected, run neither. Then follow `references/prerequisites.md` for the real host-native smoke test
+The commands are alternatives, not a sequence: run only the selected host's adapter against
+`target_repo`, and run neither when no host adapter was selected. Then follow `references/prerequisites.md` for the real host-native smoke test
 of the resolved `research-repo-standard` provenance and the `research-code-simplifier` host profile.
 Report an unavailable selected host as a manual boundary instead of simulating success.
