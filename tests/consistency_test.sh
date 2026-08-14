@@ -166,6 +166,66 @@ else
   fail "bootstrap and README must resolve the skill, run a direct adapter, and require host smoke testing"
 fi
 
+# --- 7. removed workflows and superseded process artifacts stay absent ---
+removed_paths_ok=1
+for removed_path in \
+  vendor.sh \
+  tests/vendor_test.sh \
+  tests/adapter_finalization_test.sh \
+  docs/superpowers/plans/2026-08-13-adapter-transaction-version-removal.md \
+  docs/superpowers/plans/2026-08-13-contract-harmonization.md \
+  docs/superpowers/specs/2026-08-13-adapter-transaction-version-removal-design.md \
+  docs/superpowers/specs/2026-08-13-contract-harmonization-design.md; do
+  if [[ -e "$ROOT/$removed_path" ]]; then
+    fail "obsolete workflow or process artifact remains: $removed_path"
+    removed_paths_ok=0
+  fi
+done
+if [[ ! -f "$ROOT/tests/adapter_safety_test.sh" ]]; then
+  fail "focused adapter safety suite is missing: tests/adapter_safety_test.sh"
+  removed_paths_ok=0
+fi
+((removed_paths_ok)) && pass "obsolete workflows and superseded process artifacts are absent"
+
+production_paths=(
+  "$ROOT/AGENTS.md"
+  "$ROOT/SKILL.md"
+  "$ROOT/README.md"
+  "$ROOT/Makefile"
+  "$ROOT/references"
+  "$ROOT/agents"
+  "$ROOT/adapters"
+)
+stale_surface_ok=1
+if grep -ERn 'post-vendor|vendors? `AGENTS.md`|copies only AGENTS.md|standard_version' \
+  "${production_paths[@]}"; then
+  stale_surface_ok=0
+fi
+if grep -ERn \
+  'agents/code-simplifier.md|\.claude/agents/code-simplifier.md|\.codex/agents/code-simplifier.toml' \
+  "${production_paths[@]}"; then
+  stale_surface_ok=0
+fi
+if ((stale_surface_ok)); then
+  pass "production surface contains no stale vendoring, version, or generic-profile terminology"
+else
+  fail "production surface must contain no stale vendoring, version, or generic-profile terminology"
+fi
+
+readme_surface_ok=1
+grep -Fq '.claude/agents/research-code-simplifier.md' "$ROOT/README.md" || readme_surface_ok=0
+grep -Fq '.codex/agents/research-code-simplifier.toml' "$ROOT/README.md" || readme_surface_ok=0
+grep -Fq 'Makefile' "$ROOT/README.md" || readme_surface_ok=0
+grep -Eqi 'detect[^.]*legacy policy, alias, and generic simplifier artifacts' <<< "$readme_text" ||
+  readme_surface_ok=0
+grep -Eqi 'explicit authorization[^.]*remov|remov[^.]*explicit authorization' <<< "$readme_text" ||
+  readme_surface_ok=0
+if ((readme_surface_ok)); then
+  pass "README documents host outputs and detection-first legacy cleanup"
+else
+  fail "README must document host outputs and detection-first legacy cleanup"
+fi
+
 bootstrap_integration_section="$(awk '
     /^## Selected host integration$/ { capture = 1; next }
     capture && /^## / { exit }
@@ -190,14 +250,14 @@ else
   fail "bootstrap must resolve the standard source and invoke its selected adapter against the target"
 fi
 
-# --- 7. bootstrap delegates host prerequisites to their owner ---
+# --- 8. bootstrap delegates host prerequisites to their owner ---
 if grep -qs 'references/prerequisites\.md' "$ROOT/references/bootstrap.md"; then
   pass "bootstrap delegates host prerequisites"
 else
   fail "bootstrap delegates host prerequisites"
 fi
 
-# --- 8. bootstrap questions and runtime contracts remain explicit ---
+# --- 9. bootstrap questions and runtime contracts remain explicit ---
 bootstrap_contract_ok=1
 interview_section="$(awk '
     /^### Interview$/ { capture = 1; next }
@@ -222,7 +282,7 @@ else
   fail "bootstrap interview, placeholders, and runtime contracts are explicit"
 fi
 
-# --- 9. final-review ownership corrections remain aligned ---
+# --- 10. final-review ownership corrections remain aligned ---
 final_review_contract_ok=1
 if grep -Fq 'stop before repository mutations' "$ROOT/references/prerequisites.md"; then
   final_review_contract_ok=0
@@ -245,7 +305,7 @@ else
   fail "final-review ownership corrections stay aligned"
 fi
 
-# --- 10. every reference owns one complete, focused domain contract ---
+# --- 11. every reference owns one complete, focused domain contract ---
 if grep -Fq -- '--agent <codex|claude-code>' "$ROOT/references/prerequisites.md"; then
   pass "prerequisite reference owns the portable selected-host installer form"
 else
@@ -316,7 +376,7 @@ for reference in "$ROOT"/references/*.md; do
 done
 ((reference_ownership_ok)) && pass "references own focused procedures without deferred policy ownership"
 
-# --- 11. detailed figure naming has one canonical owner ---
+# --- 12. detailed figure naming has one canonical owner ---
 figure_owner="$ROOT/references/figures.md"
 if grep -Fqs 'mf1_{short_descriptive_name}' "$figure_owner" &&
   grep -Fqs 'edf1_{short_descriptive_name}' "$figure_owner" &&
@@ -349,7 +409,7 @@ else
   printf '%s\n' "$figure_duplicates"
 fi
 
-# --- 12. simplifier profile delegates naming and configuration policy ---
+# --- 13. simplifier profile delegates naming and configuration policy ---
 if ! grep -Eq 'config/analysis\.yaml|random_seed:|test_[a-z]|datasets\.yaml' \
   "$ROOT/agents/research-code-simplifier.md"; then
   pass "simplifier profile contains no independent configuration or test-naming grammar"

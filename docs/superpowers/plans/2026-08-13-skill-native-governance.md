@@ -44,11 +44,11 @@ Prettier 3.9.6, fresh delegated review agents.
 
 ## Mandatory execution order
 
-Execute Task 1 (the complete adapter runtime replacement, documented after the policy/reference
-work packets so its interfaces are easier to read), then Task 2 (normative core and vendoring
-deletion), Task 3 (references), Task 4 (source surface), Task 5 (pressure GREEN), and Task 6
-(reviews). This order keeps `make test` green at every commit: the vendor-independent adapters land
-before the vendor executable is deleted.
+Execute Task 1 (the complete adapter runtime replacement, documented after the policy/reference work
+packets so its interfaces are easier to read), then Task 2 (normative core and vendoring deletion),
+Task 3 (references), Task 4 (source surface), Task 5 (pressure GREEN), and Task 6 (reviews). This
+order keeps `make test` green at every commit: the vendor-independent adapters land before the
+vendor executable is deleted.
 
 ## File responsibility map
 
@@ -82,6 +82,7 @@ before the vendor executable is deleted.
 ### Task 2: Make the skill the normative core and delete vendoring
 
 **Files:**
+
 - Modify: `tests/consistency_test.sh`
 - Modify: `AGENTS.md`
 - Modify: `SKILL.md`
@@ -90,10 +91,11 @@ before the vendor executable is deleted.
 - Modify: `Makefile`
 
 **Interfaces:**
+
 - Consumes: the approved design and current portable rules in `AGENTS.md`.
-- Produces: the normative headings `Applicability and precedence`, `Required skills and modification
-  gates`, `Safety floor`, `Bootstrapping sequence`, `Governed work`, and `Completion`; all references
-  and profiles rely on those owners.
+- Produces: the normative headings `Applicability and precedence`,
+  `Required skills and modification gates`, `Safety floor`, `Bootstrapping sequence`,
+  `Governed work`, and `Completion`; all references and profiles rely on those owners.
 
 - [ ] **Step 1: Replace policy-owner assertions with failing skill-native assertions**
 
@@ -182,14 +184,14 @@ and independent simplification through `research-code-simplifier` after code/tes
 Use this exact routing vocabulary at least once:
 
 ```markdown
-| Reference | Load when |
-| --- | --- |
-| `references/prerequisites.md` | a required capability is unresolved, installation or recovery is requested, or host integration must be verified |
-| `references/bootstrap.md` | creating repository structure, tool configuration, CI, the Make interface, or initial project documentation |
-| `references/configuration.md` | classifying, loading, using, changing, or overriding settings, paths, or provenance |
-| `references/data.md` | acquiring, registering, preprocessing, describing, validating, or contracting data |
-| `references/analysis.md` | scientific planning, estimands, design, inclusion, missingness, modeling, implementation, interpretation, or reporting |
-| `references/figures.md` | planning a figure, writing plotting code, changing figure outputs, or performing QA |
+| Reference                     | Load when                                                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `references/prerequisites.md` | a required capability is unresolved, installation or recovery is requested, or host integration must be verified       |
+| `references/bootstrap.md`     | creating repository structure, tool configuration, CI, the Make interface, or initial project documentation            |
+| `references/configuration.md` | classifying, loading, using, changing, or overriding settings, paths, or provenance                                    |
+| `references/data.md`          | acquiring, registering, preprocessing, describing, validating, or contracting data                                     |
+| `references/analysis.md`      | scientific planning, estimands, design, inclusion, missingness, modeling, implementation, interpretation, or reporting |
+| `references/figures.md`       | planning a figure, writing plotting code, changing figure outputs, or performing QA                                    |
 ```
 
 - [ ] **Step 5: Run the scoped test and formatting**
@@ -228,6 +230,7 @@ git commit -m "refactor: make the skill the policy owner"
 ### Task 3: Give each reference one complete domain contract
 
 **Files:**
+
 - Modify: `references/prerequisites.md`
 - Modify: `references/bootstrap.md`
 - Modify: `references/configuration.md`
@@ -238,6 +241,7 @@ git commit -m "refactor: make the skill the policy owner"
 - Create: `tests/skill_pressure_scenarios.md`
 
 **Interfaces:**
+
 - Consumes: the routing triggers and safety floor from Task 2.
 - Produces: six non-overlapping normative procedures and reproducible skill-behavior evaluations.
 
@@ -256,9 +260,9 @@ grep -Fq 'Open and visually inspect both the rendered SVG and rendered PDF' \
 grep -Fq -- '--agent <codex|claude-code>' "$ROOT/references/prerequisites.md"
 ```
 
-Reject `AGENTS.md owns`, `procedural expansion`, `floor items`, `post-vendor`, and adapter-owned skill
-installation in every reference. Keep the existing detailed figure-name sole-owner assertions, but
-search the new profile path only after Task 3.
+Reject `AGENTS.md owns`, `procedural expansion`, `floor items`, `post-vendor`, and adapter-owned
+skill installation in every reference. Keep the existing detailed figure-name sole-owner assertions,
+but search the new profile path only after Task 3.
 
 - [ ] **Step 2: Run the consistency test and confirm RED**
 
@@ -273,10 +277,9 @@ Make `references/prerequisites.md` cover only resolver discovery, authorized ins
 source provenance, delegated-agent propagation, and selected-host smoke testing. Preserve the exact
 hard skills, Superpowers marketplace distinction, the documented
 `npx skills add <package> --agent <codex|claude-code>` form, optional writing-plans companion, "file
-on disk is not resolved", and no
-silent install/substitution. Remove target policy, Claude alias, `CODEX.md`, vendoring, and universal
-Node requirements. The smoke-test result names both resolved skill provenance and the
-`research-code-simplifier` host profile.
+on disk is not resolved", and no silent install/substitution. Remove target policy, Claude alias,
+`CODEX.md`, vendoring, and universal Node requirements. The smoke-test result names both resolved
+skill provenance and the `research-code-simplifier` host profile.
 
 Make `references/bootstrap.md` begin after approved interview answers. Preserve the project layout,
 uv lock/sync sequence, local Ruff hooks, Make requirements, logging example, conditional R
@@ -293,15 +296,15 @@ Make each opening paragraph declare direct scope without citing `AGENTS.md` as o
 
 Configuration retains the four decisions, bans catch-all `project.yaml`/`settings.yaml`, forbids a
 seed field in deterministic workflows, keeps strict load/override/provenance mechanics, the focused
-test matrix, and the six-step established-repo migration. Data retains registry fields, received-form
-description without internal paths, validation, machine-readable dictionary, SHA-256, and optional
-per-dataset README; remove fixture policy and duplicate missingness floor. Analysis retains the
-complete `ANALYSIS_PLAN.md` template, recommended reporting additions, one critique per coherent
-batch including bootstrap, missing-skill versus missing-agent behavior, and "skill is guidance, not
-evidence"; remove repeated trigger/floor prose. Figures retains the complete unique template and
-naming grammar, Python backend lock, atomic-before-assembly ordering, panel letters at assembly,
-per-format directories, cross-figure encoding, and QA; explicitly require opening and visually
-inspecting both rendered SVG and PDF.
+test matrix, and the six-step established-repo migration. Data retains registry fields,
+received-form description without internal paths, validation, machine-readable dictionary, SHA-256,
+and optional per-dataset README; remove fixture policy and duplicate missingness floor. Analysis
+retains the complete `ANALYSIS_PLAN.md` template, recommended reporting additions, one critique per
+coherent batch including bootstrap, missing-skill versus missing-agent behavior, and "skill is
+guidance, not evidence"; remove repeated trigger/floor prose. Figures retains the complete unique
+template and naming grammar, Python backend lock, atomic-before-assembly ordering, panel letters at
+assembly, per-format directories, cross-figure encoding, and QA; explicitly require opening and
+visually inspecting both rendered SVG and PDF.
 
 - [ ] **Step 5: Store the exact four pressure prompts and blind rubrics**
 
@@ -364,8 +367,8 @@ Scenario C rubric, all ten required:
 1. Resolve exact `research-repo-standard` and preflight exact `superpowers:brainstorming`,
    `scientific-critical-thinking`, and `nature-figure` before interviewing; never silently install.
 2. Ask one question at a time, including project identity/purpose, claim/status, data/access,
-   currently supported Python minor, R/container need, host adapter, license, outputs, and boundaries;
-   do not self-select them.
+   currently supported Python minor, R/container need, host adapter, license, outputs, and
+   boundaries; do not self-select them.
 3. Run brainstorming, independent scientific critique, and figure strategy; explicitly record no
    plots when that is the approved answer.
 4. Obtain integrated design approval, minimally initialize only the gate-artifact path, commit and
@@ -424,6 +427,7 @@ git commit -m "docs: make references own focused contracts"
 ### Task 1: Replace the complete adapter runtime under RED tests
 
 **Files:**
+
 - Delete: `agents/code-simplifier.md`
 - Create: `agents/research-code-simplifier.md`
 - Create: `adapters/profile-installer.sh`
@@ -436,8 +440,8 @@ git commit -m "docs: make references own focused contracts"
 - Modify: `Makefile`
 
 **Interfaces:**
-- Consumes: exact skill name `research-repo-standard` and profile name
-  `research-code-simplifier`.
+
+- Consumes: exact skill name `research-repo-standard` and profile name `research-code-simplifier`.
 - Produces: `install_research_code_simplifier HOST TARGET SOURCE_PROFILE`, where HOST is exactly
   `claude-code` or `codex`, plus a public green test interface that invokes the new focused suite.
 
@@ -507,17 +511,17 @@ case "$RRS_FAULT_MODE" in
 esac
 ```
 
-The test launcher exports `RRS_ADAPTER_PID` from the adapter process before any command substitution;
-all doubles signal and record that exact value rather than relying on wrapper `PPID`. The `mktemp`
-double targets only a template ending `.research-code-simplifier.stage.XXXXXX` and
+The test launcher exports `RRS_ADAPTER_PID` from the adapter process before any command
+substitution; all doubles signal and record that exact value rather than relying on wrapper `PPID`.
+The `mktemp` double targets only a template ending `.research-code-simplifier.stage.XXXXXX` and
 supports `pre-fail`, `post-fail`, and `post-TERM`. `post-fail` creates a randomized file by invoking
 the real `mktemp`, prints its path, records its inode, and exits 76; because creation did not return
 success, production must diagnose and preserve it as unclaimed evidence. The `rm` double targets
 only the recorded stage path and supports `fail` and `replace`: `fail` exits 77 without effect;
 `replace` removes the owned path with `/bin/rm`, writes a foreign sentinel at the same path, records
-its new inode, and exits 78. Every test uses
-`assert_marker MARKER OPERATION COUNT ADAPTER_PID` and checks operation, count, recorded adapter PID, exact
-source/destination, effect inode when applicable, and wrapper exit.
+its new inode, and exits 78. Every test uses `assert_marker MARKER OPERATION COUNT ADAPTER_PID` and
+checks operation, count, recorded adapter PID, exact source/destination, effect inode when
+applicable, and wrapper exit.
 
 Use this executable foreground case runner. Do not launch the adapter with `&`: on macOS an
 asynchronous Bash may inherit SIGINT ignored and cannot restore a working INT trap. The adapter
@@ -546,9 +550,9 @@ run_fault_case() {
 ```
 
 Create equivalent `run_mktemp_fault_case` and `run_cleanup_fault_case` functions with the same
-foreground status/recorded-PID/marker protocol and their operation-specific artifact assertions. Each case is
-called once for `adapters/claude-code.sh` and once for `adapters/codex.sh`; the test exits with the
-count of named failed cases, never at the first failure.
+foreground status/recorded-PID/marker protocol and their operation-specific artifact assertions.
+Each case is called once for `adapters/claude-code.sh` and once for `adapters/codex.sh`; the test
+exits with the count of named failed cases, never at the first failure.
 
 Use a copied source fixture with a malformed canonical profile to produce render/validation failure
 without a test-only production hook. Cover both hosts for stage-mktemp pre/post failure, pre-effect
@@ -582,7 +586,9 @@ Replace the old file with this metadata and host-neutral delegated body:
 ```yaml
 ---
 name: research-code-simplifier
-description: Simplifies recently changed research code for clarity and maintainability while preserving exact behavior and scientific contracts.
+description:
+  Simplifies recently changed research code for clarity and maintainability while preserving exact
+  behavior and scientific contracts.
 ---
 ```
 
@@ -604,8 +610,8 @@ scientific judgment or implement a new requirement.
 
 Prefer readable, explicit code. Remove needless nesting, duplication, indirection, speculative
 generality, and stale narration when equivalence is clear. Do not trade clarity for fewer lines,
-collapse distinct concerns, or remove an abstraction that carries useful meaning. A completed
-review with no justified edit is a successful outcome.
+collapse distinct concerns, or remove an abstraction that carries useful meaning. A completed review
+with no justified edit is a successful outcome.
 
 After every accepted edit, rerun the covering tests and then the repository-prescribed checks for
 the touched files. Report the files reviewed, any edits and why they preserve behavior, the exact
@@ -811,8 +817,8 @@ and require the result to equal the target root or begin with `target_root/`. Pa
 valid integration structure and need not be rolled back.
 
 Create the stage directly beside the destination. Set `rrs_in_transition=1`, run
-`rrs_stage=$(mktemp "$parent/.research-code-simplifier.stage.XXXXXX")`, capture status, and on status
-zero immediately record the inode before setting `rrs_in_transition=0` and calling
+`rrs_stage=$(mktemp "$parent/.research-code-simplifier.stage.XXXXXX")`, capture status, and on
+status zero immediately record the inode before setting `rrs_in_transition=0` and calling
 `rrs_honor_signal`. On nonzero, never set `rrs_stage_inode` or clean the reported path; diagnose any
 reported artifact as unclaimed evidence, leave the transition, honor a pending signal, then fail.
 Render and validate only after successful ownership. Signals outside the `mktemp` or `ln` transition
@@ -822,11 +828,11 @@ If a destination already exists, accept only a non-symlink regular file byte-ide
 Otherwise set `rrs_in_transition=1`, call `ln "$rrs_stage" "$rrs_destination"`, save its status,
 immediately call `rrs_refresh_commit`, set `rrs_in_transition=0`, then call `rrs_honor_signal`. A
 matching inode is committed even when `ln` reports nonzero; report
-`publication command failed after commit; destination retained` and exit nonzero.
-If no commit occurred, re-check for a byte-identical concurrent destination before reporting a
-conflict/failure. Never mutate or unlink the destination. Ordinary return passes through the EXIT
-trap so cleanup failure changes success to nonzero; signal exit retains 129/130/143 and prints any
-cleanup diagnostic.
+`publication command failed after commit; destination retained` and exit nonzero. If no commit
+occurred, re-check for a byte-identical concurrent destination before reporting a conflict/failure.
+Never mutate or unlink the destination. Ordinary return passes through the EXIT trap so cleanup
+failure changes success to nonzero; signal exit retains 129/130/143 and prints any cleanup
+diagnostic.
 
 Use this exact parent, staging, publication, and main control flow:
 
@@ -974,15 +980,14 @@ install_research_code_simplifier 'claude-code' "$1" \
   "$SCRIPT_DIR/../agents/research-code-simplifier.md"
 ```
 
-Codex uses the same wrapper with `codex.sh` in usage and `codex` as the fixed first argument. Neither
-derives identity from `$0`.
+Codex uses the same wrapper with `codex.sh` in usage and `codex` as the fixed first argument.
+Neither derives identity from `$0`.
 
 - [ ] **Step 6: Update consistency checks and the public test interface**
 
 Require the new canonical path/name, provider neutrality, common-library sourcing, hardcoded host
-IDs, and absence of target policy/shared-profile logic. Delete
-`tests/adapter_finalization_test.sh`. Create `tests/adapter_safety_test.sh`. Change only the Make
-`test` recipe now to:
+IDs, and absence of target policy/shared-profile logic. Delete `tests/adapter_finalization_test.sh`.
+Create `tests/adapter_safety_test.sh`. Change only the Make `test` recipe now to:
 
 ```make
 test: ## Run vendoring, adapter, and documentation-contract tests
@@ -1029,6 +1034,7 @@ git commit -m "refactor: install research simplifier per host"
 ### Task 4: Harmonize the source surface and remove obsolete artifacts
 
 **Files:**
+
 - Delete: `docs/superpowers/plans/2026-08-13-adapter-transaction-version-removal.md`
 - Delete: `docs/superpowers/plans/2026-08-13-contract-harmonization.md`
 - Delete: `docs/superpowers/specs/2026-08-13-adapter-transaction-version-removal-design.md`
@@ -1038,6 +1044,7 @@ git commit -m "refactor: install research simplifier per host"
 - Modify: `tests/consistency_test.sh`
 
 **Interfaces:**
+
 - Consumes: final policy/reference/profile/adapter paths from Tasks 1–3.
 - Produces: one concise public workflow with no obsolete executable or active historical contract.
 
@@ -1061,8 +1068,8 @@ grep -Fq '.codex/agents/research-code-simplifier.toml' "$ROOT/README.md"
 grep -Fq 'Makefile' "$ROOT/README.md"
 ```
 
-Implement the test with `grep -ER` over that explicit production list, not `rg`, so source tests keep
-their existing Bash and standard-tool dependency floor. Production migration prose refers to
+Implement the test with `grep -ER` over that explicit production list, not `rg`, so source tests
+keep their existing Bash and standard-tool dependency floor. Production migration prose refers to
 "legacy policy, alias, and generic simplifier artifacts" without reproducing old exact paths. The
 bare generic name is permitted only when identifying Claude's native plugin; do not reject the
 required substring inside `research-code-simplifier`.
@@ -1145,6 +1152,7 @@ git commit -m "refactor: remove target policy vendoring"
 ### Task 5: Run writing-skills GREEN pressure evaluation
 
 **Files:**
+
 - Review: `tests/skill_pressure_scenarios.md`
 - Review: `SKILL.md`
 - Modify only if a reproducible scenario failure requires it: `SKILL.md` or the uniquely owning
@@ -1152,15 +1160,17 @@ git commit -m "refactor: remove target policy vendoring"
 - Modify with the same failure evidence if guidance changes: `tests/consistency_test.sh`
 
 **Interfaces:**
-- Consumes: exact stored prompts; each fresh scenario agent receives only its prompt, not the rubric.
+
+- Consumes: exact stored prompts; each fresh scenario agent receives only its prompt, not the
+  rubric.
 - Produces: four blind transcripts and a compact scorecard appended under `GREEN results` in
   `tests/skill_pressure_scenarios.md`; no response is coached after dispatch.
 
 - [ ] **Step 1: Dispatch four fresh context-free scenario agents**
 
-Use `fork_turns="none"`. Tell each agent it may use the host resolver but must not read the evaluator
-rubric. Give exactly one stored prompt. Run scenarios independently so no response contaminates
-another.
+Use `fork_turns="none"`. Tell each agent it may use the host resolver but must not read the
+evaluator rubric. Give exactly one stored prompt. Run scenarios independently so no response
+contaminates another.
 
 - [ ] **Step 2: Score each response against its blind rubric**
 
@@ -1170,7 +1180,8 @@ Require full pass for every mandatory criterion. In particular:
 - bootstrap: all three exact skills precede interview, questions are one at a time, no target
   `AGENTS.md` and no deterministic seed are created, scientific critique and figure strategy occur,
   and adapter/smoke test is post-scaffold;
-- scientific change: full gate, authorization/log, plan, critique, missingness/attrition, exact skill;
+- scientific change: full gate, authorization/log, plan, critique, missingness/attrition, exact
+  skill;
 - simplifier: exact skill/profile resolution, behavior preservation, no scientific edits, covering
   tests, and no-edit success.
 
@@ -1198,10 +1209,12 @@ git commit -m "docs: harden skill pressure behavior"
 ### Task 6: Independent simplification, line-by-line audits, and final acceptance
 
 **Files:**
+
 - Review: every tracked file in the repository
 - Modify: only files required to resolve accepted, evidence-backed review findings
 
 **Interfaces:**
+
 - Consumes: all green implementation commits.
 - Produces: no unresolved material findings, complete verification evidence, and a clean worktree.
 
@@ -1213,9 +1226,10 @@ non-overlapping primary scopes:
 1. `AGENTS.md`, `SKILL.md`, bootstrap, applicability, gates, safety floor, and pressure scenarios;
 2. all six references, checked line by line for unique invariant preservation, duplication,
    omissions, and contradictions;
-3. canonical profile, adapter library/wrappers, runtime tests, containment, signals, concurrency, and
-   cleanup;
-4. README, Makefile, consistency tests, deleted-feature residue, exact names, and link/path validity.
+3. canonical profile, adapter library/wrappers, runtime tests, containment, signals, concurrency,
+   and cleanup;
+4. README, Makefile, consistency tests, deleted-feature residue, exact names, and link/path
+   validity.
 
 Each reports Critical/Important/Minor findings with exact file/line evidence and does not edit.
 
@@ -1231,7 +1245,8 @@ cleanup. Commit each coherent correction.
 Launch a fresh agent through the installed/resolved `research-code-simplifier` profile. Scope it to
 changed executable shell and tests. Require exact `research-repo-standard` resolution, no scientific
 or interface change, and covering tests after any edit. A report of "reviewed; no safe edit" is
-valid. If the real profile cannot resolve, report that boundary rather than substituting a self-pass.
+valid. If the real profile cannot resolve, report that boundary rather than substituting a
+self-pass.
 
 - [ ] **Step 4: Run fresh whole-repository compliance review**
 
@@ -1303,8 +1318,7 @@ Then rerun the exact production-file stale audit from Task 4.
 
 - [ ] **Step 6: Report host-native boundaries and final state**
 
-For every selected/available host, report the real resolved provenance of
-`research-repo-standard` and `research-code-simplifier`. Name unavailable host resolvers as manual
-boundaries while reporting their structural generation tests. Report commits, deletions and Git
-recoverability, all verification commands/results, pressure scores, reviewer verdicts, and final
-worktree status.
+For every selected/available host, report the real resolved provenance of `research-repo-standard`
+and `research-code-simplifier`. Name unavailable host resolvers as manual boundaries while reporting
+their structural generation tests. Report commits, deletions and Git recoverability, all
+verification commands/results, pressure scores, reviewer verdicts, and final worktree status.

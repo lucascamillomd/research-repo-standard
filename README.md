@@ -3,33 +3,43 @@
 An operating standard for reproducible repositories that support a scientific analysis, study, or
 paper.
 
-## How it works
+## Use the standard
 
-The standard has two modes:
+The `research-repo-standard` skill has two modes:
 
-- **Bootstrapping:** the `research-repo-standard` skill guides the design and creation of a new
-  research repository.
-- **Governed work:** the skill applies modification gates, safety rules, and focused domain
-  references when an agent changes or reviews an existing research repository.
+- **Bootstrapping:** guide the approved design and creation of a new research repository.
+- **Governed work:** apply modification gates, safety rules, and focused domain procedures when an
+  agent changes or reviews an existing research repository.
 
 Resolve `research-repo-standard` by exact name through the selected host's native skill listing or
-resolver. File presence alone is not resolution. The installation and recovery procedure lives in
-`references/prerequisites.md`.
+resolver. A file on disk is not proof of resolution. Follow `references/prerequisites.md` for source
+provenance, authorized installation or recovery, and host verification.
 
-After the approved repository scaffold exists, install only the selected host profile directly from
-this source repository:
+After the approved core scaffold exists, enter this provenance-verified source directory and run
+only the adapter for the selected host:
 
 ```bash
 ./adapters/codex.sh <target-repo>
 ./adapters/claude-code.sh <target-repo>
 ```
 
-Run only the command for the selected host. Codex creates
-`.codex/agents/research-code-simplifier.toml`; Claude Code creates
-`.claude/agents/research-code-simplifier.md`. Then run the host-native smoke test required by
-`SKILL.md` to confirm both skill provenance and the `research-code-simplifier` profile.
+Each command has one output. Codex creates `.codex/agents/research-code-simplifier.toml`; Claude
+Code creates `.claude/agents/research-code-simplifier.md`. This source repository does not create or
+change target policy files. Run the real host-native smoke test required by `SKILL.md` after
+installation: it must report the resolved provenance of `research-repo-standard` and confirm the
+expected `research-code-simplifier` host profile. Report an unavailable selected host as a manual
+boundary.
 
-## Repository structure
+The generated repository README records the skill prerequisite, expected source provenance and
+recovery path, project scope and runtime requirements, shortest Make-based reproduction path,
+expected artifacts, and external or manual boundaries. The complete checklist is owned by
+`references/bootstrap.md`.
+
+Migration is detection-first. Detect legacy policy, alias, and generic simplifier artifacts, report
+their exact resolved targets and customization status, and leave them unchanged. Removal requires
+explicit authorization after that inspection.
+
+## Source repository
 
 ```text
 AGENTS.md                              source-repository maintenance instructions
@@ -37,15 +47,16 @@ Makefile                               source help, format, and test interface
 SKILL.md                               normative skill entry point
 references/                            focused scientific and repository procedures
 agents/research-code-simplifier.md     canonical host-neutral simplifier profile
-adapters/                              direct host-profile installers
-tests/adapter_test.sh                  normal adapter behavior
-tests/adapter_safety_test.sh           adapter fault and cleanup behavior
+adapters/profile-installer.sh          common safe profile installer
+adapters/{codex,claude-code}.sh        direct selected-host adapters
+tests/adapter_test.sh                  normal adapter and concurrency behavior
+tests/adapter_safety_test.sh           focused fault and cleanup behavior
 tests/consistency_test.sh              documentation and ownership contracts
+tests/skill_pressure_scenarios.md      blind pressure scenarios and scoring rubrics
 ```
 
-This is not the generated research-repository workflow interface.
-
-## Source maintenance
+This source repository maintains the skill and adapters. Its commands are not the generated research
+repository's workflow interface:
 
 ```bash
 make help
@@ -53,5 +64,5 @@ make format
 make test
 ```
 
-`make test` runs the adapter, adapter-safety, and consistency suites. `make format` formats the
-owned Markdown sources.
+`make test` runs the focused adapter, adapter-safety, and consistency suites. `make format` formats
+the owned Markdown sources.

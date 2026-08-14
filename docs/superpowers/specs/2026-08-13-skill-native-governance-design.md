@@ -2,8 +2,8 @@
 
 ## Purpose
 
-Make `research-repo-standard` a skill that governs research repositories when invoked, rather than
-a policy file that is copied into every target repository. The skill becomes the stable entry point,
+Make `research-repo-standard` a skill that governs research repositories when invoked, rather than a
+policy file that is copied into every target repository. The skill becomes the stable entry point,
 the references own their detailed domain contracts, and this source repository receives a short
 local `AGENTS.md` concerned only with maintaining the skill itself.
 
@@ -24,12 +24,12 @@ Use a skill-native core with focused normative references:
   local contribution and verification instructions, and contains no portable research-repository
   policy.
 - Host adapters install only the host-specific delegated simplifier profile.
-- A target repository's README records the skill prerequisite, expected source provenance,
-  recovery guidance, and the shortest reproduction path without copying normative policy.
+- A target repository's README records the skill prerequisite, expected source provenance, recovery
+  guidance, and the shortest reproduction path without copying normative policy.
 
-The alternatives were rejected because a monolithic `SKILL.md` would make every invocation load
-all procedural detail, while moving the core into another large governance reference would retain
-the indirection that made ownership unclear. The chosen structure keeps the always-required rules
+The alternatives were rejected because a monolithic `SKILL.md` would make every invocation load all
+procedural detail, while moving the core into another large governance reference would retain the
+indirection that made ownership unclear. The chosen structure keeps the always-required rules
 visible and loads specialized detail only when relevant.
 
 ## Policy migration
@@ -62,19 +62,20 @@ through narrow wording:
   host integration must be verified;
 - bootstrap: creating the repository structure, tool configuration, CI, Make interface, or initial
   project documentation;
-- configuration: classifying, loading, using, changing, or overriding settings, paths, or provenance;
+- configuration: classifying, loading, using, changing, or overriding settings, paths, or
+  provenance;
 - data: acquiring, registering, preprocessing, describing, validating, or contracting data;
 - analysis: scientific planning, estimands, design, inclusion, missingness, modeling,
   implementation, interpretation, or reporting;
 - figures: planning a figure, writing plotting code, changing figure outputs, or performing QA.
 
 References become direct owners rather than "expansions" of `AGENTS.md`. Remove duplicated floor
-restatements and brittle cross-references such as numbered floor-item pointers. Preserve their unique
-contracts, including the analysis-plan template; data registry, validation, dictionary, checksum,
-and optional README requirements; configuration ownership, strict loading and overrides, the ban on
-catch-all configuration files, migration procedure, and the prohibition on inventing a seed field
-for a fully deterministic workflow; and the complete figure contract, atomic naming, export,
-assembly, cross-figure encoding, and QA procedure.
+restatements and brittle cross-references such as numbered floor-item pointers. Preserve their
+unique contracts, including the analysis-plan template; data registry, validation, dictionary,
+checksum, and optional README requirements; configuration ownership, strict loading and overrides,
+the ban on catch-all configuration files, migration procedure, and the prohibition on inventing a
+seed field for a fully deterministic workflow; and the complete figure contract, atomic naming,
+export, assembly, cross-figure encoding, and QA procedure.
 
 Do not maintain per-file standard-version stamps or tests for version drift.
 
@@ -86,10 +87,10 @@ not resolution. Installation is never silent, and unresolved skills are not imit
 
 The interview asks one question at a time and explicitly obtains the project identity and purpose,
 scientific claim and analysis status, data/access constraints, Python minor version, optional R or
-container needs, supported host adapter, license choice, and any project-specific workflow needs.
-It does not silently choose a Python version, seed, adapter, license, or scientific default. A seed
-is configured only if randomness is actually required. The approved answers drive the scaffold,
-initial analysis and figure strategy, and README.
+container needs, supported host adapter, license choice, and any project-specific workflow needs. It
+does not silently choose a Python version, seed, adapter, license, or scientific default. A seed is
+configured only if randomness is actually required. The approved answers drive the scaffold, initial
+analysis and figure strategy, and README.
 
 The existing writing-skills baseline exposed two pressure failures that the rewrite must correct:
 
@@ -98,9 +99,9 @@ The existing writing-skills baseline exposed two pressure failures that the rewr
 - figure agents must inspect rendered PDF as well as SVG rather than treating file existence or a
   PNG preview as complete QA.
 
-After the rewrite, fresh agents rerun the governed scientific-change, exploratory-figure,
-bootstrap, and delegated-simplification scenarios without being shown the expected answers. All
-requirements must pass, with explicit rendered SVG and PDF inspection in the figure scenario.
+After the rewrite, fresh agents rerun the governed scientific-change, exploratory-figure, bootstrap,
+and delegated-simplification scenarios without being shown the expected answers. All requirements
+must pass, with explicit rendered SVG and PDF inspection in the figure scenario.
 
 ## Vendoring removal
 
@@ -120,9 +121,8 @@ customization status are established.
 
 ## Delegated simplifier identity
 
-Rename the repository's delegated profile from `code-simplifier` to
-`research-code-simplifier` everywhere. The new name avoids collision with Claude's native
-`code-simplifier` plugin.
+Rename the repository's delegated profile from `code-simplifier` to `research-code-simplifier`
+everywhere. The new name avoids collision with Claude's native `code-simplifier` plugin.
 
 The canonical host-neutral source is `agents/research-code-simplifier.md`. It runs only after an
 explicit delegation required by the skill, invokes the exact `research-repo-standard` skill, reads
@@ -139,9 +139,10 @@ name is permitted only in migration prose that explicitly identifies a legacy ar
 native plugin.
 
 The two superseded design documents and two superseded implementation plans currently under
-`docs/superpowers/` describe vendoring, shared profiles, aliases, version stamps, and the old generic
-name as active behavior. Delete those four obsolete process artifacts during implementation; Git
-retains their history. The new design and plan replace them and are the only active gate artifacts.
+`docs/superpowers/` describe vendoring, shared profiles, aliases, version stamps, and the old
+generic name as active behavior. Delete those four obsolete process artifacts during implementation;
+Git retains their history. The new design and plan replace them and are the only active gate
+artifacts.
 
 ## Adapter behavior
 
@@ -150,8 +151,8 @@ Each adapter installs exactly one host-specific profile and has no shared target
 - the Claude adapter writes only the Claude Markdown profile;
 - the Codex adapter writes only the Codex TOML profile.
 
-Both generated profiles derive the canonical name, folded description, and body or instructions
-from `agents/research-code-simplifier.md`. Only syntax required to wrap that material in the host's
+Both generated profiles derive the canonical name, folded description, and body or instructions from
+`agents/research-code-simplifier.md`. Only syntax required to wrap that material in the host's
 Markdown or TOML format may be host-specific. Tests fail if either output drifts from the canonical
 source. Each profile invokes `research-repo-standard` by exact name and does not depend on a target
 `AGENTS.md`, a shared top-level `agents/` directory, or an alias file.
@@ -171,17 +172,16 @@ lock protocol. Retain a smaller safe single-file publication algorithm:
 7. Report nonzero with a precise diagnostic when an owned staging artifact cannot be removed, and
    preserve evidence that cannot be removed safely.
 
-Concurrent installations for the same host must never overwrite differing content. Concurrent
-Claude and Codex installations may proceed independently without a shared lock.
+Concurrent installations for the same host must never overwrite differing content. Concurrent Claude
+and Codex installations may proceed independently without a shared lock.
 
-Adapters do not install or claim to resolve skills. After adapter installation, the skill performs
-a host-native delegated smoke test that reports the resolved provenance of
-`research-repo-standard` and confirms that `research-code-simplifier` resolves through the expected
-profile. If the host cannot establish either fact, dependent work stops with recovery guidance.
-Source-repository acceptance uses structural generation tests for both supported hosts. A real
-resolver smoke test is required for each selected and available host; an unavailable host is
-reported as a manual verification boundary and does not invalidate otherwise complete source-repo
-verification.
+Adapters do not install or claim to resolve skills. After adapter installation, the skill performs a
+host-native delegated smoke test that reports the resolved provenance of `research-repo-standard`
+and confirms that `research-code-simplifier` resolves through the expected profile. If the host
+cannot establish either fact, dependent work stops with recovery guidance. Source-repository
+acceptance uses structural generation tests for both supported hosts. A real resolver smoke test is
+required for each selected and available host; an unavailable host is reported as a manual
+verification boundary and does not invalidate otherwise complete source-repo verification.
 
 ## Documentation and ownership cleanup
 
