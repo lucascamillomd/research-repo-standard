@@ -163,14 +163,16 @@ question, does not satisfy the record:
 Preflight: research-repo-standard + three hard-gate skills resolved before interview
 Reviews: brainstorming outcome; independent scientific critique and dispositions; figure strategy
 or explicit no-figure strategy
-Gate: approved committed specification and plan before implementation
+Gate: integrated design approval; minimal gate-artifact initialization; committed and reviewed
+specification; implementation plan ready
 Scaffold: core contracts — uv and Make, configuration, data registry and raw-data safety, analysis,
 provenance, verification; no unapproved runtimes
 Forbidden artifacts: no target AGENTS.md/CLAUDE.md/CODEX.md, no shared top-level simplifier
 Randomness: no seed for a deterministic workflow; otherwise explicit Seed 42
 README: expected skill source/provenance, recovery, shortest reproduction path
 Host: only the selected adapter, after core scaffold; real smoke test or honest boundary
-Boundaries: assumptions and manual or external boundaries reported; actual artifacts inspected
+Boundaries: assumptions and manual or external boundaries reported; actual generated artifacts
+inspected before completion is claimed
 ```
 
 ## Adopting an existing repository

@@ -501,12 +501,40 @@ for required_pattern in \
   'smoke test' \
   'boundar' \
   'artifacts inspected' \
+  'design approval|approved[^;]*design' \
+  'gate-artifact' \
+  'specification' \
+  'plan' \
   'critique' \
   'figure strategy' \
   'core contracts' \
   'README'; do
   grep -Eqi "$required_pattern" <<< "$bootstrap_record_text" || bootstrap_contract_ok=0
 done
+# the gate slot carries the whole sequence: approval, gate artifacts, committed spec, ready plan
+record_gate_slot="$(awk '
+    /^Gate:/ { capture = 1; print; next }
+    capture && /^[A-Za-z][A-Za-z ]*:/ { exit }
+    capture { print }
+' <<< "$bootstrap_record" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
+for gate_slot_pattern in \
+  'design approval|approved[^;]*design' \
+  'gate-artifact' \
+  'commit[a-z]*[^;]*(specification|spec)|specification[^;]*commit' \
+  'review' \
+  'plan'; do
+  grep -Eqi "$gate_slot_pattern" <<< "$record_gate_slot" || bootstrap_contract_ok=0
+done
+# the boundaries slot binds inspecting real generated artifacts to claiming completion
+record_boundaries_slot="$(awk '
+    /^Boundaries:/ { capture = 1; print; next }
+    capture && /^[A-Za-z][A-Za-z ]*:/ { exit }
+    capture { print }
+' <<< "$bootstrap_record" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
+grep -Eqi 'boundar' <<< "$record_boundaries_slot" || bootstrap_contract_ok=0
+grep -Eqi 'inspect' <<< "$record_boundaries_slot" || bootstrap_contract_ok=0
+grep -Eqi 'inspect[a-z]*[^;]*complet|complet[^;]*inspect' <<< "$record_boundaries_slot" ||
+  bootstrap_contract_ok=0
 # the numbered interview above owns topic coverage; the record must not restate it
 if grep -Eqi 'identity/purpose|research question/intended claim|supported Python minor' \
   <<< "$bootstrap_record_text"; then
