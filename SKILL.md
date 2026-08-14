@@ -16,9 +16,11 @@ Apply this skill to a repository whose purpose is, or is intended to become, the
 scientific analysis, study, paper, or claim. Do not apply it to a general-purpose software project,
 teaching repository, or scratch exploration that will never support a claim.
 
-Use **bootstrapping mode** when creating a research repository. Use **governed-work mode** for work
-in an existing research repository. In both modes, explicit user instructions and legal,
-institutional, journal, and data-use requirements take precedence over this standard.
+Use **bootstrapping mode** when creating a research repository. Use **adoption mode** when an
+existing repository was not created under this standard or its compliance is unknown. Use
+**governed-work mode** for work in a research repository that already follows it. In every mode,
+explicit user instructions and legal, institutional, journal, and data-use requirements take
+precedence over this standard.
 
 Local repository instructions may add stricter or project-specific requirements. They do not
 silently weaken this skill's safety floor. When two applicable instructions conflict, surface the
@@ -161,6 +163,21 @@ Randomness: no seed for a deterministic workflow; otherwise explicit Seed 42
 Host: only the selected adapter, after core scaffold; real smoke test or honest boundary
 Boundaries: assumptions and manual/external boundaries reported; actual artifacts inspected
 ```
+
+## Adopting an existing repository
+
+Enter adoption mode when the repository already exists and was not created under this standard, or
+when its compliance is unknown.
+
+Report the governed-work invocation record below first, then walk the standard item by item: the
+safety floor, then each reference's contract in routing-table order. Mark every item compliant, a
+gap, or not applicable, and cite file-level evidence — the paths, settings, tests, or missing
+artifacts behind the verdict. For configuration items, reuse the established-repository migration in
+`references/configuration.md` instead of inventing a second procedure.
+
+Then produce a prioritized migration plan: data safety and provenance first, reproducibility and
+contracts next, conveniences last. Change nothing while assessing — the review is read-only — and
+take each accepted migration step through the gate its own change class requires.
 
 ## Governed work
 

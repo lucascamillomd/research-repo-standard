@@ -48,6 +48,7 @@ for heading in \
   '## Required skills and modification gates' \
   '## Safety floor' \
   '## Bootstrapping sequence' \
+  '## Adopting an existing repository' \
   '## Governed work' \
   '## Completion'; do
   grep -Fqx "$heading" "$ROOT/SKILL.md" || skill_core_ok=0
@@ -208,6 +209,35 @@ if ((proportion_ok)); then
   pass "simplifier review batches per unit of work and brevity relaxes only mechanical interview topics"
 else
   fail "simplifier review must batch with a recorded waiver and brevity must batch only mechanical interview topics"
+fi
+
+# --- 3d. adoption mode assesses an existing repository before changing it ---
+adoption_section="$(awk '
+    /^## Adopting an existing repository$/ { capture = 1; next }
+    capture && /^## / { exit }
+    capture { print }
+' "$ROOT/SKILL.md")"
+adoption_text="$(tr '\n' ' ' <<< "$adoption_section" | tr -s '[:space:]' ' ')"
+adoption_ok=1
+[[ -n "$adoption_text" ]] || adoption_ok=0
+# the applicability framing names adoption alongside the other modes
+grep -Eqi 'adoption mode' <<< "$skill_text" || adoption_ok=0
+# the walk covers the floor and every reference contract, with evidence and a verdict per item
+grep -Eqi 'safety floor' <<< "$adoption_text" || adoption_ok=0
+grep -Eqi 'routing.table' <<< "$adoption_text" || adoption_ok=0
+grep -Eqi 'complian|gap' <<< "$adoption_text" || adoption_ok=0
+grep -Eqi 'evidence' <<< "$adoption_text" || adoption_ok=0
+# configuration migration keeps its single owner
+grep -Fq 'references/configuration.md' <<< "$adoption_text" || adoption_ok=0
+# the review changes nothing; adoption work still passes through the gates
+grep -Eqi 'change nothing|changes? nothing|read-only' <<< "$adoption_text" || adoption_ok=0
+grep -Eqi 'gate' <<< "$adoption_text" || adoption_ok=0
+# it stays choreography rather than a second copy of the contracts
+[[ "$(grep -c . <<< "$adoption_section")" -le 20 ]] || adoption_ok=0
+if ((adoption_ok)); then
+  pass "adoption mode assesses each contract with evidence before any gated migration"
+else
+  fail "adoption mode must walk floor and references with evidence, change nothing, and defer to the gates"
 fi
 
 # --- 4. canonical simplifier profile has the collision-safe identity ---
