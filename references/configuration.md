@@ -83,7 +83,7 @@ setting:
 4. Move the remaining stable researcher-editable scientific or operational settings to
    `analysis.yaml`, and keep non-setting implementation constants in code.
 5. Preserve existing behavior with focused tests before intentionally changing values.
-6. Record the migration and every authorized value change in `docs/lab_notebook.md`.
+6. Record the migration and every authorized value change in `docs/LAB_NOTEBOOK.md`.
 
 ## Focused test matrix
 

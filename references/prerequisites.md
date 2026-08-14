@@ -6,12 +6,15 @@ capabilities are separate from packages installed in a research repository.
 
 ## Required capabilities
 
-Resolve these three hard-gate skills by exact name before a bootstrap interview. For governed work,
-resolve each skill before the work that depends on it.
+Resolve these three hard-gate capabilities before a bootstrap interview. For governed work, resolve
+each capability before the work that depends on it. Resolve the two scientific skills by exact name.
+Resolve `superpowers` as a whole package: confirm the host lists its skills — at minimum
+`superpowers:brainstorming` and `superpowers:writing-plans`, which the workflow invokes by exact
+name.
 
-| Skill                          | Authoritative source                                    |
+| Capability                     | Authoritative source                                    |
 | ------------------------------ | ------------------------------------------------------- |
-| `superpowers:brainstorming`    | <https://github.com/obra/superpowers>                   |
+| `superpowers` (whole package)  | <https://github.com/obra/superpowers>                   |
 | `scientific-critical-thinking` | <https://github.com/k-dense-ai/scientific-agent-skills> |
 | `nature-figure`                | <https://github.com/Yuan1z0825/nature-skills>           |
 
@@ -61,8 +64,8 @@ Follow other hosts' authoritative installation instructions rather than guessing
 
 ## Shared planning companion
 
-At planning time, resolve the optional companion `superpowers:writing-plans` from the selected
-Superpowers installation. It is used after design approval and is not a fourth bootstrap hard gate.
+`superpowers:writing-plans` is provided by the required Superpowers package and is used after design
+approval. At planning time, resolve it by exact name from that same installation before invoking it.
 
 After an authorized installation, restart or reload the agent session when the host requires it,
 rerun native discovery, verify the exact name and source provenance, and then resume from the

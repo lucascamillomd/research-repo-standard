@@ -45,7 +45,7 @@ change can break, so when uncertain, use the full gate.
   and delegated implementation inherits the completed gate; reopen it at design if scope expands.
 - **Standard gate:** Result-affecting changes below design level, such as analysis configuration
   values, figure changes, and feature additions within the already approved design. Obtain explicit
-  authorization for the change and append to `docs/lab_notebook.md` the entry described under
+  authorization for the change and append to `docs/LAB_NOTEBOOK.md` the entry described under
   Governed work before the results are presented. Cover the change with tests. No specification or
   plan artifact is required; escalate to the full gate the moment a design-level item is in play.
 - **Light path:** Mechanical, non-result-affecting changes such as documentation, comments,
@@ -57,8 +57,10 @@ change can break, so when uncertain, use the full gate.
   declared outputs from an already approved workflow. Questions ask for answers, not edits; answer
   first and wait for an explicit change request.
 
-Load every reference whose semantic trigger matches the requested work. Read the selected reference
-completely before dependent decisions or edits.
+## Reference routing
+
+This routing table serves every mode. Load every reference whose semantic trigger matches the
+requested work. Read the selected reference completely before dependent decisions or edits.
 
 | Reference                     | Load when                                                                                                              |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -82,7 +84,7 @@ blocker rather than weakening one.
 3. **Estimands, inclusion rules, and data contracts change only with authorization.** Record the
    authorized change before presenting results built on it.
 4. **Exploratory never silently becomes confirmatory.** Label analyses. Record post hoc changes and
-   their rationale in `docs/lab_notebook.md` before presenting the result as planned.
+   their rationale in `docs/LAB_NOTEBOOK.md` before presenting the result as planned.
 5. **No silent complete-case filtering.** Report missingness before exclusions or imputation.
    Inclusion and exclusion criteria are code, not prose.
 6. **Randomness is declared, never invented.** When randomness is unavoidable, the seed is explicit,
@@ -98,15 +100,16 @@ blocker rather than weakening one.
 
 ## Bootstrapping sequence
 
-1. **Preflight once.** Before the interview, resolve the exact names `superpowers:brainstorming`,
-   `scientific-critical-thinking`, and `nature-figure` through the current host. Use
+1. **Preflight once.** Before the interview, resolve the `superpowers` package as a whole — its
+   `superpowers:brainstorming` and `superpowers:writing-plans` skills are both used — and the exact
+   names `scientific-critical-thinking` and `nature-figure` through the current host. Use
    `references/prerequisites.md` for authorized recovery. Repeat only if the agent session changes.
 2. **Interview one question at a time.** Ask the questions below, pursue conditional follow-ups, and
-   do not silently choose a Python version, seed, adapter, license, or scientific default. When the
-   user explicitly asks for brevity, the mechanical topics — Python minor, host adapter, license —
-   may be presented together as concrete proposed defaults that still require explicit confirmation.
-   Batching is permitted for those three topics only; every other numbered topic below stays one at
-   a time. Nothing is ever chosen silently.
+   do not silently choose a seed, adapter, license, or scientific default. When the user explicitly
+   asks for brevity, the mechanical topics — host adapter, license — may be presented together as
+   concrete proposed defaults that still require explicit confirmation. Batching is permitted for
+   those two topics only; every other numbered topic below stays one at a time. Nothing is ever
+   chosen silently.
 3. **Design with the full gate.** Invoke `superpowers:brainstorming`, explore alternatives, and keep
    implementation blocked while the design is unsettled.
 4. **Critique the science independently.** Launch a separate review agent that applies
@@ -140,18 +143,17 @@ Ask these, following the cadence rules in step 2:
 1. What is the project identity and purpose?
 2. What is the primary research question and intended scientific claim?
 3. Is the current status exploratory or confirmatory?
-4. Which currently supported Python minor should the project use?
-5. Which host adapter should be installed: `codex`, `claude-code`, or none?
-6. Should the license be MIT, or should the repository remain unlicensed or proprietary?
-7. Which datasets and access or data-use constraints are expected?
-8. Which workflow stages are needed, and which processed-data checkpoint can be shared?
-9. Are R or other non-Python tools required, and can they run in a pinned container? If yes, which
+4. Which host adapter should be installed: `codex`, `claude-code`, or none?
+5. Should the license be MIT, or should the repository remain unlicensed or proprietary?
+6. Which datasets and access or data-use constraints are expected?
+7. Which workflow stages are needed, and which processed-data checkpoint can be shared?
+8. Are R or other non-Python tools required, and can they run in a pinned container? If yes, which
    runtime, version, system dependencies, and tests must it support?
-10. Which tables, plots, reports, and publication targets are expected?
-11. Which steps cannot be automated because of licensing, compute, or external-environment limits?
-12. What can public CI verify, and what requires external inputs or tools? What is the smallest
+9. Which tables, plots, reports, and publication targets are expected?
+10. Which steps cannot be automated because of licensing, compute, or external-environment limits?
+11. What can public CI verify, and what requires external inputs or tools? What is the smallest
     permitted fixture or checkpoint for each external boundary?
-13. Which journal and publication type is the repository expected to support?
+12. Which journal and publication type is the repository expected to support?
 
 ### Bootstrap execution record
 
@@ -162,7 +164,8 @@ repository file. Saying only that the required topics will be completed, or list
 question, does not satisfy the record:
 
 ```text
-Preflight: research-repo-standard + three hard-gate skills resolved before interview
+Preflight: research-repo-standard + superpowers package + two scientific hard-gate skills resolved
+before interview
 Reviews: brainstorming outcome; independent scientific critique and dispositions; figure strategy
 or explicit no-figure strategy
 Gate: integrated design approval; minimal gate-artifact initialization; committed and reviewed
@@ -204,6 +207,8 @@ disk, are not resolution or invocation evidence. Report:
 Standard skill: exact research-repo-standard; host-native resolver; source provenance; invoked
 ```
 
+### Context and scope
+
 Before changing anything, discover and read the local instructions that apply from the repository
 root through the files in scope. Read the README, relevant project documents and configuration,
 nearby tests, and `git status`. Identify the scientific claim, pipeline stage, inputs, outputs, and
@@ -213,12 +218,16 @@ scientific meaning, interfaces, data safety, or scope.
 Use the routing table above broadly. Apply every loaded domain contract before dependent decisions.
 Do not avoid a contract through narrower task wording.
 
+### Authorization and records
+
 Obtain authorization before any design-level change listed under the full gate above. Before results
 are presented, append the decision, rationale and evidence, authorization source, affected work, and
-any superseded entry to `docs/lab_notebook.md`; that entry field set is the one the standard gate
+any superseded entry to `docs/LAB_NOTEBOOK.md`; that entry field set is the one the standard gate
 above refers to. Before presenting results affected by a changed analysis decision, amend
 `docs/ANALYSIS_PLAN.md` as `references/analysis.md` prescribes and label the change's post hoc
 status honestly.
+
+### Independent critique
 
 Work that depends on a scientific judgment under review waits for an independent critique at every
 gate, not only at design level: a separate review agent must apply `scientific-critical-thinking` to
@@ -227,14 +236,20 @@ Standard-gate changes that embody a scientific judgment — covariate sets, thre
 — are included. Batching one critique per coherent batch of decisions follows
 `references/analysis.md`.
 
+### Change discipline
+
 Keep changes narrow and follow the repository's declared interfaces. Tests and documentation change
 with behavior. Validate inputs before expensive computation, keep raw data immutable, and write
 declared outputs transactionally. If the approved scope expands, return to the applicable gate.
+
+### Destruction
 
 Destruction is never implied. Deleting files, dropping columns or rows, overwriting existing
 results, resetting or rewriting Git history, and force-pushing require explicit authorization. First
 resolve the exact narrow targets and state what would be destroyed and whether it is recoverable; if
 either is unclear, stop and ask.
+
+### Simplifier review
 
 After changing code or tests, launch an independent review agent through the current host's exact
 `research-code-simplifier` profile. Run it once per coherent unit of delegated work rather than

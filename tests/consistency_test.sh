@@ -46,6 +46,7 @@ skill_core_ok=1
 for heading in \
   '## Applicability and precedence' \
   '## Required skills and modification gates' \
+  '## Reference routing' \
   '## Safety floor' \
   '## Bootstrapping sequence' \
   '## Adopting an existing repository' \
@@ -60,7 +61,7 @@ for required in \
   'research-code-simplifier' \
   'data/raw/' \
   'Seed 42' \
-  'docs/lab_notebook.md' \
+  'docs/LAB_NOTEBOOK.md' \
   'transactionally'; do
   grep -Fq "$required" "$ROOT/SKILL.md" || skill_core_ok=0
 done
@@ -142,7 +143,7 @@ fi
 # --- 3b. modification gates stay proportionate to what a change can break ---
 gate_section="$(awk '
     /^## Required skills and modification gates$/ { capture = 1; next }
-    capture && /^## Safety floor$/ { exit }
+    capture && /^## Reference routing$/ { exit }
     capture { print }
 ' "$ROOT/SKILL.md")"
 gate_text="$(tr '\n' ' ' <<< "$gate_section" | tr -s '[:space:]' ' ')"
@@ -166,7 +167,7 @@ standard_gate_text="$(awk '
     capture { print }
 ' <<< "$gate_section" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
 grep -Eqi 'authoriz' <<< "$standard_gate_text" || gate_ok=0
-grep -Fq 'docs/lab_notebook.md' <<< "$standard_gate_text" || gate_ok=0
+grep -Fq 'docs/LAB_NOTEBOOK.md' <<< "$standard_gate_text" || gate_ok=0
 grep -Eqi 'test' <<< "$standard_gate_text" || gate_ok=0
 # governed work owns the entry field set; the standard-gate bullet only points at it
 grep -Eqi 'described under Governed work' <<< "$standard_gate_text" || gate_ok=0
@@ -205,8 +206,8 @@ grep -Eqi 'mechanical' <<< "$bootstrap_step_two" || proportion_ok=0
 grep -Eqi 'explicit confirmation' <<< "$bootstrap_step_two" || proportion_ok=0
 grep -Eqi 'one at a time' <<< "$bootstrap_step_two" || proportion_ok=0
 grep -Eqi 'silent' <<< "$bootstrap_step_two" || proportion_ok=0
-# batching covers those three mechanical topics and nothing else
-grep -Eqi 'those three topics only' <<< "$bootstrap_step_two" || proportion_ok=0
+# batching covers those two mechanical topics and nothing else
+grep -Eqi 'those two topics only' <<< "$bootstrap_step_two" || proportion_ok=0
 grep -Eqi 'every other numbered topic' <<< "$bootstrap_step_two" || proportion_ok=0
 # the scenario rubric must score the same relaxed cadence, not the old never-bundle rule
 scenario_c_rubric="$(awk '
@@ -460,9 +461,14 @@ interview_section="$(awk '
     capture && /^## / { exit }
     capture { print }
 ' "$ROOT/SKILL.md")"
-for required in 'Python minor' 'host adapter'; do
-  grep -Fq "$required" <<< "$interview_section" || bootstrap_contract_ok=0
-done
+grep -Fq 'host adapter' <<< "$interview_section" || bootstrap_contract_ok=0
+# superpowers is required as a whole package; its skills are still invoked by exact name
+grep -Eqi 'superpowers. package as a whole' <<< "$skill_text" || bootstrap_contract_ok=0
+grep -Eqi 'superpowers. \(whole package\)' "$ROOT/references/prerequisites.md" ||
+  bootstrap_contract_ok=0
+# the Python version is never an interview decision; bootstrap pins the latest stable minor
+grep -Fqi 'Python minor' <<< "$interview_section" && bootstrap_contract_ok=0
+grep -Eqi 'latest stable Python minor' "$ROOT/references/bootstrap.md" || bootstrap_contract_ok=0
 # the question list defers cadence to the bootstrapping step rather than stating a second rule
 grep -Eqi 'cadence rules in step 2' <<< "$interview_section" || bootstrap_contract_ok=0
 # the scientific topics stay separately numbered questions, whatever their wording

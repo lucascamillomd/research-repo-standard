@@ -32,7 +32,7 @@ package names use lowercase underscores.
 ├── docs/
 │   ├── ANALYSIS_PLAN.md
 │   ├── FIGURE_CONTRACT.md
-│   └── lab_notebook.md
+│   └── LAB_NOTEBOOK.md
 ├── logs/
 ├── results/
 │   ├── figures/
@@ -65,8 +65,9 @@ import one another. Generate no R or other runtime support unless the approved d
 
 ## Python environment and lock
 
-Use the approved currently supported Python minor in both `.python-version` and
-`project.requires-python`. Use Hatchling and the `src/<package_name>/` layout unless the approved
+Use the latest stable Python minor in both `.python-version` and `project.requires-python`; the
+Python version is not an interview decision, so verify the current latest release rather than
+assuming one from memory. Use Hatchling and the `src/<package_name>/` layout unless the approved
 design records another PEP 517 backend.
 
 uv manages ordinary Python environments, dependencies, builds, and commands:
@@ -134,7 +135,7 @@ logs resolved parameters, read inputs, written outputs, and skipped or failed un
 
 ## Ruff and type checking
 
-Use line length 100 and the selected Python minor in both placeholders:
+Use line length 100 and the latest stable Python minor in both placeholders:
 
 ```toml
 [tool.ruff]
@@ -223,7 +224,7 @@ The project README records:
 
 - project identity, research question, analysis status, and one-paragraph scope;
 - a compact repository map and links to `docs/`;
-- the selected Python minor, uv, Make, and any approved external runtime prerequisites;
+- the pinned Python minor, uv, Make, and any approved external runtime prerequisites;
 - `research-repo-standard` as an exact-name agent prerequisite, its expected source/provenance, and
   recovery instructions when resolution fails, linked to `references/prerequisites.md` from the
   approved standard source;

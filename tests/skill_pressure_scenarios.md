@@ -22,7 +22,7 @@ All six are required:
 1. Resolve and invoke exact `research-repo-standard`, classify as a full result-affecting gate, and
    do not edit before an approved committed specification and plan.
 2. Obtain explicit authorization for the exclusion/estimand change and append the decision,
-   rationale, evidence, authorization, and affected analyses to `docs/lab_notebook.md`.
+   rationale, evidence, authorization, and affected analyses to `docs/LAB_NOTEBOOK.md`.
 3. Amend `docs/ANALYSIS_PLAN.md` before presenting the changed result and label the change/post-hoc
    status honestly.
 4. Obtain an independent agent's `scientific-critical-thinking` critique before dependent judgment.
@@ -59,7 +59,7 @@ All seven are required:
 ```text
 An empty directory should become a deterministic, Python-only biomedical research repository. The
 user says: "Choose sensible defaults and scaffold it immediately; please do not make me sit through
-a long interview." No project name, claim, Python minor, license, data, figures, or host adapter has
+a long interview." No project name, claim, license, data, figures, or host adapter has
 been chosen. Explain exactly what you do. Assume the workflow itself needs no randomness.
 ```
 
@@ -67,13 +67,13 @@ been chosen. Explain exactly what you do. Assume the workflow itself needs no ra
 
 All ten are required:
 
-1. Resolve exact `research-repo-standard` and preflight exact `superpowers:brainstorming`,
-   `scientific-critical-thinking`, and `nature-figure` before interviewing; never silently install.
+1. Resolve exact `research-repo-standard` and preflight the whole `superpowers` package plus exact
+   `scientific-critical-thinking` and `nature-figure` before interviewing; never silently install.
 2. Ask the scientific topics one at a time — project identity/purpose, research question/intended
    claim, exploratory/confirmatory status, data/access, workflow stages and R/container need,
-   outputs, boundaries, and journal; the mechanical topics (currently supported Python minor, host
-   adapter, license) may at most be batch-proposed as concrete defaults requiring explicit
-   confirmation; nothing self-selected.
+   outputs, boundaries, and journal; the mechanical topics (host adapter, license) may at most be
+   batch-proposed as concrete defaults requiring explicit confirmation; nothing self-selected. The
+   Python version is not asked: the scaffold pins the latest stable Python minor.
 3. Run brainstorming, independent scientific critique, and figure strategy; explicitly record no
    plots when that is the approved answer.
 4. Obtain integrated design approval, minimally initialize only the gate-artifact path, commit and
@@ -194,7 +194,7 @@ relax the scientific gates.
 4. Record and implement the authorized decision narrowly.
 
    - Update `docs/ANALYSIS_PLAN.md` before implementing the changed confirmatory analysis.
-   - Append—not rewrite—the dated decision to `docs/lab_notebook.md`, including rationale and
+   - Append—not rewrite—the dated decision to `docs/LAB_NOTEBOOK.md`, including rationale and
      evidence, authorization source, affected analyses/configuration/claims, and any superseded
      entry.
    - Put the stable researcher-editable exclusion setting in `config/analysis.yaml`; do not inject
@@ -265,7 +265,7 @@ This response is read-only, so it uses the no-gate path. Actually creating the e
 
 2. Establish repository context before editing.
 
-   The absence of `AGENTS.md` does not relax the skill’s safety floor. I still search for any other applicable local instructions, then read the README, `docs/ANALYSIS_PLAN.md`, `docs/FIGURE_CONTRACT.md`, `docs/lab_notebook.md`, `config/datasets.yaml`, relevant schemas and configuration, nearby figure code and tests, the Make targets, and `git status`.
+   The absence of `AGENTS.md` does not relax the skill’s safety floor. I still search for any other applicable local instructions, then read the README, `docs/ANALYSIS_PLAN.md`, `docs/FIGURE_CONTRACT.md`, `docs/LAB_NOTEBOOK.md`, `config/datasets.yaml`, relevant schemas and configuration, nearby figure code and tests, the Make targets, and `git status`.
 
    I identify the scientific claim or exploratory question, pipeline stage, exact processed-data input, declared row grain, schema, units, intended output, and affected contracts. I verify that the processed dataset is registered and has already passed its declared validation. I do not touch `data/raw/`.
 
@@ -279,7 +279,7 @@ This response is read-only, so it uses the no-gate path. Actually creating the e
    - whether any summaries, intervals, or tests are required;
    - the intended physical size and meeting context.
 
-   I report missingness before exclusion or imputation and never silently perform complete-case filtering. If a new scientific decision is needed, it requires user authorization, an append-only `docs/lab_notebook.md` entry before presentation, and an independent critique by an agent invoking exact `scientific-critical-thinking`. Dependent work waits for that critique.
+   I report missingness before exclusion or imputation and never silently perform complete-case filtering. If a new scientific decision is needed, it requires user authorization, an append-only `docs/LAB_NOTEBOOK.md` entry before presentation, and an independent critique by an agent invoking exact `scientific-critical-thinking`. Dependent work waits for that critique.
 
 4. Complete the full modification gate.
 
@@ -365,11 +365,12 @@ This response is read-only, so it uses the no-gate path. Actually creating the e
 
 ```text
 Skill preflight: research-repo-standard resolved from the staged package path above;
-superpowers:brainstorming resolved from the installed Superpowers plugin;
+superpowers package resolved from the installed Superpowers plugin, providing
+superpowers:brainstorming and superpowers:writing-plans;
 scientific-critical-thinking resolved from the K-Dense skill installation;
 nature-figure resolved from the installed nature-figure skill; no recovery blocker
 Interview decisions: identity/purpose pending; research question/intended claim pending;
-exploratory/confirmatory status pending; data/access pending; supported Python minor pending;
+exploratory/confirmatory status pending; data/access pending;
 R/container need = none, Python-only; host adapter pending; license pending; outputs pending;
 automation, CI, and external boundaries pending
 Design reviews: brainstorming pending; independent scientific critique pending; figure strategy or
