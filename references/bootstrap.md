@@ -39,17 +39,18 @@ package names use lowercase underscores.
 │   ├── source_data/
 │   ├── tables/
 │   └── reports/
-├── scripts/
-│   ├── 01_data/
-│   ├── 02_preprocessing/
-│   ├── 03_features/
-│   ├── 04_analysis/
-│   ├── 05_sensitivity/
-│   ├── 06_figure_data/
-│   ├── 07_figures/
-│   └── 08_verification/
+├── workflow/
+│   ├── Snakefile
+│   ├── rules/
+│   │   ├── data.smk
+│   │   ├── preprocessing.smk
+│   │   ├── analysis.smk
+│   │   ├── figures.smk
+│   │   └── verification.smk
+│   └── schemas/
+│       ├── analysis.schema.yaml
+│       └── datasets.schema.yaml
 ├── src/<package_name>/
-│   ├── config.py
 │   ├── paths.py
 │   └── figures/
 │       └── common/
@@ -59,9 +60,12 @@ package names use lowercase underscores.
 └── tests/
 ```
 
-Adapt numbered stage names to the approved workflow while keeping their execution order visible. Put
-importable and testable logic under `src/<package_name>/`; stage scripts orchestrate and do not
-import one another. Generate no R or other runtime support unless the approved design requires it.
+Adapt rule-module names under `workflow/rules/` to the approved workflow. The `workflow/Snakefile`
+declares `configfile`, `rule all`, and includes the rule modules; it owns orchestration. Each rule
+declares `input:`, `output:`, `log:`, and `params:`, and its body is a single call into
+`src/<package_name>/` functions. Rules contain no scientific logic. Put importable and testable
+logic under `src/<package_name>/`. Generate no R or other runtime support unless the approved
+design requires it.
 
 ## Python environment and lock
 
@@ -103,7 +107,8 @@ compatibility, serialization, binary, or model constraints.
 dev = ["pre-commit", "pytest", "ruff", "ty"]
 ```
 
-`loguru` is a runtime dependency because stage logging is part of the pipeline.
+`loguru` and `snakemake` are runtime dependencies because rule logging and orchestration are part
+of the pipeline.
 
 ## Configuration
 
@@ -154,7 +159,7 @@ quote-style = "double"
 python-version = "3.XY"
 
 [tool.ty.src]
-include = ["src", "scripts", "tests"]
+include = ["src", "tests"]
 ```
 
 Enable stable rules only. Do not enable all or preview rules indiscriminately. Permit only safe
@@ -178,8 +183,8 @@ full test suite in pre-commit; Make and CI own tests.
 
 ## Make interface
 
-Make is the public workflow interface. `help` is the default goal, every target has a one-line `##`
-description, and these targets are required:
+Make is the public workflow interface; Snakemake is the pipeline engine behind it. `help` is the
+default goal, every target has a one-line `##` description, and these targets are required:
 
 ```make
 .DEFAULT_GOAL := help
@@ -187,16 +192,17 @@ description, and these targets are required:
 help:            ## Show this help
 setup:           ## Create the locked environment and install pre-commit hooks
 test:            ## Run the test suite
+pipeline:        ## Run the full Snakemake pipeline
 verify-results:  ## Verify declared results using permitted inputs
 ```
 
-Name the verification gate to fit the project. Add approved targets for quality checks, analysis,
-figures, reports, the light and full pipelines, and narrow cleanup. A reader must be able to reach
-the analysis, figures, full pipeline, and verification without knowing internal script paths.
-Cleanup targets are explicit and incapable of reaching `data/raw/`.
-
-Phony high-level targets need not pretend to provide file-level incrementality. Add file
-dependencies only when they are reliable.
+Name the verification gate to fit the project. Pipeline-facing targets are one-line wrappers over
+Snakemake — `pipeline` runs `uv run --locked snakemake --cores all` — and approved targets for
+analysis, figures, and reports wrap named Snakemake target rules. A reader must be able to reach
+the analysis, figures, full pipeline, and verification without knowing rule or internal file
+names. File-level incrementality is owned by Snakemake's DAG; Make targets stay phony one-line
+wrappers. Cleanup targets are explicit Make targets incapable of reaching `data/raw/`;
+do not use `snakemake --delete-all-output`.
 
 ## Conditional external runtimes
 
@@ -214,8 +220,8 @@ log_threshold(INFO)
 log_info("fitted {n} models on {nrow(df)} rows", n = length(fits))
 ```
 
-Do not create a dedicated R package by default. Minimal R orchestration may remain in its numbered
-stage; scientific plotting remains in Python.
+Do not create a dedicated R package by default. Minimal R orchestration may remain behind its
+Snakemake rule; scientific plotting remains in Python.
 
 ## Generated README checklist
 

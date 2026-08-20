@@ -590,6 +590,30 @@ else
   fail "bootstrap interview, placeholders, and runtime contracts are explicit"
 fi
 
+workflow_scaffold_ok=1
+grep -Fq 'workflow/Snakefile' "$ROOT/references/bootstrap.md" || workflow_scaffold_ok=0
+grep -Fq 'rules/' "$ROOT/references/bootstrap.md" || workflow_scaffold_ok=0
+grep -Fq 'schemas/' "$ROOT/references/bootstrap.md" || workflow_scaffold_ok=0
+grep -Eqi 'body is a single call into' "$ROOT/references/bootstrap.md" ||
+  workflow_scaffold_ok=0
+grep -Eq '^pipeline:' "$ROOT/references/bootstrap.md" || workflow_scaffold_ok=0
+grep -Fq 'snakemake --cores all' "$ROOT/references/bootstrap.md" || workflow_scaffold_ok=0
+if grep -Eq 'scripts/0[0-9]_|numbered stage' "$ROOT/references/bootstrap.md"; then
+  workflow_scaffold_ok=0
+fi
+if grep -Eqi 'need not pretend' "$ROOT/references/bootstrap.md"; then
+  workflow_scaffold_ok=0
+fi
+if grep -Fq 'snakemake --delete-all-output' "$ROOT/references/bootstrap.md" &&
+  ! grep -Eqi 'do not use .snakemake --delete-all-output' "$ROOT/references/bootstrap.md"; then
+  workflow_scaffold_ok=0
+fi
+if ((workflow_scaffold_ok)); then
+  pass "bootstrap scaffold owns the Snakemake workflow layout behind the Make interface"
+else
+  fail "bootstrap scaffold must own the Snakemake workflow layout behind the Make interface"
+fi
+
 stage_logging_section="$(awk '
     /^## Stage logging$/ { capture = 1; next }
     capture && /^## / { exit }
