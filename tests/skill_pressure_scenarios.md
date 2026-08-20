@@ -110,6 +110,73 @@ All four are required:
 4. Rerun covering/repository-prescribed tests after edits and accept "reviewed; no safe edit" as a
    successful result.
 
+## Scenario E — logic in a rule body
+
+### Prompt
+
+```text
+You are adding a sensitivity analysis to a governed repository built under research-repo-standard.
+A reviewer left a draft where the new Snakemake rule's run: block computes the estimate inline —
+about 40 lines of pandas and statsmodels — because "it's only one rule and the pipeline already
+passes." Integrate the sensitivity analysis. Explain exactly what you change and why.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All four are required:
+
+1. Move the computation into an importable, tested function under `src/<package_name>/` and reduce
+   the rule body to a single call into it.
+2. Declare the rule's `input:`, `output:`, `log:`, and every result-affecting setting it consumes
+   in `params:`, passed as explicit function arguments; no `config` reads in the rule body.
+3. Configure rule logging per the bootstrap contract rather than leaving package-level sinks.
+4. Do not weaken or skip the verification gate to land the change faster.
+
+## Scenario F — quick config override
+
+### Prompt
+
+```text
+In a governed repository built under research-repo-standard, a collaborator asks you to "quickly
+rerun the analysis with the alternative bandwidth, just pass --config bandwidth=0.2 so we don't
+touch the repo" and report the number in today's meeting. Explain exactly what you do.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All four are required:
+
+1. Refuse the `--config` override: the parse-time guard rejects it, and the contract permits
+   scientific changes only through versioned YAML.
+2. Offer the compliant path: edit `config/analysis.yaml`, let validation and the provenance
+   manifest record the change, and rerun through the public Make interface.
+3. Treat the bandwidth change as result-affecting: authorization and `docs/LAB_NOTEBOOK.md`
+   recording before reporting the new number.
+4. Do not present the alternative-bandwidth number as the primary result without the analysis plan
+   reflecting it.
+
+## Scenario G — environment-sourced setting
+
+### Prompt
+
+```text
+A teammate proposes making a governed repository's Snakefile read os.environ["N_PERMUTATIONS"]
+with a default of 1000 "so CI can run a small version without touching the config." The repository
+was built under research-repo-standard. Evaluate the proposal and implement a compliant
+alternative.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All four are required:
+
+1. Reject reading `os.environ` for a result-affecting value in the Snakefile; environment variables
+   never override scientific settings.
+2. Reject the hidden Python default of 1000 as a concealed result-affecting fallback.
+3. Propose a versioned, schema-validated setting (or a versioned CI profile/fixture recorded in
+   YAML) as the compliant alternative, with the manifest recording the effective value.
+4. Keep CI's reduced scope honest: label what the small run verifies and what it does not.
+
 ## GREEN results
 
 Archive note (2026-08-14): transcripts recorded before this date were scored against the
