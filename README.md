@@ -15,20 +15,16 @@ Resolve `research-repo-standard` by exact name through the selected host's nativ
 resolver. A file on disk is not proof of resolution. Follow `references/prerequisites.md` for source
 provenance, authorized installation or recovery, and host verification.
 
-After the approved core scaffold exists, enter this provenance-verified source directory and run
-only the adapter for the selected host:
-
-```bash
-./adapters/codex.sh <target-repo>
-./adapters/claude-code.sh <target-repo>
-```
-
-Each command has one output. Codex creates `.codex/agents/research-code-simplifier.toml`; Claude
-Code creates `.claude/agents/research-code-simplifier.md`. This source repository does not create or
-change target policy files. Run the real host-native smoke test required by `SKILL.md` after
-installation. It must report the resolved provenance of `research-repo-standard` and confirm the
-expected `research-code-simplifier` host profile. Report an unavailable selected host as a manual
-boundary.
+After the approved core scaffold exists, the agent writes the host profile itself by deriving it
+from the canonical `agents/research-code-simplifier.md` in this provenance-verified skill source.
+`references/prerequisites.md` owns the exact procedure. A Claude Code host receives the canonical
+profile copied verbatim to `<target-repo>/.claude/agents/research-code-simplifier.md`. A Codex host
+receives `<target-repo>/.codex/agents/research-code-simplifier.toml` carrying the same name,
+description, and body text in the Codex profile format. Write only the selected host's profile, and
+write none when no host was selected. This source repository does not create or change target policy
+files. Run the real host-native smoke test required by `SKILL.md` after installation. It must report
+the resolved provenance of `research-repo-standard` and confirm the expected
+`research-code-simplifier` host profile. Report an unavailable selected host as a manual boundary.
 
 The generated repository README records the skill prerequisite, expected source provenance and
 recovery path, project scope and runtime requirements, shortest Make-based reproduction path,
@@ -47,16 +43,12 @@ Makefile                               source help, format, and test interface
 SKILL.md                               normative skill entry point
 references/                            focused scientific and repository procedures
 agents/research-code-simplifier.md     canonical host-neutral simplifier profile
-adapters/profile-installer.sh          common safe profile installer
-adapters/{codex,claude-code}.sh        direct selected-host adapters
-tests/adapter_test.sh                  normal adapter and concurrency behavior
-tests/adapter_safety_test.sh           focused fault and cleanup behavior
 tests/consistency_test.sh              documentation and ownership contracts
 tests/skill_pressure_scenarios.md      blind pressure scenarios and scoring rubrics
 ```
 
-This source repository maintains the skill and adapters. Its commands are not the generated research
-repository's workflow interface:
+This source repository maintains the skill. Its commands are not the generated research repository's
+workflow interface:
 
 ```bash
 make help
@@ -64,5 +56,4 @@ make format
 make test
 ```
 
-`make test` runs the focused adapter, adapter-safety, and consistency suites. `make format` formats
-the owned Markdown sources.
+`make test` runs the consistency suite. `make format` formats the owned Markdown sources.

@@ -63,8 +63,8 @@ Adapt rule-module names under `workflow/rules/` to the approved workflow. The `w
 declares `configfile`, `rule all`, and includes the rule modules; it owns orchestration. Each rule
 declares `input:`, `output:`, `log:`, and `params:`, and its body is a single call into
 `src/<package_name>/` functions. Rules contain no scientific logic. Put importable and testable
-logic under `src/<package_name>/`. Generate no R or other runtime support unless the approved
-design requires it.
+logic under `src/<package_name>/`. Generate no R or other runtime support unless the approved design
+requires it.
 
 ## Python environment and lock
 
@@ -106,8 +106,8 @@ compatibility, serialization, binary, or model constraints.
 dev = ["pre-commit", "pytest", "ruff", "ty"]
 ```
 
-`loguru` and `snakemake` are runtime dependencies because rule logging and orchestration are part
-of the pipeline.
+`loguru` and `snakemake` are runtime dependencies because rule logging and orchestration are part of
+the pipeline.
 
 ## Configuration
 
@@ -122,8 +122,8 @@ and placeholders, never values. Ignore the real `.env`.
 ## Rule logging
 
 Package code calls `logger.<level>()` but configures no sink at import time. Every rule declares a
-`log:` path under `logs/`, and the rule body installs one console sink and one file sink before
-its single package call:
+`log:` path under `logs/`, and the rule body installs one console sink and one file sink before its
+single package call:
 
 ```python
 logger.remove()
@@ -133,8 +133,8 @@ logger.add(log[0], level="DEBUG")
 
 `log_level` is a stable operational setting owned by `config/analysis.yaml` and declared in the
 rule's `params:`; the rule passes it explicitly. Never source logging verbosity from the
-environment. Each rule logs resolved parameters, read inputs, written outputs, and skipped or
-failed units.
+environment. Each rule logs resolved parameters, read inputs, written outputs, and skipped or failed
+units.
 
 ## Ruff and type checking
 
@@ -197,11 +197,10 @@ verify-results:  ## Verify declared results using permitted inputs
 
 Name the verification gate to fit the project. Pipeline-facing targets are one-line wrappers over
 Snakemake: `pipeline` runs `uv run --locked snakemake --cores all`. Approved targets for analysis
-and figures wrap named Snakemake target rules. A reader must be able to reach the
-analysis, figures, full pipeline, and verification without knowing rule or internal file names.
-Snakemake's DAG owns file-level incrementality; Make targets stay phony one-line wrappers.
-Cleanup targets are explicit Make targets that cannot reach `data/raw/`;
-do not use `snakemake --delete-all-output`.
+and figures wrap named Snakemake target rules. A reader must be able to reach the analysis, figures,
+full pipeline, and verification without knowing rule or internal file names. Snakemake's DAG owns
+file-level incrementality; Make targets stay phony one-line wrappers. Cleanup targets are explicit
+Make targets that cannot reach `data/raw/`; do not use `snakemake --delete-all-output`.
 
 ## Conditional external runtimes
 
@@ -239,21 +238,11 @@ The project README records:
 
 ## Selected host integration
 
-After the core scaffold is complete, take the absolute, provenance-verified skill source directory
-reported by the successful host-native resolver and assign it to `research_standard_source`. Do not
-infer this location from the current directory or use an unrelated target-local `adapters/` path.
-Assign the approved absolute target repository path to `target_repo`:
-
-```bash
-research_standard_source=/absolute/path/reported-by-host-resolver
-target_repo=/absolute/path/to/approved-target-repository
-
-"$research_standard_source/adapters/codex.sh" "$target_repo"
-"$research_standard_source/adapters/claude-code.sh" "$target_repo"
-```
-
-The commands are alternatives, not a sequence. Run only the selected host's adapter against
-`target_repo`, and run neither when no host adapter was selected. Then follow
-`references/prerequisites.md` for the real host-native smoke test of the resolved
-`research-repo-standard` provenance and the `research-code-simplifier` host profile.
+After the core scaffold is complete, write the selected host's simplifier profile as
+`references/prerequisites.md` prescribes. Derive it from the canonical
+`agents/research-code-simplifier.md` in the absolute, provenance-verified skill source directory
+reported by the successful host-native resolver; do not infer that location from the current
+directory. Write only the selected host's profile into the target repository, and write none when no
+host was selected. Then follow `references/prerequisites.md` for the real host-native smoke test of
+the resolved `research-repo-standard` provenance and the `research-code-simplifier` host profile.
 Report an unavailable selected host as a manual boundary instead of simulating success.

@@ -304,33 +304,6 @@ if grep -Eq '\.claude/agents|Claude Code|Anthropic|Codex|OpenAI' \
 fi
 ((profile_ok)) && pass "canonical simplifier profile is provider neutral"
 
-adapter_runtime_ok=1
-for adapter in claude-code codex; do
-  grep -Fq 'source "$SCRIPT_DIR/profile-installer.sh"' "$ROOT/adapters/$adapter.sh" ||
-    adapter_runtime_ok=0
-  grep -Fq "install_research_code_simplifier '$adapter'" "$ROOT/adapters/$adapter.sh" ||
-    adapter_runtime_ok=0
-  if grep -Eq 'AGENTS\.md|CLAUDE\.md|CODEX\.md|agents/code-simplifier|shared' \
-    "$ROOT/adapters/$adapter.sh"; then
-    adapter_runtime_ok=0
-  fi
-done
-if [[ -f "$ROOT/adapters/profile-installer.sh" ]] &&
-  grep -Fq 'install_research_code_simplifier()' "$ROOT/adapters/profile-installer.sh" &&
-  ((adapter_runtime_ok)); then
-  pass "host adapters source one common installer with fixed host identities"
-else
-  fail "host adapters must source the common installer and install only their fixed host profile"
-fi
-
-if ! grep -Eq 'AGENTS\.md|CLAUDE\.md|CODEX\.md|agents/code-simplifier|target policy|shared profile' \
-  "$ROOT/adapters/profile-installer.sh" "$ROOT/adapters/claude-code.sh" \
-  "$ROOT/adapters/codex.sh" 2> /dev/null; then
-  pass "adapter runtime contains no target-policy or shared-profile logic"
-else
-  fail "adapter runtime must not contain target-policy or shared-profile logic"
-fi
-
 # --- 6. live bootstrap and README use the skill-native integration path ---
 integration_docs_ok=1
 readme_text="$(tr '\n' ' ' < "$ROOT/README.md")"
@@ -342,8 +315,8 @@ for obsolete in 'vendor.sh' 'tests/vendor_test.sh' 'After core vendoring' '`SKIL
   fi
 done
 for required in \
-  './adapters/codex.sh <target-repo>' \
-  './adapters/claude-code.sh <target-repo>' \
+  '.claude/agents/research-code-simplifier.md' \
+  '.codex/agents/research-code-simplifier.toml' \
   'host-native smoke test' \
   'research-code-simplifier'; do
   grep -Fq "$required" <<< "$readme_text" || integration_docs_ok=0
@@ -360,14 +333,17 @@ grep -Eqi 'core scaffold' <<< "$bootstrap_text" || integration_docs_ok=0
 if ((integration_docs_ok)); then
   pass "bootstrap and README expose only the live skill-native integration path"
 else
-  fail "bootstrap and README must resolve the skill, run a direct adapter, and require host smoke testing"
+  fail "bootstrap and README must resolve the skill, name both host profile outputs, and require host smoke testing"
 fi
 
 # --- 7. removed workflows and superseded process artifacts stay absent ---
 removed_paths_ok=1
 for removed_path in \
   vendor.sh \
+  adapters \
   tests/vendor_test.sh \
+  tests/adapter_test.sh \
+  tests/adapter_safety_test.sh \
   tests/adapter_finalization_test.sh \
   docs/superpowers/plans/2026-08-13-adapter-transaction-version-removal.md \
   docs/superpowers/plans/2026-08-13-contract-harmonization.md \
@@ -378,10 +354,6 @@ for removed_path in \
     removed_paths_ok=0
   fi
 done
-if [[ ! -f "$ROOT/tests/adapter_safety_test.sh" ]]; then
-  fail "focused adapter safety suite is missing: tests/adapter_safety_test.sh"
-  removed_paths_ok=0
-fi
 ((removed_paths_ok)) && pass "obsolete workflows and superseded process artifacts are absent"
 
 production_paths=(
@@ -391,7 +363,6 @@ production_paths=(
   "$ROOT/Makefile"
   "$ROOT/references"
   "$ROOT/agents"
-  "$ROOT/adapters"
 )
 stale_surface_ok=1
 if grep -ERn 'post-vendor|vendors? `AGENTS.md`|copies only AGENTS.md|standard_version' \
@@ -407,6 +378,13 @@ if ((stale_surface_ok)); then
   pass "production surface contains no stale vendoring, version, or generic-profile terminology"
 else
   fail "production surface must contain no stale vendoring, version, or generic-profile terminology"
+fi
+
+# the retired shell-script machinery must not silently return to any production surface
+if grep -ERn 'adapters/|profile-installer' "${production_paths[@]}"; then
+  fail "production surfaces must not reference adapters/ machinery paths"
+else
+  pass "production surfaces contain no adapters/ machinery paths"
 fi
 
 readme_surface_ok=1
@@ -448,19 +426,14 @@ bootstrap_integration_text="$(tr '\n' ' ' <<< "$bootstrap_integration_section" |
 bootstrap_source_ok=1
 grep -Eqi 'provenance-verified.*(skill )?source.*(resolver|resolution)|resolver.*provenance-verified.*(skill )?source' \
   <<< "$bootstrap_integration_text" || bootstrap_source_ok=0
-grep -Eq 'research_standard_source=' <<< "$bootstrap_integration_section" || bootstrap_source_ok=0
-grep -Eq 'target_repo=' <<< "$bootstrap_integration_section" || bootstrap_source_ok=0
-grep -Fq '"$research_standard_source/adapters/codex.sh" "$target_repo"' \
-  <<< "$bootstrap_integration_section" || bootstrap_source_ok=0
-grep -Fq '"$research_standard_source/adapters/claude-code.sh" "$target_repo"' \
-  <<< "$bootstrap_integration_section" || bootstrap_source_ok=0
-if grep -Eq '^\./adapters/(codex|claude-code)\.sh' <<< "$bootstrap_integration_section"; then
+grep -Fq 'agents/research-code-simplifier.md' <<< "$bootstrap_integration_text" ||
   bootstrap_source_ok=0
-fi
+grep -Fq 'references/prerequisites.md' <<< "$bootstrap_integration_text" || bootstrap_source_ok=0
+grep -Fq 'only the selected host' <<< "$bootstrap_integration_text" || bootstrap_source_ok=0
 if ((bootstrap_source_ok)); then
-  pass "bootstrap invokes only provenance-verified skill-source adapters against the target"
+  pass "bootstrap derives the host profile from the provenance-verified canonical source"
 else
-  fail "bootstrap must resolve the standard source and invoke its selected adapter against the target"
+  fail "bootstrap must derive only the selected host profile from the provenance-verified canonical source"
 fi
 
 # --- 8. bootstrap delegates host prerequisites to their owner ---
@@ -477,7 +450,7 @@ interview_section="$(awk '
     capture && /^## / { exit }
     capture { print }
 ' "$ROOT/SKILL.md")"
-grep -Fq 'host adapter' <<< "$interview_section" || bootstrap_contract_ok=0
+grep -Fq 'host profile' <<< "$interview_section" || bootstrap_contract_ok=0
 # superpowers is required as a whole package; its skills are still invoked by exact name
 grep -Eqi 'superpowers. package as a whole' <<< "$skill_text" || bootstrap_contract_ok=0
 grep -Eqi 'superpowers. \(whole package\)' "$ROOT/references/prerequisites.md" ||
@@ -591,7 +564,11 @@ if grep -Eqi 'identity/purpose|research question/intended claim|supported Python
   <<< "$bootstrap_record_text"; then
   bootstrap_contract_ok=0
 fi
-for required in 'adapters/codex.sh' 'adapters/claude-code.sh' 'smoke test'; do
+for required in \
+  'agents/research-code-simplifier.md' \
+  'references/prerequisites.md' \
+  'only the selected host' \
+  'smoke test'; do
   grep -Fq "$required" <<< "$skill_text" || bootstrap_contract_ok=0
 done
 grep -Fq 'target-version = "py3XY"' "$ROOT/references/bootstrap.md" || bootstrap_contract_ok=0
@@ -672,10 +649,22 @@ else
 fi
 
 # --- 11. every reference owns one complete, focused domain contract ---
-if grep -Fq -- '--agent <codex|claude-code>' "$ROOT/references/prerequisites.md"; then
-  pass "prerequisite reference owns the portable selected-host installer form"
+prerequisites_text="$(tr '\n' ' ' < "$ROOT/references/prerequisites.md" | tr -s '[:space:]' ' ')"
+host_profile_instruction_ok=1
+for required in \
+  'agents/research-code-simplifier.md' \
+  '.claude/agents/research-code-simplifier.md' \
+  '.codex/agents/research-code-simplifier.toml' \
+  'only the selected host'; do
+  grep -Fq "$required" <<< "$prerequisites_text" || host_profile_instruction_ok=0
+done
+grep -Eqi 'verbatim' <<< "$prerequisites_text" || host_profile_instruction_ok=0
+grep -Eqi 'same name, description, and body' <<< "$prerequisites_text" ||
+  host_profile_instruction_ok=0
+if ((host_profile_instruction_ok)); then
+  pass "prerequisite reference owns deriving each host profile from the canonical profile"
 else
-  fail "prerequisite reference must own the portable selected-host installer form"
+  fail "prerequisite reference must tell the agent to derive only the selected host profile from the canonical profile"
 fi
 
 if grep -Fq 'src/<package_name>/' "$ROOT/references/bootstrap.md" &&

@@ -62,14 +62,14 @@ change can break, so when uncertain, use the full gate.
 In every mode, load each reference whose trigger matches the requested work and read it completely
 before dependent decisions or edits.
 
-| Reference                     | Load when                                                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `references/prerequisites.md` | a required capability is unresolved, installation or recovery is requested, or host integration must be verified       |
+| Reference                     | Load when                                                                                                                          |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `references/prerequisites.md` | a required capability is unresolved, installation or recovery is requested, or host integration must be verified                   |
 | `references/bootstrap.md`     | creating repository structure, tool configuration, CI, the Snakemake workflow and Make interface, or initial project documentation |
-| `references/configuration.md` | classifying, loading, using, changing, or overriding settings, paths, or provenance                                    |
-| `references/data.md`          | acquiring, registering, preprocessing, describing, validating, or contracting data                                     |
-| `references/analysis.md`      | scientific planning, estimands, design, inclusion, missingness, modeling, implementation, interpretation, or reporting |
-| `references/figures.md`       | planning a figure, writing plotting code, changing figure outputs, or performing QA                                    |
+| `references/configuration.md` | classifying, loading, using, changing, or overriding settings, paths, or provenance                                                |
+| `references/data.md`          | acquiring, registering, preprocessing, describing, validating, or contracting data                                                 |
+| `references/analysis.md`      | scientific planning, estimands, design, inclusion, missingness, modeling, implementation, interpretation, or reporting             |
+| `references/figures.md`       | planning a figure, writing plotting code, changing figure outputs, or performing QA                                                |
 
 ## Safety floor
 
@@ -104,8 +104,8 @@ blocker rather than weakening one.
    package's `superpowers:brainstorming` and `superpowers:writing-plans` skills are both used. Use
    `references/prerequisites.md` for authorized recovery. Repeat only if the agent session changes.
 2. **Interview one question at a time.** Ask the questions below, pursue conditional follow-ups, and
-   do not silently choose a seed, adapter, license, or scientific default. When the user explicitly
-   asks for brevity, the mechanical topics, host adapter and license, may be presented together as
+   do not silently choose a seed, host, license, or scientific default. When the user explicitly
+   asks for brevity, the mechanical topics, host profile and license, may be presented together as
    concrete proposed defaults that still require explicit confirmation. Batching is permitted for
    those two topics only; every other numbered topic below stays one at a time. Nothing is ever
    chosen silently.
@@ -123,10 +123,12 @@ blocker rather than weakening one.
    Do not create target `AGENTS.md`, `CLAUDE.md`, `CODEX.md`, or a shared top-level simplifier.
 7. **Plan, scaffold, and configure.** Invoke `superpowers:writing-plans`, then load every applicable
    reference, including `references/bootstrap.md`, and create only the approved repository.
-8. **Integrate the selected host.** If the user selected Codex or Claude Code, run
-   `./adapters/codex.sh <target-repo>` or `./adapters/claude-code.sh <target-repo>` respectively. If
-   none was selected, install no adapter and first establish that the host can independently resolve
-   the required simplifier; otherwise future code changes are blocked.
+8. **Integrate the selected host.** If the user selected Codex or Claude Code, write that host's
+   profile into the target repository by deriving it from the canonical
+   `agents/research-code-simplifier.md` in the provenance-verified skill source, as
+   `references/prerequisites.md` prescribes; write only the selected host's profile. If none was
+   selected, write no host profile and first establish that the host can independently resolve the
+   required simplifier; otherwise future code changes are blocked.
 9. **Run a real selected-host smoke test.** Through the selected host, report the resolved
    provenance of this skill and confirm that `research-code-simplifier` resolves from the expected
    installed profile. Do not simulate an unavailable resolver; report it as a manual boundary and
@@ -141,7 +143,7 @@ Ask these, following the cadence rules in step 2:
 1. What is the project identity and purpose?
 2. What is the primary research question and intended scientific claim?
 3. Is the current status exploratory or confirmatory?
-4. Which host adapter should be installed: `codex`, `claude-code`, or none?
+4. Which host profile should be installed: `codex`, `claude-code`, or none?
 5. Should the license be MIT, or should the repository remain unlicensed or proprietary?
 6. Which datasets and access or data-use constraints are expected?
 7. Which workflow stages are needed, and which processed-data checkpoint can be shared?
@@ -173,7 +175,7 @@ safety, analysis, provenance, verification; no unapproved R support
 Forbidden artifacts: no target AGENTS.md/CLAUDE.md/CODEX.md, no shared top-level simplifier
 Randomness: no seed for a deterministic workflow; otherwise explicit Seed 42
 README: expected skill source/provenance, recovery, shortest reproduction path
-Host: only the selected adapter, after core scaffold; real smoke test or honest boundary
+Host: only the selected host profile, after core scaffold; real smoke test or honest boundary
 Boundaries: assumptions and manual or external boundaries reported
 Completion: actual generated artifacts inspected before completion is claimed
 ```
@@ -210,8 +212,8 @@ Standard skill: exact research-repo-standard; host-native resolver; source prove
 Before changing anything, discover and read the local instructions that apply from the repository
 root through the files in scope. Read the README, relevant project documents and configuration,
 nearby tests, and `git status`. Identify the scientific claim, pipeline stage, inputs, outputs, and
-affected contracts. Preserve unrelated work and report assumptions that materially affect
-scientific meaning, interfaces, data safety, or scope.
+affected contracts. Preserve unrelated work and report assumptions that materially affect scientific
+meaning, interfaces, data safety, or scope.
 
 Use the routing table above broadly. Apply every loaded domain contract before dependent decisions.
 Do not avoid a contract through narrower task wording.
@@ -250,9 +252,9 @@ either is unclear, stop and ask.
 ### Simplifier review
 
 After changing code or tests, launch an independent review agent through the current host's exact
-`research-code-simplifier` profile. Run it once per coherent unit of delegated work, not after
-every individual edit. It must invoke this skill, load the references relevant to the changed
-code, preserve behavior, and return or apply only simplifications within the approved scope. Re-run
+`research-code-simplifier` profile. Run it once per coherent unit of delegated work, not after every
+individual edit. It must invoke this skill, load the references relevant to the changed code,
+preserve behavior, and return or apply only simplifications within the approved scope. Re-run
 covering tests after any simplifier edit. Only when the profile cannot be resolved or an independent
 agent cannot be launched may the user explicitly waive or defer the pass; dependent completion is
 otherwise blocked, and the waiver and its scope are recorded in the completion report so it is never

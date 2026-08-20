@@ -64,8 +64,8 @@ Follow other hosts' authoritative installation instructions rather than guessing
 
 ## Shared planning companion
 
-The required Superpowers package provides `superpowers:writing-plans` for use after design
-approval. At planning time, resolve it by exact name from that same installation before invoking it.
+The required Superpowers package provides `superpowers:writing-plans` for use after design approval.
+At planning time, resolve it by exact name from that same installation before invoking it.
 
 After an authorized installation, restart or reload the agent session when the host requires it,
 rerun native discovery, verify the exact name and source provenance, and then resume from the
@@ -82,6 +82,24 @@ from its own environment.
 If the parent resolves a capability but the delegate cannot, dependent review remains blocked unless
 the user explicitly waives or defers it, in which case record the waiver and its scope. Report that
 delegated-resolution boundary instead of replacing the independent review with a self-review.
+
+## Host profile installation
+
+After the approved core scaffold exists, the agent writes the delegated simplifier profile into the
+target repository itself; no installer script exists. Derive the profile from the canonical
+`agents/research-code-simplifier.md` in the provenance-verified skill source reported by the
+host-native resolver, never from a location inferred from the current directory.
+
+- For a Claude Code host, copy the canonical profile verbatim to
+  `<target-repo>/.claude/agents/research-code-simplifier.md`.
+- For a Codex host, write `<target-repo>/.codex/agents/research-code-simplifier.toml` carrying the
+  same name, description, and body text in the Codex profile format.
+
+Write only the selected host's profile, and write none when no host was selected. The canonical
+profile stays host-neutral; never add host names to it, and never restate its content in another
+policy file. Never create or modify target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md`, and never
+overwrite an existing customized profile without explicit authorization. After installation, run the
+selected-host smoke test below.
 
 ## Selected-host smoke test
 
