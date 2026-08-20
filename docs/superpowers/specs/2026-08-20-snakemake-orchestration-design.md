@@ -58,15 +58,25 @@ Make remains the unchanged mandatory public interface wrapping Snakemake invocat
 - Package functions never receive or read the Snakemake `config` object. Rules pass individual
   values as explicit typed function arguments. Explicit propagation and the ban on global mutable
   settings survive at the function boundary.
-- `--config` and `--configfile` CLI overrides are banned outright. A scientific or operational
-  setting changes only by editing versioned YAML. This replaces the previous CLI-override
-  whitelist.
+- `--config` and `--configfile` CLI overrides are banned outright, and the ban is enforced, not
+  merely stated: Snakemake merges CLI overrides into `config` with command-line precedence before
+  schema validation, so validation alone cannot reject them. The Snakefile therefore re-reads the
+  versioned YAML files directly at parse time and fails, before the DAG is built, whenever the
+  effective `config` object diverges from their contents. A scientific or operational setting
+  changes only by editing versioned YAML. This replaces the previous CLI-override whitelist.
 - Environment variables still never override scientific settings; the Snakefile does not read
   `os.environ` for result-affecting values.
-- The provenance manifest requirement survives, implemented as a pipeline-start rule that records
-  each config file's path, SHA-256 hash, and validated effective values before computation.
-- Snakemake runs use `--rerun-triggers` including `params` so a changed setting invalidates
-  downstream outputs.
+- The provenance manifest requirement survives as a manifest rule whose inputs are both config
+  files and whose output records each file's path, SHA-256 hash, and validated effective values.
+  Snakemake orders work only through input/output DAG edges, so every result-producing rule
+  declares the manifest as an input, wrapped in `ancient()`: the dependency edge guarantees the
+  manifest exists before any result job runs, while ignoring its mtime prevents each run's
+  rewritten manifest from spuriously invalidating the whole pipeline.
+- Every result-affecting configuration value a rule consumes is declared in that rule's `params:`
+  and passed from there as explicit function arguments; rules never read `config` inside rule
+  bodies. Combined with `--rerun-triggers` including `params`, this is what makes a changed
+  setting genuinely invalidate downstream outputs — values consumed only inside a rule body are
+  invisible to Snakemake's invalidation.
 - The seed contract is unchanged: `random_seed: 42` declared and propagated when randomness exists;
   no seed field for a deterministic workflow.
 - The six-step migration for established repositories is updated to target the new loading
@@ -95,10 +105,17 @@ Make remains the unchanged mandatory public interface wrapping Snakemake invocat
 
 - `tests/consistency_test.sh`: keep Makefile/README anchors; add anchors for `workflow/Snakefile`,
   `workflow/rules/`, and schema validation; rewrite configuration-precedence and stage-logging
-  anchors to the new wording; add anchors for the `--config` ban and the thin-rule contract. Suite
-  green before commit.
+  anchors to the new wording; add anchors for the enforced `--config` guard, the `ancient()`
+  manifest edge, the `params:`-declaration rule, and the thin-rule contract. Suite green before
+  commit.
 - `tests/skill_pressure_scenarios.md`: add three scenarios — scientific logic in a `run:` block,
   using `--config` to "quickly test" a value, and reading `os.environ` inside the Snakefile.
+- The focused test matrix in `references/configuration.md` gains entries that bootstrapped
+  repositories must implement at runtime: the parse-time guard rejects `--config` and
+  `--configfile` before computation; the manifest exists before any result job runs, including
+  under parallel scheduling; and a changed result-affecting setting reruns the downstream rules
+  that consume it. These are contracts for bootstrapped repositories, not executable tests in this
+  skill repository.
 
 ## Out of scope
 
