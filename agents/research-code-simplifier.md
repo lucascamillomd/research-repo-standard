@@ -26,3 +26,69 @@ with no justified edit is a successful outcome.
 After every accepted edit, rerun the covering tests and then the repository-prescribed checks for
 the touched files. Report the files reviewed, any edits and why they preserve behavior, the exact
 verification results, and any unresolved boundary.
+
+## Before and after examples
+
+Each after is real code from a widely used project. Each before is the same behavior rewritten
+with the defects this review removes. The diff between the pair is the lesson; aim every accepted
+edit at that diff.
+
+The before narrates each line, stages values in pointless intermediate variables, and wraps the
+loop in a try/except that swallows errors it has no way to handle.
+
+```python
+# Before
+def iter_slices(string, slice_length):
+    """Iterate over slices of a string."""
+    # start at the beginning of the string
+    current_position = 0
+    # compute the total length of the input
+    total_length = len(string)
+    if slice_length is None or slice_length <= 0:
+        slice_length = total_length
+    try:
+        # keep looping until we run off the end
+        while current_position < total_length:
+            # work out where this slice ends
+            end_position = current_position + slice_length
+            yield string[current_position:end_position]
+            current_position = end_position
+    except Exception:
+        pass
+```
+
+```python
+# After. From requests (Apache-2.0), requests/utils.py
+def iter_slices(string, slice_length):
+    """Iterate over slices of a string."""
+    pos = 0
+    if slice_length is None or slice_length <= 0:
+        slice_length = len(string)
+    while pos < len(string):
+        yield string[pos : pos + slice_length]
+        pos += slice_length
+```
+
+The before coerces a type no caller mishandles, accumulates by hand what one call returns, and
+carries a flag nothing sets.
+
+```python
+# Before
+def take(n, iterable, as_tuple=False):
+    "Return first n items of the iterable as a list."
+    # coerce n in case a caller passes a numeric string
+    n = int(n)
+    collected_items = []
+    for item in islice(iterable, n):
+        collected_items.append(item)
+    if as_tuple:
+        return tuple(collected_items)
+    return collected_items
+```
+
+```python
+# After. From the CPython itertools recipes (PSF license), Doc/library/itertools.rst
+def take(n, iterable):
+    "Return first n items of the iterable as a list."
+    return list(islice(iterable, n))
+```

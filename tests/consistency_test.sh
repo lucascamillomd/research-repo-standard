@@ -304,6 +304,14 @@ if grep -Eq '\.claude/agents|Claude Code|Anthropic|Codex|OpenAI' \
 fi
 ((profile_ok)) && pass "canonical simplifier profile is provider neutral"
 
+# --- 5a. simplifier profile teaches with attributed before/after examples ---
+if grep -Fqx '## Before and after examples' "$ROOT/agents/research-code-simplifier.md" &&
+  grep -Fq 'From requests (Apache-2.0)' "$ROOT/agents/research-code-simplifier.md"; then
+  pass "simplifier profile shows attributed before/after simplification examples"
+else
+  fail "simplifier profile must show attributed before/after simplification examples"
+fi
+
 # --- 6. live bootstrap and README use the skill-native integration path ---
 integration_docs_ok=1
 readme_text="$(tr '\n' ' ' < "$ROOT/README.md")"
