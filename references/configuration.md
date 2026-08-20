@@ -1,7 +1,7 @@
 # Reference: configuration ownership contract
 
-This contract classifies settings and defines strict configuration loading, path ownership,
-overrides, configuration provenance, migration, and focused tests.
+This contract classifies settings and defines schema-validated loading, override rejection, path
+ownership, configuration provenance, migration, and focused tests.
 
 ## Ownership decision
 
