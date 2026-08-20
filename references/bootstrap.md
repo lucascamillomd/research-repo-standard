@@ -112,10 +112,10 @@ of the pipeline.
 
 ## Configuration
 
-Load `references/configuration.md` before creating YAML, `config.py`, `paths.py`, CLI overrides, or
-configuration provenance; it owns where each value belongs and how the loader validates it. Create
-`config/datasets.yaml` and `config/analysis.yaml`; TOML remains the owner of packaging and tool
-configuration.
+Load `references/configuration.md` before creating YAML, schemas, `paths.py`, the Snakefile's
+configfile declaration, or configuration provenance; it owns where each value belongs and how
+validation and the override guard work. Create `config/datasets.yaml` and `config/analysis.yaml`;
+TOML remains the owner of packaging and tool configuration.
 
 Create `.env.example` only when the project consumes environment variables. List safe variable names
 and placeholders, never values. Ignore the real `.env`.

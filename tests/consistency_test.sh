@@ -695,6 +695,27 @@ else
   fail "configuration classifier must keep sensitive, derived, editable, and code buckets exclusive"
 fi
 
+snakemake_config_ok=1
+grep -Fq 'configfile' "$ROOT/references/configuration.md" || snakemake_config_ok=0
+grep -Fq 'snakemake.utils.validate' "$ROOT/references/configuration.md" || snakemake_config_ok=0
+grep -Fq 'additionalProperties: false' "$ROOT/references/configuration.md" ||
+  snakemake_config_ok=0
+grep -Eqi 'parse time[^.]*before the DAG|before the DAG[^.]*parse time' \
+  "$ROOT/references/configuration.md" || snakemake_config_ok=0
+grep -Fq 'ancient()' "$ROOT/references/configuration.md" || snakemake_config_ok=0
+grep -Eqi 'declared in that rule.+params:|params:.+explicit typed function arguments' \
+  "$ROOT/references/configuration.md" || snakemake_config_ok=0
+grep -Eqi 'never narrow .--rerun-triggers' "$ROOT/references/configuration.md" ||
+  snakemake_config_ok=0
+if grep -Eqi 'immutable typed' "$ROOT/references/configuration.md"; then
+  snakemake_config_ok=0
+fi
+if ((snakemake_config_ok)); then
+  pass "configuration contract owns Snakemake-native loading, override guard, and provenance edges"
+else
+  fail "configuration contract must own Snakemake-native loading, override guard, and provenance edges"
+fi
+
 # each contract keeps one owner: bootstrap and analysis defer instead of restating
 dedupe_ok=1
 bootstrap_configuration_section="$(awk '

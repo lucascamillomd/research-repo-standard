@@ -11,8 +11,8 @@ precedence is normative:
 1. Credentials, secrets, machine-specific absolute roots, and GPU selection use environment
    variables, even when a researcher chooses them for a run.
 2. Values derived from repository structure or another setting are computed rather than configured.
-   Derived internal paths always live in `paths.py`; other derived configuration values may be
-   computed in `config.py`. Do not duplicate either in YAML.
+   Derived internal paths always live in `paths.py`; other derived configuration values are
+   computed in package code. Do not duplicate either in YAML.
 3. All remaining stable researcher-editable scientific or operational settings live in
    `config/analysis.yaml`. This includes every setting that can alter the dataset, estimate, model,
    figure, or scientific claim.
@@ -32,21 +32,30 @@ Python version, packaging metadata, tool configuration, and locked dependencies 
 `.python-version`, `pyproject.toml`, and `uv.lock`. Do not duplicate them in analysis YAML. Do not
 create a catch-all `project.yaml` or `settings.yaml`.
 
-## Loading and overrides
+## Loading and validation
 
-Load configuration once per stage through `src/<package_name>/config.py`, before expensive
-computation. The loader owns schemas, parsing, type conversion, ranges, units, cross-field
-validation, and composition of permitted overrides. Reject unknown fields, missing required fields,
-invalid values, and values with more than one owner.
+The Snakefile declares `configfile: "config/analysis.yaml"`, loads `config/datasets.yaml`, and
+validates both at DAG-build time with `snakemake.utils.validate` against JSON Schemas in
+`workflow/schemas/` that set `additionalProperties: false`. Validation rejects unknown fields,
+missing required fields, invalid values, ranges, units, and invalid cross-field combinations
+before any job runs.
 
-Return immutable typed objects and pass them explicitly from entry points into package functions.
-Package functions do not reread YAML or import mutable module-level settings. `config.py` contains
-no project-specific scientific or operational values. Optional schema fields may represent a genuine
-absent state, but they never conceal a scientific default or result-affecting fallback in Python.
+Package functions never receive or read the Snakemake `config` object. Every result-affecting
+configuration value a rule consumes is declared in that rule's `params:` and passed from there as
+explicit typed function arguments; rules never read `config` inside rule bodies. Values consumed
+only inside a rule body are invisible to Snakemake's invalidation, so the `params:` declaration is
+what makes a changed setting rerun the rules that consume it. Never narrow `--rerun-triggers`
+below Snakemake's default trigger set, which includes `params` and `code`.
 
-Command-line arguments are reserved for genuine invocation-time variation and use the same
-validation as YAML. Define which fields may be overridden and reject all others. Environment
-variables never override scientific settings.
+## Override rejection
+
+`--config` and `--configfile` overrides are banned, and the ban is enforced rather than stated:
+Snakemake merges command-line overrides into `config` with command-line precedence before schema
+validation, so validation alone cannot reject them. The Snakefile re-reads the versioned YAML
+files directly at parse time and fails, before the DAG is built, whenever the effective `config`
+object diverges from their contents. A scientific or operational setting changes only by editing
+versioned YAML. Environment variables never override scientific settings; the Snakefile does not
+read `os.environ` for result-affecting values.
 
 ## Paths and environment
 
@@ -61,13 +70,14 @@ and safe placeholders, never credentials.
 
 ## Configuration provenance
 
-Before computation, create a validated effective configuration. For every loaded YAML file, record
-its path or stable identifier, SHA-256 hash, and validated effective values. Record every CLI
-override, its value, its source, and whether it can affect results. Record permitted environment
-inputs by variable name and redacted presence; never record a secret value.
-
-Reject an unrecorded result-affecting override. The manifest must distinguish versioned values from
-invocation-time values and contain enough information to reproduce the composition order.
+A manifest rule takes both configuration files as inputs and writes a manifest recording each
+file's path or stable identifier, SHA-256 hash, and validated effective values, with permitted
+environment inputs recorded by variable name and redacted presence; never record a secret value.
+Snakemake orders work only through input/output DAG edges, so every result-producing rule declares
+the manifest as an input wrapped in `ancient()`: the edge guarantees the manifest exists before
+any result job runs, while ignoring its mtime prevents each run's rewritten manifest from
+spuriously invalidating unchanged work. The manifest must distinguish versioned values from
+computed values and contain enough information to reproduce the effective configuration.
 
 ## Established repositories
 
@@ -79,7 +89,8 @@ setting:
 2. Obtain authorization before changing scientific meaning, an estimand, an inclusion rule, or a
    data contract.
 3. Move credentials, secrets, machine-specific roots, and GPU selection to environment variables;
-   move derived internal paths to `paths.py` and other derived configuration values to `config.py`.
+   move derived internal paths to `paths.py` and other derived configuration values into package
+   code, deleting `src/<package_name>/config.py` in favor of schema-validated configfile loading.
 4. Move the remaining stable researcher-editable scientific or operational settings to
    `analysis.yaml`, and keep non-setting implementation constants in code.
 5. Preserve existing behavior with focused tests before intentionally changing values.
@@ -89,9 +100,16 @@ setting:
 
 Configuration tests cover:
 
-- rejection of unknown, missing, invalid, and duplicate-owned values;
-- invalid cross-field combinations, units, ranges, and override composition;
-- immutable typed return objects, one load per stage, and explicit parameter propagation;
+- schema rejection of unknown, missing, invalid, and duplicate-owned values, including invalid
+  cross-field combinations, units, and ranges;
+- the parse-time guard failing the run before computation when `--config` or `--configfile`
+  diverges the effective configuration from versioned YAML;
+- explicit `params:` declaration and propagation of every result-affecting value a rule consumes,
+  with no `config` reads inside rule bodies;
+- a changed result-affecting setting rerunning the downstream rules that consume it, and unchanged
+  settings not invalidating unrelated work;
+- the manifest existing before any result job runs, including under parallel scheduling, and its
+  `ancient()` edge not invalidating unchanged work;
 - absence of hidden result-affecting Python defaults and environment overrides of scientific
   settings;
 - precedence collisions, including researcher-selected secrets, machine roots, GPU selection, and
@@ -100,4 +118,7 @@ Configuration tests cover:
 - repository containment and inability to redirect canonical raw-data locations;
 - propagation of `random_seed: 42` to every stochastic component when randomness is used;
 - absence of a seed setting in a fully deterministic workflow; and
-- provenance failure for every omitted or unrecordable result-affecting override.
+- provenance failure when the manifest cannot record a consumed configuration source.
+
+The guard, manifest-ordering, parallel-scheduling, and rerun entries are runtime integration tests
+implemented by the bootstrapped repository, not by this skill repository.
