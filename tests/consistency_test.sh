@@ -614,23 +614,24 @@ else
   fail "bootstrap scaffold must own the Snakemake workflow layout behind the Make interface"
 fi
 
-stage_logging_section="$(awk '
-    /^## Stage logging$/ { capture = 1; next }
+rule_logging_section="$(awk '
+    /^## Rule logging$/ { capture = 1; next }
     capture && /^## / { exit }
     capture { print }
 ' "$ROOT/references/bootstrap.md")"
-stage_logging_text="$(tr '\n' ' ' <<< "$stage_logging_section" | tr -s '[:space:]' ' ')"
+rule_logging_text="$(tr '\n' ' ' <<< "$rule_logging_section" | tr -s '[:space:]' ' ')"
 logging_ownership_ok=1
-grep -Fq 'stage_config.log_level' <<< "$stage_logging_section" || logging_ownership_ok=0
-grep -Eqi 'validated.*passed explicitly|passed explicitly.*validated' \
-  <<< "$stage_logging_text" || logging_ownership_ok=0
-if grep -Fq 'os.environ.get("LOG_LEVEL"' <<< "$stage_logging_section"; then
+grep -Fq 'params.log_level' <<< "$rule_logging_section" || logging_ownership_ok=0
+grep -Eqi "declared in the rule.+params" <<< "$rule_logging_text" || logging_ownership_ok=0
+grep -Eqi 'never source logging verbosity from the environment' \
+  <<< "$rule_logging_text" || logging_ownership_ok=0
+if grep -Fq 'os.environ.get("LOG_LEVEL"' <<< "$rule_logging_section"; then
   logging_ownership_ok=0
 fi
 if ((logging_ownership_ok)); then
-  pass "bootstrap logging receives its classified operational setting explicitly"
+  pass "rule logging receives its classified operational setting explicitly"
 else
-  fail "bootstrap logging must not create an environment-owned operational setting"
+  fail "rule logging must not create an environment-owned operational setting"
 fi
 
 # --- 10. final-review ownership corrections remain aligned ---

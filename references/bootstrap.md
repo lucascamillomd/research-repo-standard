@@ -120,22 +120,22 @@ configuration.
 Create `.env.example` only when the project consumes environment variables. List safe variable names
 and placeholders, never values. Ignore the real `.env`.
 
-## Stage logging
+## Rule logging
 
-Package code calls `logger.<level>()` but configures no sink at import time. Each stage entry point
-removes the default sink and installs one console sink and one file sink under `logs/`:
+Package code calls `logger.<level>()` but configures no sink at import time. Every rule declares a
+`log:` path under `logs/`, and the rule body installs one console sink and one file sink before
+its single package call:
 
 ```python
 logger.remove()
-logger.add(sys.stderr, level=stage_config.log_level)
-logger.add(paths.LOGS / "02_fit_{time}.log", level="DEBUG", rotation="20 MB")
+logger.add(sys.stderr, level=params.log_level)
+logger.add(log[0], level="DEBUG")
 ```
 
-`stage_config.log_level` is a stable operational setting owned by `config/analysis.yaml`. The
-validated value is passed explicitly after the entry point's single configuration load. When
-verbosity is genuine invocation-time variation, expose only a declared, validated CLI override and
-compose it through the same loader; never source logging verbosity from the environment. Each stage
-logs resolved parameters, read inputs, written outputs, and skipped or failed units.
+`log_level` is a stable operational setting owned by `config/analysis.yaml` and declared in the
+rule's `params:`, from which it is passed explicitly; never source logging verbosity from the
+environment. Each rule logs resolved parameters, read inputs, written outputs, and skipped or
+failed units.
 
 ## Ruff and type checking
 
