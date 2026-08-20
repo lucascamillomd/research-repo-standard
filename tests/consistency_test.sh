@@ -395,6 +395,13 @@ else
   pass "production surfaces contain no adapters/ machinery paths"
 fi
 
+# the renamed figure_data directory and dropped reports directory must not regress
+if grep -ERn 'source_data|results/reports' "${production_paths[@]}"; then
+  fail "production surfaces must not use the retired source_data or results/reports names"
+else
+  pass "production surfaces contain no retired source_data or results/reports names"
+fi
+
 readme_surface_ok=1
 grep -Fq '.claude/agents/research-code-simplifier.md' "$ROOT/README.md" || readme_surface_ok=0
 grep -Fq '.codex/agents/research-code-simplifier.toml' "$ROOT/README.md" || readme_surface_ok=0
@@ -816,6 +823,7 @@ if grep -Fqs 'mf1_{short_descriptive_name}' "$figure_owner" &&
   grep -Fqs 'png/mf1_hazard_ratio_distribution.png' "$figure_owner" &&
   grep -Fqs 'mf1_hazard_ratio_distribution.csv' "$figure_owner" &&
   grep -Fqs 'results/figures/<figure_id>/<format>/' "$figure_owner" &&
+  grep -Fqs 'results/figure_data/<figure_id>/' "$figure_owner" &&
   grep -Eqis 'letters[^.]*(never|not)[^.]*asset name' "$figure_owner" &&
   grep -Eqis 'same[^.]*stem[^.]*format' "$figure_owner" &&
   grep -Eqis 'panel letters are applied only' "$figure_owner"; then
