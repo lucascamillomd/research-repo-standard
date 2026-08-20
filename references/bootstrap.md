@@ -36,9 +36,8 @@ package names use lowercase underscores.
 ├── logs/
 ├── results/
 │   ├── figures/
-│   ├── source_data/
-│   ├── tables/
-│   └── reports/
+│   ├── figure_data/
+│   └── tables/
 ├── workflow/
 │   ├── Snakefile
 │   ├── rules/
@@ -197,8 +196,8 @@ verify-results:  ## Verify declared results using permitted inputs
 ```
 
 Name the verification gate to fit the project. Pipeline-facing targets are one-line wrappers over
-Snakemake: `pipeline` runs `uv run --locked snakemake --cores all`. Approved targets for analysis,
-figures, and reports wrap named Snakemake target rules. A reader must be able to reach the
+Snakemake: `pipeline` runs `uv run --locked snakemake --cores all`. Approved targets for analysis
+and figures wrap named Snakemake target rules. A reader must be able to reach the
 analysis, figures, full pipeline, and verification without knowing rule or internal file names.
 Snakemake's DAG owns file-level incrementality; Make targets stay phony one-line wrappers.
 Cleanup targets are explicit Make targets that cannot reach `data/raw/`;
@@ -235,7 +234,7 @@ The project README records:
   approved standard source;
 - required hard-gate skills, clearly separated from packages installed by `make setup`;
 - the shortest reproduction path, including setup and the canonical `make pipeline` command;
-- expected tables, figures, reports, and provenance artifacts; and
+- expected tables, figures, and provenance artifacts; and
 - external data, licensing, compute, manual, and unavailable-tool boundaries.
 
 ## Selected host integration

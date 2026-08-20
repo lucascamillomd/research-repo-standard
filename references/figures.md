@@ -1,6 +1,6 @@
 # Reference: plot and figure contract
 
-This contract owns figure planning, the Python plotting implementation, source data, detailed atomic
+This contract owns figure planning, the Python plotting implementation, figure data, detailed atomic
 asset naming, export paths, assembly conventions, cross-figure encoding, and rendered-output QA.
 Load it and invoke exact `nature-figure` before planning a figure, writing plotting code, changing
 figure outputs, or performing QA.
@@ -20,7 +20,7 @@ Final size:
 Panel map:
 Evidence hierarchy:
 Statistics needed:
-Source data needed:
+Figure data needed:
 Image-integrity notes:
 Reviewer risk:
 Required export formats:
@@ -35,21 +35,22 @@ letters separately, but those letters never become part of the atomic asset name
 
 A figure produced from repository data is figure work regardless of framing. "Exploratory", "quick",
 "draft", or a deadline changes how fast this contract is approved, not whether the contract, the
-traceable source data, the four required export formats, and the rendered SVG and PDF inspection
+traceable figure data, the four required export formats, and the rendered SVG and PDF inspection
 happen. Publication polish means journal sizing, final typography, and assembly. Deferring it is a
 user scope decision only after the contract records the deferral and the editable exports still
 exist.
 
-## Python implementation and source data
+## Python implementation and figure data
 
 Python is the plotting backend. Do not switch languages or render a fallback preview in another
 runtime. Implement testable, importable functions under `src/<package_name>/figures/<figure_id>/`;
 keep Snakemake rules as thin orchestration entry points. Shared style, export, and validation
 utilities live under `src/<package_name>/figures/common/{style,export,validation}.py`.
 
-Each quantitative panel has traceable publication source data under
-`results/source_data/<figure_id>/`. Source data is tidy, documented, sufficient to recreate every
+Each quantitative panel has traceable publication figure data under
+`results/figure_data/<figure_id>/`. Figure data is tidy, documented, sufficient to recreate every
 quantitative mark, and exported as CSV or TSV with a README when interpretation needs explanation.
+These files serve as the journal-facing "Source Data" exports submitted with the manuscript.
 
 ## Atomic panels and naming
 
@@ -60,9 +61,9 @@ atomic assets use deterministic semantic stems `mf1_{short_descriptive_name}` an
 - has an explicit function or specification;
 - reads a declared, validated input;
 - is independently reproducible without a previously mutated plotting session;
-- exposes the statistics shown and maps to a source-data file;
+- exposes the statistics shown and maps to a figure-data file;
 - omits manuscript panel letters from its filename and rendered plot; and
-- uses the same atomic stem for its source-data file and for every format: SVG, PDF, TIFF, PNG.
+- uses the same atomic stem for its figure-data file and for every format: SVG, PDF, TIFF, PNG.
 
 ```text
 results/
@@ -71,7 +72,7 @@ results/
 │   ├── pdf/mf1_hazard_ratio_distribution.pdf
 │   ├── tiff/mf1_hazard_ratio_distribution.tiff
 │   └── png/mf1_hazard_ratio_distribution.png
-└── source_data/main_figure_1/
+└── figure_data/main_figure_1/
     ├── mf1_hazard_ratio_distribution.csv
     └── README.md
 ```
@@ -116,7 +117,7 @@ Inspect at final physical size and record the QA outcome in `docs/FIGURE_CONTRAC
 - axes that invite comparison use defensible scales;
 - red/green is not the only distinction and grayscale interpretation remains possible where needed;
 - `n`, replicate definitions, center, spread, tests, corrections, and comparisons are documented;
-- source-data files reproduce every quantitative mark;
+- figure-data files reproduce every quantitative mark;
 - raster resolution is sufficient and TIFF output is 600 dpi;
 - image panels have calibrated scale bars where applicable;
 - crop, contrast, gamma, pseudo-color, stitching, and image reuse are documented; and

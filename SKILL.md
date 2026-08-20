@@ -115,7 +115,7 @@ blocker rather than weakening one.
    `scientific-critical-thinking` to the question, claim, study design, estimand, and major validity
    risks without implementing. Incorporate or explicitly disposition every material finding.
 5. **Define the figure strategy.** Load `references/figures.md` and invoke `nature-figure` before
-   planning figures. Define source data, outputs, exports, and QA. If no figures are planned, record
+   planning figures. Define figure data, outputs, exports, and QA. If no figures are planned, record
    an explicit no-figure strategy.
 6. **Approve and document.** Present the integrated design for approval. In an empty directory,
    initialize only version control and the gate-artifact path needed to write the specification.
@@ -268,7 +268,7 @@ invoked
 ## Completion
 
 Before declaring completion, run the repository's applicable formatting, lint, type, test, and
-verification interfaces. Inspect actual generated tables, figures, reports, profiles, and provenance
+verification interfaces. Inspect actual generated tables, figures, profiles, and provenance
 manifests rather than trusting exit codes. Check `git status` for unintended files and confirm raw
 inputs and unrelated work are unchanged.
 
