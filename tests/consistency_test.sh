@@ -760,11 +760,18 @@ else
   fail "bootstrap must defer configuration ownership and analysis must defer skill provenance"
 fi
 
-if grep -Fq 'SHA-256' "$ROOT/references/data.md" &&
-  grep -Fq 'machine-readable data dictionary' "$ROOT/references/data.md"; then
-  pass "data reference owns checksums and machine-readable dictionaries"
+data_checksum_text="$(tr '\n' ' ' < "$ROOT/references/data.md" | tr -s '[:space:]' ' ')"
+data_checksum_ok=1
+# checksums are an optional registry field, verified against a published digest where one exists
+grep -Eqi 'optional[^.]*checksum|checksum[^.]*optional' <<< "$data_checksum_text" || data_checksum_ok=0
+grep -Fq 'published digest' <<< "$data_checksum_text" || data_checksum_ok=0
+# a dataset without a checksum still validates; local raw data never needs one
+grep -Eqi 'not a validation failure' <<< "$data_checksum_text" || data_checksum_ok=0
+grep -Fq 'machine-readable data dictionary' "$ROOT/references/data.md" || data_checksum_ok=0
+if ((data_checksum_ok)); then
+  pass "data reference keeps checksums optional and owns machine-readable dictionaries"
 else
-  fail "data reference must own checksums and machine-readable dictionaries"
+  fail "data reference must keep checksums optional and own machine-readable dictionaries"
 fi
 
 if grep -Fq '## Analysis-plan template' "$ROOT/references/analysis.md"; then

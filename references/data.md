@@ -17,15 +17,17 @@ Record the fields needed to answer those questions, normally including:
 - acquisition method and the script or documented manual boundary responsible;
 - source version, release, retrieval date, or other permitted stable identity;
 - expected received files and the row grain of derived datasets;
-- SHA-256 checksum for immutable downloads, models, and important resources when permitted;
+- optional SHA-256 checksum, recommended only for shared or redistributable fixtures and for
+  downloads whose upstream publishes a digest;
 - license, consent, contractual, or other data-use restrictions;
 - machine-readable data dictionary or schema location; and
 - upstream source and downstream pipeline stages.
 
 `paths.py` derives internal locations such as `data/raw/...`; do not encode those paths in a
 registry received-form description. Use programmatic acquisition when licensing and access controls
-permit it. Validate stable accessions or URLs and the expected SHA-256 digest before accepting an
-acquired artifact.
+permit it. Validate stable accessions or URLs before accepting an acquired artifact, and verify a
+download against its published digest when the upstream provides one. Local raw data never requires
+a checksum.
 
 A per-dataset `README.md` is optional when local access, provenance, manual acquisition, or data-use
 instructions are unique. It supplements the registry; `config/datasets.yaml` remains the canonical
@@ -42,8 +44,9 @@ Validate every dataset before analysis. The validation contract checks, as appli
 - permitted nullability and sentinel values defined by the schema;
 - join cardinality and unmatched-key accounting;
 - ordering invariants when order has meaning; and
-- expected file inventory, stable identifiers, and checksums.
+- expected file inventory, stable identifiers, and checksums the registry records.
 
+Check a checksum only when the registry records one; an absent checksum is not a validation failure.
 Fail with a precise dataset identifier and violated rule. Validation creates no implicit correction;
 cleaning, harmonization, and derivation belong in declared downstream stages with new outputs.
 
