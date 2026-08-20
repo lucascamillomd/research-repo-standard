@@ -65,7 +65,7 @@ before dependent decisions or edits.
 | Reference                     | Load when                                                                                                              |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `references/prerequisites.md` | a required capability is unresolved, installation or recovery is requested, or host integration must be verified       |
-| `references/bootstrap.md`     | creating repository structure, tool configuration, CI, the Make interface, or initial project documentation            |
+| `references/bootstrap.md`     | creating repository structure, tool configuration, CI, the Snakemake workflow and Make interface, or initial project documentation |
 | `references/configuration.md` | classifying, loading, using, changing, or overriding settings, paths, or provenance                                    |
 | `references/data.md`          | acquiring, registering, preprocessing, describing, validating, or contracting data                                     |
 | `references/analysis.md`      | scientific planning, estimands, design, inclusion, missingness, modeling, implementation, interpretation, or reporting |
@@ -168,8 +168,8 @@ Reviews: brainstorming outcome; independent scientific critique and dispositions
 or explicit no-figure strategy
 Gate: integrated design approval; minimal gate-artifact initialization; committed and reviewed
 specification; implementation plan ready
-Scaffold: core contracts — uv and Make, configuration, data registry and raw-data safety, analysis,
-provenance, verification; no unapproved R support
+Scaffold: core contracts — uv, Snakemake, and Make, configuration, data registry and raw-data
+safety, analysis, provenance, verification; no unapproved R support
 Forbidden artifacts: no target AGENTS.md/CLAUDE.md/CODEX.md, no shared top-level simplifier
 Randomness: no seed for a deterministic workflow; otherwise explicit Seed 42
 README: expected skill source/provenance, recovery, shortest reproduction path

@@ -423,6 +423,22 @@ else
   fail "README must document host outputs and detection-first legacy cleanup"
 fi
 
+snakemake_surface_ok=1
+grep -Fq 'uv, Snakemake, and Make' "$ROOT/SKILL.md" || snakemake_surface_ok=0
+grep -Eqi 'Snakemake workflow' "$ROOT/SKILL.md" || snakemake_surface_ok=0
+grep -Fq 'Snakemake rules as thin orchestration' "$ROOT/references/figures.md" ||
+  snakemake_surface_ok=0
+grep -Fq 'make pipeline' "$ROOT/references/bootstrap.md" || snakemake_surface_ok=0
+if grep -Eqi 'stage scripts' "$ROOT/SKILL.md" "$ROOT/references/figures.md" \
+  "$ROOT/references/bootstrap.md"; then
+  snakemake_surface_ok=0
+fi
+if ((snakemake_surface_ok)); then
+  pass "skill surfaces route Snakemake orchestration consistently"
+else
+  fail "skill surfaces must route Snakemake orchestration consistently"
+fi
+
 bootstrap_integration_section="$(awk '
     /^## Selected host integration$/ { capture = 1; next }
     capture && /^## / { exit }

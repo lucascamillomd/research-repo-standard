@@ -234,7 +234,7 @@ The project README records:
   recovery instructions when resolution fails, linked to `references/prerequisites.md` from the
   approved standard source;
 - required hard-gate skills, clearly separated from packages installed by `make setup`;
-- the shortest reproduction path, including setup and the canonical Make command;
+- the shortest reproduction path, including setup and the canonical `make pipeline` command;
 - expected tables, figures, reports, and provenance artifacts; and
 - external data, licensing, compute, manual, and unavailable-tool boundaries.
 

@@ -43,7 +43,7 @@ decision only after the contract records it and the editable exports still exist
 
 Python is the plotting backend. Do not switch languages or render a fallback preview in another
 runtime. Implement testable, importable functions under `src/<package_name>/figures/<figure_id>/`;
-keep stage scripts as thin orchestration entry points. Shared style, export, and validation
+keep Snakemake rules as thin orchestration entry points. Shared style, export, and validation
 utilities live under `src/<package_name>/figures/common/{style,export,validation}.py`.
 
 Each quantitative panel has traceable publication source data under
