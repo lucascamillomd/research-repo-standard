@@ -913,6 +913,20 @@ else
   fail "pressure evidence must use the Task 6 A/D reruns without overstating host resolution"
 fi
 
+# --- 15a. the Snakemake pressure scenarios stay pinned ---
+snakemake_scenarios_ok=1
+for heading in \
+  '## Scenario E — logic in a rule body' \
+  '## Scenario F — quick config override' \
+  '## Scenario G — environment-sourced setting'; do
+  grep -Fq "$heading" "$ROOT/tests/skill_pressure_scenarios.md" || snakemake_scenarios_ok=0
+done
+if ((snakemake_scenarios_ok)); then
+  pass "pressure scenarios cover Snakemake rule, override, and environment contracts"
+else
+  fail "pressure scenarios must cover Snakemake rule, override, and environment contracts"
+fi
+
 # --- final ---
 if ((FAILS > 0)); then
   echo "$FAILS test(s) failed"
