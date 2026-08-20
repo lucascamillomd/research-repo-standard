@@ -36,8 +36,9 @@ letters separately, but those letters never become part of the atomic asset name
 A figure produced from repository data is figure work regardless of framing. "Exploratory", "quick",
 "draft", or a deadline changes how fast this contract is approved, not whether the contract, the
 traceable source data, the four required export formats, and the rendered SVG and PDF inspection
-happen. Deferring publication polish — journal sizing, final typography, assembly — is a user scope
-decision only after the contract records it and the editable exports still exist.
+happen. Publication polish means journal sizing, final typography, and assembly. Deferring it is a
+user scope decision only after the contract records the deferral and the editable exports still
+exist.
 
 ## Python implementation and source data
 
@@ -61,7 +62,7 @@ atomic assets use deterministic semantic stems `mf1_{short_descriptive_name}` an
 - is independently reproducible without a previously mutated plotting session;
 - exposes the statistics shown and maps to a source-data file;
 - omits manuscript panel letters from its filename and rendered plot; and
-- uses the same atomic stem for every format — SVG, PDF, TIFF, PNG — and its source-data file.
+- uses the same atomic stem for its source-data file and for every format: SVG, PDF, TIFF, PNG.
 
 ```text
 results/
@@ -96,8 +97,8 @@ no rainbow color maps, direct labels or one shared legend, readable final-size t
 non-data ink, and a panel hierarchy that reflects the evidence hierarchy.
 
 The same condition, method, cohort, control, and statistical meaning keeps the same color, marker,
-line, and ordering across panels and figures. A compelling exception must be documented in the
-figure contract before implementation.
+line, and ordering across panels and figures. Document any compelling exception in the
+figure contract before implementing it.
 
 ## QA checklist
 

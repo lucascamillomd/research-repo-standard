@@ -22,7 +22,7 @@ Record the fields needed to answer those questions, normally including:
 - machine-readable data dictionary or schema location; and
 - upstream source and downstream pipeline stages.
 
-Internal locations such as `data/raw/...` are derived in `paths.py`; do not encode those paths in a
+`paths.py` derives internal locations such as `data/raw/...`; do not encode those paths in a
 registry received-form description. Use programmatic acquisition when licensing and access controls
 permit it. Validate stable accessions or URLs and the expected SHA-256 digest before accepting an
 acquired artifact.

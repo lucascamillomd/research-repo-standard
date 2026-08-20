@@ -8,7 +8,7 @@ capabilities are separate from packages installed in a research repository.
 
 Resolve these three hard-gate capabilities before a bootstrap interview. For governed work, resolve
 each capability before the work that depends on it. Resolve the two scientific skills by exact name.
-Resolve `superpowers` as a whole package: confirm the host lists its skills — at minimum
+Resolve `superpowers` as a whole package. Confirm the host lists its skills, at minimum
 `superpowers:brainstorming` and `superpowers:writing-plans`, which the workflow invokes by exact
 name.
 
@@ -64,7 +64,7 @@ Follow other hosts' authoritative installation instructions rather than guessing
 
 ## Shared planning companion
 
-`superpowers:writing-plans` is provided by the required Superpowers package and is used after design
+The required Superpowers package provides `superpowers:writing-plans` for use after design
 approval. At planning time, resolve it by exact name from that same installation before invoking it.
 
 After an authorized installation, restart or reload the agent session when the host requires it,

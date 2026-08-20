@@ -28,9 +28,9 @@ Decision log entries and authorization:
 ```
 
 Translate stable researcher-editable analysis decisions into `config/analysis.yaml`; keep the plan
-as the scientific explanation and the configuration as the validated executable values. When an
-approved post hoc change is made, update the plan and decision log before presenting the result and
-label its status honestly.
+as the scientific explanation and the configuration as the validated executable values. After an
+approved post hoc change, update the plan and decision log before presenting the result and label
+its status honestly.
 
 ## Statistical reporting
 
@@ -58,8 +58,8 @@ coherent batch.
 An independent agent, separate from the implementing agent, invokes exact
 `scientific-critical-thinking`, reads the relevant repository context, and returns findings without
 implementing the task. The critique may run beside work that does not depend on the judgment;
-dependent decisions wait for its findings. Material findings are incorporated into the design or
-explicitly dispositioned with rationale.
+dependent decisions wait for its findings. Incorporate material findings into the design or
+explicitly disposition them with rationale.
 
 If `scientific-critical-thinking` is missing, cannot be resolved, or cannot be invoked, report the
 exact capability blocker and stop only the critique-dependent work. If the skill resolves but the

@@ -49,7 +49,7 @@ below Snakemake's default trigger set, which includes `params` and `code`.
 
 ## Override rejection
 
-`--config` and `--configfile` overrides are banned, and the ban is enforced rather than stated:
+`--config` and `--configfile` overrides are banned, and the ban is enforced rather than stated.
 Snakemake merges command-line overrides into `config` with command-line precedence before schema
 validation, so validation alone cannot reject them. The Snakefile re-reads the versioned YAML
 files directly at parse time and fails, before the DAG is built, whenever the effective `config`
@@ -74,9 +74,9 @@ A manifest rule takes both configuration files as inputs and writes a manifest r
 file's path or stable identifier, SHA-256 hash, and validated effective values, with permitted
 environment inputs recorded by variable name and redacted presence; never record a secret value.
 Snakemake orders work only through input/output DAG edges, so every result-producing rule declares
-the manifest as an input wrapped in `ancient()`: the edge guarantees the manifest exists before
+the manifest as an input wrapped in `ancient()`. The edge guarantees the manifest exists before
 any result job runs, while ignoring its mtime prevents each run's rewritten manifest from
-spuriously invalidating unchanged work. The manifest must distinguish versioned values from
+invalidating unchanged work. The manifest must distinguish versioned values from
 computed values and contain enough information to reproduce the effective configuration.
 
 ## Established repositories

@@ -26,14 +26,14 @@ only the adapter for the selected host:
 Each command has one output. Codex creates `.codex/agents/research-code-simplifier.toml`; Claude
 Code creates `.claude/agents/research-code-simplifier.md`. This source repository does not create or
 change target policy files. Run the real host-native smoke test required by `SKILL.md` after
-installation: it must report the resolved provenance of `research-repo-standard` and confirm the
+installation. It must report the resolved provenance of `research-repo-standard` and confirm the
 expected `research-code-simplifier` host profile. Report an unavailable selected host as a manual
 boundary.
 
 The generated repository README records the skill prerequisite, expected source provenance and
 recovery path, project scope and runtime requirements, shortest Make-based reproduction path,
-expected artifacts, and external or manual boundaries. The complete checklist is owned by
-`references/bootstrap.md`.
+expected artifacts, and external or manual boundaries. `references/bootstrap.md` owns the complete
+checklist.
 
 Migration is detection-first. Detect legacy policy, alias, and generic simplifier artifacts, report
 their exact resolved targets and customization status, and leave them unchanged. Removal requires

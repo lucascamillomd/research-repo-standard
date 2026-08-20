@@ -23,7 +23,7 @@ explicit user instructions and legal, institutional, journal, and data-use requi
 precedence over this standard.
 
 Local repository instructions may add stricter or project-specific requirements. They do not
-silently weaken this skill's safety floor. When two applicable instructions conflict, surface the
+silently weaken this skill's safety floor. When two applicable instructions conflict, report the
 conflict and follow the higher-precedence requirement.
 
 ## Required skills and modification gates
@@ -38,7 +38,7 @@ not by which file carries the edit: a configuration value that changes an estima
 exclusion rule, or a missing-data policy is a design-level change. Ceremony scales with what the
 change can break, so when uncertain, use the full gate.
 
-- **Full gate:** Design-level changes — estimands, study design, statistical methodology, inclusion
+- **Full gate:** Design-level changes: estimands, study design, statistical methodology, inclusion
   or exclusion rules, missing-data policy, causal interpretation, data contracts, pipeline
   structure, claim scope, and this standard's rules. Invoke `superpowers:brainstorming`. Do not
   implement until the approved specification is committed and reviewed and the plan is ready. Direct
@@ -88,7 +88,7 @@ blocker rather than weakening one.
 5. **No silent complete-case filtering.** Report missingness before exclusions or imputation.
    Inclusion and exclusion criteria are code, not prose.
 6. **Randomness is declared, never invented.** When randomness is unavoidable, the seed is explicit
-   recorded configuration — Seed 42. A deterministic workflow gets no seed. Prefer deterministic
+   recorded configuration: Seed 42. A deterministic workflow gets no seed. Prefer deterministic
    algorithms when scientifically equivalent, and declare nondeterministic boundaries honestly.
 7. **Outputs are written transactionally.** Build a temporary artifact, validate it, and only then
    replace the declared destination. A failed run must not leave output that looks complete.
@@ -99,13 +99,13 @@ blocker rather than weakening one.
 
 ## Bootstrapping sequence
 
-1. **Preflight once.** Before the interview, resolve the `superpowers` package as a whole — its
-   `superpowers:brainstorming` and `superpowers:writing-plans` skills are both used — and the exact
-   names `scientific-critical-thinking` and `nature-figure` through the current host. Use
+1. **Preflight once.** Before the interview, resolve the `superpowers` package as a whole and the
+   exact names `scientific-critical-thinking` and `nature-figure` through the current host; the
+   package's `superpowers:brainstorming` and `superpowers:writing-plans` skills are both used. Use
    `references/prerequisites.md` for authorized recovery. Repeat only if the agent session changes.
 2. **Interview one question at a time.** Ask the questions below, pursue conditional follow-ups, and
    do not silently choose a seed, adapter, license, or scientific default. When the user explicitly
-   asks for brevity, the mechanical topics — host adapter, license — may be presented together as
+   asks for brevity, the mechanical topics, host adapter and license, may be presented together as
    concrete proposed defaults that still require explicit confirmation. Batching is permitted for
    those two topics only; every other numbered topic below stays one at a time. Nothing is ever
    chosen silently.
@@ -131,7 +131,7 @@ blocker rather than weakening one.
    provenance of this skill and confirm that `research-code-simplifier` resolves from the expected
    installed profile. Do not simulate an unavailable resolver; report it as a manual boundary and
    follow `references/prerequisites.md` recovery guidance.
-10. **Inspect and report.** Inspect the actual generated artifacts — not exit codes — then report
+10. **Inspect and report.** Inspect the actual generated artifacts, not exit codes, then report
     every remaining assumption and manual or external boundary.
 
 ### Interview
@@ -185,13 +185,13 @@ when its compliance is unknown.
 
 Report the governed-work invocation record below first, then walk the standard item by item: the
 safety floor, then each reference's contract in routing-table order. Mark every item compliant, a
-gap, or not applicable, and cite file-level evidence — the paths, settings, tests, or missing
+gap, or not applicable, and cite file-level evidence: the paths, settings, tests, or missing
 artifacts behind the verdict. For configuration items, reuse the established-repository migration in
 `references/configuration.md` instead of inventing a second procedure.
 
 Then produce a prioritized migration plan: data safety and provenance first, reproducibility and
-contracts next, conveniences last. Change nothing while assessing — the review is read-only — and
-take each accepted migration step through the gate its own change class requires.
+contracts next, conveniences last. Change nothing while assessing; the review is read-only. Take
+each accepted migration step through the gate its own change class requires.
 
 ## Governed work
 
@@ -210,7 +210,7 @@ Standard skill: exact research-repo-standard; host-native resolver; source prove
 Before changing anything, discover and read the local instructions that apply from the repository
 root through the files in scope. Read the README, relevant project documents and configuration,
 nearby tests, and `git status`. Identify the scientific claim, pipeline stage, inputs, outputs, and
-affected contracts. Preserve unrelated work and surface assumptions that materially affect
+affected contracts. Preserve unrelated work and report assumptions that materially affect
 scientific meaning, interfaces, data safety, or scope.
 
 Use the routing table above broadly. Apply every loaded domain contract before dependent decisions.
@@ -228,10 +228,10 @@ status honestly.
 ### Independent critique
 
 Work that depends on a scientific judgment under review waits for an independent critique at every
-gate, not only at design level: a separate review agent must apply `scientific-critical-thinking` to
+gate, not only at design level. A separate review agent must apply `scientific-critical-thinking` to
 that judgment and return findings without implementing them before dependent results are presented.
-Standard-gate changes that embody a scientific judgment — covariate sets, thresholds, model settings
-— are included. Batching one critique per coherent batch of decisions follows
+Standard-gate changes that embody a scientific judgment are included: covariate sets, thresholds,
+model settings. Batching one critique per coherent batch of decisions follows
 `references/analysis.md`.
 
 ### Change discipline
@@ -251,13 +251,12 @@ either is unclear, stop and ask.
 
 After changing code or tests, launch an independent review agent through the current host's exact
 `research-code-simplifier` profile. Run it once per coherent unit of delegated work, not after
-every individual edit. It must
-invoke this skill, load the references relevant to the changed code, preserve behavior, and return
-or apply only simplifications within the approved scope. Re-run covering tests after any simplifier
-edit. Only when the profile cannot be resolved or an independent agent cannot be launched may the
-user explicitly waive or defer the pass; dependent completion is otherwise blocked, and the waiver
-and its scope are recorded in the completion report so it is never silent. This is not a general
-opt-out, and a self-pass never substitutes for the independent review.
+every individual edit. It must invoke this skill, load the references relevant to the changed
+code, preserve behavior, and return or apply only simplifications within the approved scope. Re-run
+covering tests after any simplifier edit. Only when the profile cannot be resolved or an independent
+agent cannot be launched may the user explicitly waive or defer the pass; dependent completion is
+otherwise blocked, and the waiver and its scope are recorded in the completion report so it is never
+silent. This is not a general opt-out, and a self-pass never substitutes for the independent review.
 
 Before inspecting the delegated diff, the reviewer reports this additional resolution record:
 

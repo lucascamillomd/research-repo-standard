@@ -115,7 +115,7 @@ of the pipeline.
 Load `references/configuration.md` before creating YAML, schemas, `paths.py`, the Snakefile's
 configfile declaration, or configuration provenance; it owns where each value belongs and how
 validation and the override guard work. Create `config/datasets.yaml` and `config/analysis.yaml`;
-TOML remains the owner of packaging and tool configuration.
+TOML still owns packaging and tool configuration.
 
 Create `.env.example` only when the project consumes environment variables. List safe variable names
 and placeholders, never values. Ignore the real `.env`.
@@ -133,7 +133,7 @@ logger.add(log[0], level="DEBUG")
 ```
 
 `log_level` is a stable operational setting owned by `config/analysis.yaml` and declared in the
-rule's `params:`, from which it is passed explicitly; never source logging verbosity from the
+rule's `params:`; the rule passes it explicitly. Never source logging verbosity from the
 environment. Each rule logs resolved parameters, read inputs, written outputs, and skipped or
 failed units.
 
@@ -197,11 +197,11 @@ verify-results:  ## Verify declared results using permitted inputs
 ```
 
 Name the verification gate to fit the project. Pipeline-facing targets are one-line wrappers over
-Snakemake — `pipeline` runs `uv run --locked snakemake --cores all` — and approved targets for
-analysis, figures, and reports wrap named Snakemake target rules. A reader must be able to reach
-the analysis, figures, full pipeline, and verification without knowing rule or internal file
-names. File-level incrementality is owned by Snakemake's DAG; Make targets stay phony one-line
-wrappers. Cleanup targets are explicit Make targets incapable of reaching `data/raw/`;
+Snakemake: `pipeline` runs `uv run --locked snakemake --cores all`. Approved targets for analysis,
+figures, and reports wrap named Snakemake target rules. A reader must be able to reach the
+analysis, figures, full pipeline, and verification without knowing rule or internal file names.
+Snakemake's DAG owns file-level incrementality; Make targets stay phony one-line wrappers.
+Cleanup targets are explicit Make targets that cannot reach `data/raw/`;
 do not use `snakemake --delete-all-output`.
 
 ## Conditional external runtimes
@@ -253,7 +253,8 @@ target_repo=/absolute/path/to/approved-target-repository
 "$research_standard_source/adapters/claude-code.sh" "$target_repo"
 ```
 
-The commands are alternatives, not a sequence: run only the selected host's adapter against
-`target_repo`, and run neither when no host adapter was selected. Then follow `references/prerequisites.md` for the real host-native smoke test
-of the resolved `research-repo-standard` provenance and the `research-code-simplifier` host profile.
+The commands are alternatives, not a sequence. Run only the selected host's adapter against
+`target_repo`, and run neither when no host adapter was selected. Then follow
+`references/prerequisites.md` for the real host-native smoke test of the resolved
+`research-repo-standard` provenance and the `research-code-simplifier` host profile.
 Report an unavailable selected host as a manual boundary instead of simulating success.
