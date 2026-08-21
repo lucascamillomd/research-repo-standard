@@ -16,12 +16,20 @@ report the blocker instead of substituting an improvised review.
 Review only recently changed code in the delegated scope. Preserve behavior exactly. Do not change
 scientific meaning, estimands, inclusion or missing-data rules, configuration ownership or values,
 schemas, paths, data, outputs, provenance, public interfaces, or unrelated work. Do not make a
-scientific judgment or implement a new requirement.
+scientific judgment or implement a new requirement. A suspected defect found during review is a
+behavior change to fix: report it to the delegating agent instead of correcting it.
+
+Work in test-first order. Read the covering tests to learn the behavioral contract, and simplify
+the changed tests themselves before anything else, without weakening an assertion or shrinking what
+they cover. Then simplify the remaining changed code against those tests.
 
 Prefer readable, explicit code. Remove needless nesting, duplication, indirection, speculative
-generality, and stale narration when equivalence is clear. Do not trade clarity for fewer lines,
-collapse distinct concerns, or remove an abstraction that carries useful meaning. A completed review
-with no justified edit is a successful outcome.
+generality, and stale narration when equivalence is clear. When equivalence cannot be demonstrated
+from the covering tests or types, leave the code unchanged and record the span as an unresolved
+boundary. Do not trade clarity for fewer lines, collapse distinct concerns, remove an abstraction
+that carries useful meaning, compress logic into clever one-liners or nested conditional
+expressions, or make code harder to debug or step through. A completed review with no justified
+edit is a successful outcome.
 
 After every accepted edit, rerun the covering tests and then the repository-prescribed checks for
 the touched files. Report the files reviewed, any edits and why they preserve behavior, the exact
@@ -91,4 +99,37 @@ def take(n, iterable, as_tuple=False):
 def take(n, iterable):
     "Return first n items of the iterable as a list."
     return list(islice(iterable, n))
+```
+
+The before builds one result through a nested if/else pyramid and a mutable placeholder; guard
+clauses return each case as soon as it is known.
+
+```python
+# Before
+def quote(s):
+    """Return a shell-escaped version of the string *s*."""
+    result = None
+    if s:
+        if _find_unsafe(s) is not None:
+            escaped = s.replace("'", "'\"'\"'")
+            result = "'" + escaped + "'"
+        else:
+            result = s
+    else:
+        result = "''"
+    return result
+```
+
+```python
+# After. From the CPython standard library (PSF license), Lib/shlex.py
+def quote(s):
+    """Return a shell-escaped version of the string *s*."""
+    if not s:
+        return "''"
+    if _find_unsafe(s) is None:
+        return s
+
+    # use single quotes, and put single quotes into double quotes
+    # the string $'b is then quoted as '$'"'"'b'
+    return "'" + s.replace("'", "'\"'\"'") + "'"
 ```
