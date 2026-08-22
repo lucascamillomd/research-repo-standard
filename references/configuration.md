@@ -11,8 +11,8 @@ precedence is normative:
 1. Credentials, secrets, machine-specific absolute roots, and GPU selection use environment
    variables, even when a researcher chooses them for a run.
 2. Values derived from repository structure or another setting are computed rather than configured.
-   Derived internal paths always live in `paths.py`; other derived configuration values are
-   computed in package code. Do not duplicate either in YAML.
+   Derived internal paths always live in `paths.py`; other derived configuration values are computed
+   in package code. Do not duplicate either in YAML.
 3. All remaining stable researcher-editable scientific or operational settings live in
    `config/analysis.yaml`. This includes every setting that can alter the dataset, estimate, model,
    figure, or scientific claim.
@@ -37,25 +37,25 @@ create a catch-all `project.yaml` or `settings.yaml`.
 The Snakefile declares `configfile: "config/analysis.yaml"`, loads `config/datasets.yaml`, and
 validates both at DAG-build time with `snakemake.utils.validate` against JSON Schemas in
 `workflow/schemas/` that set `additionalProperties: false`. Validation rejects unknown fields,
-missing required fields, invalid values, ranges, units, and invalid cross-field combinations
-before any job runs.
+missing required fields, invalid values, ranges, units, and invalid cross-field combinations before
+any job runs.
 
 Package functions never receive or read the Snakemake `config` object. Every result-affecting
 configuration value a rule consumes is declared in that rule's `params:` and passed from there as
 explicit typed function arguments; rules never read `config` inside rule bodies. Values consumed
 only inside a rule body are invisible to Snakemake's invalidation, so the `params:` declaration is
-what makes a changed setting rerun the rules that consume it. Never narrow `--rerun-triggers`
-below Snakemake's default trigger set, which includes `params` and `code`.
+what makes a changed setting rerun the rules that consume it. Never narrow `--rerun-triggers` below
+Snakemake's default trigger set, which includes `params` and `code`.
 
 ## Override rejection
 
 `--config` and `--configfile` overrides are banned, and the ban is enforced rather than stated.
 Snakemake merges command-line overrides into `config` with command-line precedence before schema
-validation, so validation alone cannot reject them. The Snakefile re-reads the versioned YAML
-files directly at parse time and fails, before the DAG is built, whenever the effective `config`
-object diverges from their contents. A scientific or operational setting changes only by editing
-versioned YAML. Environment variables never override scientific settings; the Snakefile does not
-read `os.environ` for result-affecting values.
+validation, so validation alone cannot reject them. The Snakefile re-reads the versioned YAML files
+directly at parse time and fails, before the DAG is built, whenever the effective `config` object
+diverges from their contents. A scientific or operational setting changes only by editing versioned
+YAML. Environment variables never override scientific settings; the Snakefile does not read
+`os.environ` for result-affecting values.
 
 ## Paths and environment
 
@@ -70,14 +70,14 @@ and safe placeholders, never credentials.
 
 ## Configuration provenance
 
-A manifest rule takes both configuration files as inputs and writes a manifest recording each
-file's path or stable identifier, SHA-256 hash, and validated effective values, with permitted
-environment inputs recorded by variable name and redacted presence; never record a secret value.
-Snakemake orders work only through input/output DAG edges, so every result-producing rule declares
-the manifest as an input wrapped in `ancient()`. The edge guarantees the manifest exists before
-any result job runs, while ignoring its mtime prevents each run's rewritten manifest from
-invalidating unchanged work. The manifest must distinguish versioned values from
-computed values and contain enough information to reproduce the effective configuration.
+A manifest rule takes both configuration files as inputs and writes a manifest recording each file's
+path or stable identifier, SHA-256 hash, and validated effective values, with permitted environment
+inputs recorded by variable name and redacted presence; never record a secret value. Snakemake
+orders work only through input/output DAG edges, so every result-producing rule declares the
+manifest as an input wrapped in `ancient()`. The edge guarantees the manifest exists before any
+result job runs, while ignoring its mtime prevents each run's rewritten manifest from invalidating
+unchanged work. The manifest must distinguish versioned values from computed values and contain
+enough information to reproduce the effective configuration.
 
 ## Established repositories
 
@@ -102,8 +102,8 @@ Configuration tests cover:
 
 - schema rejection of unknown, missing, invalid, and duplicate-owned values, including invalid
   cross-field combinations, units, and ranges;
-- the parse-time guard failing the run before computation when `--config` or `--configfile`
-  diverges the effective configuration from versioned YAML;
+- the parse-time guard failing the run before computation when `--config` or `--configfile` diverges
+  the effective configuration from versioned YAML;
 - explicit `params:` declaration and propagation of every result-affecting value a rule consumes,
   with no `config` reads inside rule bodies;
 - a changed result-affecting setting rerunning the downstream rules that consume it, and unchanged

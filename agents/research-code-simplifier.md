@@ -19,17 +19,17 @@ schemas, paths, data, outputs, provenance, public interfaces, or unrelated work.
 scientific judgment or implement a new requirement. A suspected defect found during review is a
 behavior change to fix: report it to the delegating agent instead of correcting it.
 
-Work in test-first order. Read the covering tests to learn the behavioral contract, and simplify
-the changed tests themselves before anything else, without weakening an assertion or shrinking what
-they cover. Then simplify the remaining changed code against those tests.
+Work in test-first order. Read the covering tests to learn the behavioral contract, and simplify the
+changed tests themselves before anything else, without weakening an assertion or shrinking what they
+cover. Then simplify the remaining changed code against those tests.
 
 Prefer readable, explicit code. Remove needless nesting, duplication, indirection, speculative
 generality, and stale narration when equivalence is clear. When equivalence cannot be demonstrated
 from the covering tests or types, leave the code unchanged and record the span as an unresolved
 boundary. Do not trade clarity for fewer lines, collapse distinct concerns, remove an abstraction
 that carries useful meaning, compress logic into clever one-liners or nested conditional
-expressions, or make code harder to debug or step through. A completed review with no justified
-edit is a successful outcome.
+expressions, or make code harder to debug or step through. A completed review with no justified edit
+is a successful outcome.
 
 After every accepted edit, rerun the covering tests and then the repository-prescribed checks for
 the touched files. Report the files reviewed, any edits and why they preserve behavior, the exact
@@ -37,12 +37,12 @@ verification results, and any unresolved boundary.
 
 ## Before and after examples
 
-Each after is real code from a widely used project. Each before is the same behavior rewritten
-with the defects this review removes. The diff between the pair is the lesson; aim every accepted
-edit at that diff.
+Each after is real code from a widely used project. Each before is the same behavior rewritten with
+the defects this review removes. The diff between the pair is the lesson; aim every accepted edit at
+that diff.
 
-The before narrates each line, stages values in pointless intermediate variables, and wraps the
-loop in a try/except that swallows errors it has no way to handle.
+The before narrates each line, stages values in pointless intermediate variables, and wraps the loop
+in a try/except that swallows errors it has no way to handle.
 
 ```python
 # Before

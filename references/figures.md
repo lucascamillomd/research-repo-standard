@@ -98,8 +98,8 @@ no rainbow color maps, direct labels or one shared legend, readable final-size t
 non-data ink, and a panel hierarchy that reflects the evidence hierarchy.
 
 The same condition, method, cohort, control, and statistical meaning keeps the same color, marker,
-line, and ordering across panels and figures. Document any compelling exception in the
-figure contract before implementing it.
+line, and ordering across panels and figures. Document any compelling exception in the figure
+contract before implementing it.
 
 ## QA checklist
 
