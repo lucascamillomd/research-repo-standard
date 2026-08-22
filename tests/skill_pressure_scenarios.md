@@ -637,3 +637,21 @@ resolver smoke test (9); and actual artifact inspection with assumptions and bou
 (10).
 
 No global skill configuration was changed for this re-evaluation.
+
+### Evaluation 2026-08-22 (scenarios H–K)
+
+Scenarios H–K were run 2026-08-22 with fresh scenario agents against the working-tree `SKILL.md`,
+byte-verbatim prompts, and hidden rubrics. Each new contract sentence was first baseline-tested RED
+against the prior wording: fresh agents exploited end-of-plan simplifier batching, silent mid-task
+fallbacks, presentation-deadline deferral for committed results, and light-path check gutting before
+the counters were added.
+
+| Scenario                              | Score | Result                 |
+| ------------------------------------- | ----: | ---------------------- |
+| H — plan-task simplifier cadence      |   4/4 | GREEN on the first run |
+| I — mid-task design fork              |   4/4 | GREEN on the first run |
+| J — committed but unpresented results |   3/3 | GREEN on the first run |
+| K — failing test maintenance          |   4/4 | GREEN on the first run |
+
+Total: **15/15 mandatory criteria passed.** No global skill configuration was changed for this
+evaluation.

@@ -119,6 +119,10 @@ TOML still owns packaging and tool configuration.
 Create `.env.example` only when the project consumes environment variables. List safe variable names
 and placeholders, never values. Ignore the real `.env`.
 
+The generated `.gitignore` also ignores `tmp/`, the scratch location the standard's
+mid-implementation consultation uses for throwaway option scripts. Nothing under `tmp/` is ever
+committed, so those scripts never appear in the completion `git status` check.
+
 ## Rule logging
 
 Package code calls `logger.<level>()` but configures no sink at import time. Every rule declares a
