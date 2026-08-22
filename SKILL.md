@@ -242,6 +242,23 @@ Keep changes narrow and follow the repository's declared interfaces. Tests and d
 with behavior. Validate inputs before expensive computation, keep raw data immutable, and write
 declared outputs transactionally. If the approved scope expands, return to the applicable gate.
 
+### Mid-implementation consultation
+
+When implementation hits a fork the approved plan did not settle, stop and consult the user before
+writing dependent code. Forks include a test that cannot pass as designed, a contract that does not
+fit, a failed approach, and an unforeseen design choice. Present two to four concrete options with
+their consequences and wait for the choice. Ask through the host's question tool when it provides
+one; in Claude Code that is AskUserQuestion. Where no question tool exists, present plain enumerated
+options. When options differ in real code, write one small throwaway script per option in a scratch
+location such as `tmp/`, never committed and never under the governed `results/` or `data/` trees,
+so the user reads real code before choosing. Delete the scripts once the user chooses; they never
+reach the completion diff. Silently picking a fallback is a scope expansion, not a fix. An inherited
+plan approval does not cover a choice the plan never made, and recording the decision afterward in
+`docs/LAB_NOTEBOOK.md` or the completion report does not replace asking first. Later critique and
+simplifier passes review a chosen option; they never choose it. The user is the paper's author and
+stays familiar with the repository's design by deciding these forks. Escalate a design-level fork to
+the full gate.
+
 ### Destruction
 
 Destruction is never implied. Deleting files, dropping columns or rows, overwriting existing
@@ -252,13 +269,16 @@ either is unclear, stop and ask.
 ### Simplifier review
 
 After changing code or tests, launch an independent review agent through the current host's exact
-`research-code-simplifier` profile. Run it once per coherent unit of delegated work, not after every
-individual edit. It must invoke this skill, load the references relevant to the changed code,
-preserve behavior, and return or apply only simplifications within the approved scope. Re-run
-covering tests after any simplifier edit. Only when the profile cannot be resolved or an independent
-agent cannot be launched may the user explicitly waive or defer the pass; dependent completion is
-otherwise blocked, and the waiver and its scope are recorded in the completion report so it is never
-silent. This is not a general opt-out, and a self-pass never substitutes for the independent review.
+`research-code-simplifier` profile. When the work executes an implementation plan, run the pass
+after each completed plan task and before starting the next; one end-of-plan pass over the combined
+diff does not satisfy it. For work outside a plan, run it once per coherent unit of delegated work.
+Never run it after every individual edit. It must invoke this skill, load the references relevant to
+the changed code, preserve behavior, and return or apply only simplifications within the approved
+scope. Re-run covering tests after any simplifier edit. Only when the profile cannot be resolved or
+an independent agent cannot be launched may the user explicitly waive or defer the pass; dependent
+completion is otherwise blocked, and the waiver and its scope are recorded in the completion report
+so it is never silent. This is not a general opt-out, and a self-pass never substitutes for the
+independent review.
 
 Before inspecting the delegated diff, the reviewer reports this additional resolution record:
 

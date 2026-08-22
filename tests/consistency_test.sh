@@ -190,8 +190,13 @@ fi
 
 # --- 3c. independent review and interview cadence scale with the work ---
 proportion_ok=1
-# the simplifier pass batches per unit of work and any skip is explicit and recorded
+# the simplifier pass runs per completed plan task, batches ad-hoc work, and any skip is recorded
 grep -Eqi 'once per coherent unit' <<< "$skill_text" || proportion_ok=0
+grep -Eqi 'after each completed plan task' <<< "$skill_text" || proportion_ok=0
+grep -Eqi 'end-of-plan pass' <<< "$skill_text" || proportion_ok=0
+# the plan-task cadence scenario stays pinned with its refusal anchor
+grep -Fq '## Scenario H — plan-task simplifier cadence' "$ROOT/tests/skill_pressure_scenarios.md" || proportion_ok=0
+grep -Eqi 'end-of-plan pass' "$ROOT/tests/skill_pressure_scenarios.md" || proportion_ok=0
 grep -Eqi 'waive|waiver' <<< "$skill_text" || proportion_ok=0
 grep -Fq 'completion report' <<< "$skill_text" || proportion_ok=0
 grep -Eqi 'self-pass' <<< "$skill_text" || proportion_ok=0
@@ -221,9 +226,9 @@ grep -Eqi 'mechanical topics' <<< "$scenario_c_rubric" || proportion_ok=0
 grep -Eqi 'explicit confirmation' <<< "$scenario_c_rubric" || proportion_ok=0
 grep -Eqi 'self-select' <<< "$scenario_c_rubric" || proportion_ok=0
 if ((proportion_ok)); then
-  pass "simplifier review batches per unit of work and brevity relaxes only mechanical interview topics"
+  pass "simplifier review runs per plan task, batches ad-hoc work, and brevity relaxes only mechanical interview topics"
 else
-  fail "simplifier review must batch with a recorded waiver and brevity must batch only mechanical interview topics"
+  fail "simplifier review must run per plan task, batch ad-hoc work with a recorded waiver, and brevity must batch only mechanical interview topics"
 fi
 
 # --- 3ca. critique, plan amendment, and the scoped simplifier waiver ---
@@ -238,6 +243,16 @@ governed_ok=1
 grep -Eqi 'depends on a scientific judgment under review' <<< "$governed_text" || governed_ok=0
 grep -Eqi 'not only at design level' <<< "$governed_text" || governed_ok=0
 grep -Eqi 'covariate sets, thresholds, model settings' <<< "$governed_text" || governed_ok=0
+# a mid-implementation fork stops for user options instead of a silent fallback
+grep -Eqi 'stop and consult' <<< "$governed_text" || governed_ok=0
+grep -Eqi 'two to four concrete options' <<< "$governed_text" || governed_ok=0
+grep -Fq 'AskUserQuestion' <<< "$governed_text" || governed_ok=0
+grep -Eqi 'never committed' <<< "$governed_text" || governed_ok=0
+grep -Eqi 'plan never made' <<< "$governed_text" || governed_ok=0
+# the fork scenario stays pinned with its refusal anchors
+grep -Fq '## Scenario I — mid-task design fork' "$ROOT/tests/skill_pressure_scenarios.md" || governed_ok=0
+grep -Eqi 'silently pick a fallback' "$ROOT/tests/skill_pressure_scenarios.md" || governed_ok=0
+grep -Fq 'AskUserQuestion' "$ROOT/tests/skill_pressure_scenarios.md" || governed_ok=0
 # the analysis plan is amended before affected results are presented
 grep -Fq 'docs/ANALYSIS_PLAN.md' <<< "$governed_text" || governed_ok=0
 grep -Eqi 'post hoc status' <<< "$governed_text" || governed_ok=0
@@ -248,9 +263,9 @@ grep -Eqi 'not a general opt-out' <<< "$governed_text" || governed_ok=0
 grep -Eqi 'waived and recorded' <<< "$skill_text" || governed_ok=0
 grep -Eqi 'waives or defers' "$ROOT/references/prerequisites.md" || governed_ok=0
 if ((governed_ok)); then
-  pass "governed work critiques dependent judgments, amends the plan, and scopes the waiver"
+  pass "governed work critiques dependent judgments, consults on mid-implementation forks, amends the plan, and scopes the waiver"
 else
-  fail "governed work must critique every dependent scientific judgment, amend the analysis plan, and allow the waiver only on a resolution failure"
+  fail "governed work must critique every dependent scientific judgment, stop and consult on mid-implementation forks, amend the analysis plan, and allow the waiver only on a resolution failure"
 fi
 
 # --- 3d. adoption mode assesses an existing repository before changing it ---
