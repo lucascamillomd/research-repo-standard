@@ -83,6 +83,9 @@ grep -Eqi 'result-affecting setting[^.]*one[^.]*owner|one[^.]*owner[^.]*result-a
 grep -Fq 'before computation' <<< "$safety_floor_text" || safety_floor_ok=0
 grep -Eqi 'Seed 42' <<< "$safety_floor_text" || safety_floor_ok=0
 grep -Eqi 'deterministic' <<< "$safety_floor_text" || safety_floor_ok=0
+# removing, disabling, skipping, or loosening a check counts as weakening it
+grep -Eqi 'is weakening it' <<< "$safety_floor_text" || safety_floor_ok=0
+grep -Eqi 'covering tests are checks' <<< "$safety_floor_text" || safety_floor_ok=0
 # the nondeterminism and hidden-default invariants stay in the floor itself
 grep -Eqi 'nondeterministic boundaries' <<< "$safety_floor_text" || safety_floor_ok=0
 grep -Eqi 'never hidden in a code default' <<< "$safety_floor_text" || safety_floor_ok=0
@@ -161,6 +164,11 @@ grep -Eqi 'when uncertain[^.]*full gate' <<< "$gate_text" || gate_ok=0
 # classification keys to scientific meaning, not to which file carries the edit
 grep -Eqi 'not by which file' <<< "$gate_text" || gate_ok=0
 grep -Eqi 'configuration value that changes an estimand' <<< "$gate_text" || gate_ok=0
+# gutting a check never rides the light path; regeneration requires the approved state unchanged
+grep -Eqi 'never light path' <<< "$gate_text" || gate_ok=0
+grep -Eqi 'unchanged since approval' <<< "$gate_text" || gate_ok=0
+grep -Fq '## Scenario K — failing test maintenance' "$ROOT/tests/skill_pressure_scenarios.md" || gate_ok=0
+grep -Eqi 'skip-mark' "$ROOT/tests/skill_pressure_scenarios.md" || gate_ok=0
 standard_gate_text="$(awk '
     /^- \*\*Standard gate:\*\*/ { capture = 1; print; next }
     capture && /^- \*\*/ { exit }
@@ -249,6 +257,9 @@ grep -Eqi 'two to four concrete options' <<< "$governed_text" || governed_ok=0
 grep -Fq 'AskUserQuestion' <<< "$governed_text" || governed_ok=0
 grep -Eqi 'never committed' <<< "$governed_text" || governed_ok=0
 grep -Eqi 'plan never made' <<< "$governed_text" || governed_ok=0
+# committed result artifacts count as presented, and the deadline is never agent-chosen
+grep -Eqi 'committed, pushed, or shared' <<< "$governed_text" || governed_ok=0
+grep -Fq '## Scenario J — committed but unpresented results' "$ROOT/tests/skill_pressure_scenarios.md" || governed_ok=0
 # the fork scenario stays pinned with its refusal anchors
 grep -Fq '## Scenario I — mid-task design fork' "$ROOT/tests/skill_pressure_scenarios.md" || governed_ok=0
 grep -Eqi 'silently pick a fallback' "$ROOT/tests/skill_pressure_scenarios.md" || governed_ok=0
@@ -598,7 +609,7 @@ for required in \
   'agents/research-code-simplifier.md' \
   'references/prerequisites.md' \
   'only the selected host' \
-  'smoke test'; do
+  'three-check smoke test'; do
   grep -Fq "$required" <<< "$skill_text" || bootstrap_contract_ok=0
 done
 grep -Fq 'target-version = "py3XY"' "$ROOT/references/bootstrap.md" || bootstrap_contract_ok=0

@@ -5,9 +5,11 @@ paper.
 
 ## Use the standard
 
-The `research-repo-standard` skill has two modes:
+The `research-repo-standard` skill has three modes:
 
 - **Bootstrapping:** guide the approved design and creation of a new research repository.
+- **Adoption:** assess an existing repository against the standard read-only, item by item with
+  evidence, then plan gated migration.
 - **Governed work:** apply modification gates, safety rules, and focused domain procedures when an
   agent changes or reviews an existing research repository.
 
@@ -22,9 +24,9 @@ profile copied verbatim to `<target-repo>/.claude/agents/research-code-simplifie
 receives `<target-repo>/.codex/agents/research-code-simplifier.toml` carrying the same name,
 description, and body text in the Codex profile format. Write only the selected host's profile, and
 write none when no host was selected. This source repository does not create or change target policy
-files. Run the real host-native smoke test required by `SKILL.md` after installation. It must report
-the resolved provenance of `research-repo-standard` and confirm the expected
-`research-code-simplifier` host profile. Report an unavailable selected host as a manual boundary.
+files. Run the real host-native smoke test after installation; `references/prerequisites.md` defines
+its three required checks, including launching the delegated reviewer far enough to report that it
+resolved `research-repo-standard`. Report an unavailable selected host as a manual boundary.
 
 The generated repository README records the skill prerequisite, expected source provenance and
 recovery path, project scope and runtime requirements, shortest Make-based reproduction path,

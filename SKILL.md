@@ -50,11 +50,15 @@ change can break, so when uncertain, use the full gate.
   plan artifact is required; escalate to the full gate the moment a design-level item is in play.
 - **Light path:** Mechanical, non-result-affecting changes such as documentation, comments,
   formatting, behavior-preserving renames or tested refactors, and tests that do not change
-  behavior. State the intent, files, and why the change is non-result-affecting; obtain one
-  confirmation, then implement without specification or plan artifacts. Escalate to the standard
-  gate if results may change, and to the full gate if interfaces or contracts may change.
+  behavior. Deleting, disabling, or skip-marking a test, loosening an assertion, or relaxing a
+  schema or validation constraint is never light path; classify it by what the check guarded, and a
+  failing check makes that classification standard gate or higher. State the intent, files, and why
+  the change is non-result-affecting; obtain one confirmation, then implement without specification
+  or plan artifacts. Escalate to the standard gate if results may change, and to the full gate if
+  interfaces or contracts may change.
 - **No gate:** Read-only explanation, inspection, diagnosis, status reporting, and regeneration of
-  declared outputs from an already approved workflow. Questions ask for answers, not edits; answer
+  declared outputs from an already approved workflow whose code and configuration are unchanged
+  since approval; verify that before regenerating. Questions ask for answers, not edits; answer
   first and wait for an explicit change request.
 
 ## Reference routing
@@ -80,11 +84,12 @@ blocker rather than weakening one.
    harmonization, exclusions, and derived variables create new files under `data/interim/` or
    `data/processed/`. Cleanup paths are narrow, named, guarded, and incapable of reaching raw data.
 2. **Never weaken a gate to make it pass.** Reproducibility, provenance, and validation checks exist
-   to fail. A failing check is information, not an obstacle.
+   to fail. A failing check is information, not an obstacle. Removing, disabling, skipping, or
+   loosening a check is weakening it, whatever the edit is called, and covering tests are checks.
 3. **Estimands, inclusion rules, and data contracts change only with authorization.** Record the
    authorized change before presenting results built on it.
 4. **Exploratory never silently becomes confirmatory.** Label analyses. Record post hoc changes and
-   their rationale in `docs/LAB_NOTEBOOK.md` before presenting the result as planned.
+   their rationale in `docs/LAB_NOTEBOOK.md` before presenting the result as if it were planned.
 5. **No silent complete-case filtering.** Report missingness before exclusions or imputation.
    Inclusion and exclusion criteria are code, not prose.
 6. **Randomness is declared, never invented.** When randomness is unavoidable, the seed is explicit
@@ -129,10 +134,10 @@ blocker rather than weakening one.
    `references/prerequisites.md` prescribes; write only the selected host's profile. If none was
    selected, write no host profile and first establish that the host can independently resolve the
    required simplifier; otherwise future code changes are blocked.
-9. **Run a real selected-host smoke test.** Through the selected host, report the resolved
-   provenance of this skill and confirm that `research-code-simplifier` resolves from the expected
-   installed profile. Do not simulate an unavailable resolver; report it as a manual boundary and
-   follow `references/prerequisites.md` recovery guidance.
+9. **Run a real selected-host smoke test.** Run the three-check smoke test
+   `references/prerequisites.md` defines through the selected host, including launching the
+   delegated reviewer far enough to report its own resolution. Do not simulate an unavailable
+   resolver; report it as a manual boundary and follow the same reference's recovery guidance.
 10. **Inspect and report.** Inspect the actual generated artifacts, not exit codes, then report
     every remaining assumption and manual or external boundary.
 
@@ -225,7 +230,10 @@ are presented, append the decision, rationale and evidence, authorization source
 any superseded entry to `docs/LAB_NOTEBOOK.md`; that entry field set is the one the standard gate
 above refers to. Before presenting results affected by a changed analysis decision, amend
 `docs/ANALYSIS_PLAN.md` as `references/analysis.md` prescribes and label the change's post hoc
-status honestly.
+status honestly. A result is presented once its artifacts are committed, pushed, or shared in any
+form, not only when someone is shown a number. Every obligation keyed to presenting is due before
+the affected result artifacts are committed; presentation is never a deadline the agent defers by
+staying silent about finished results.
 
 ### Independent critique
 
