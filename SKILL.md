@@ -66,7 +66,8 @@ break; when uncertain, use the full gate.
 
 In every mode, read the table below broadly. Load each reference whose trigger matches the requested
 work, read it completely, and apply its contract before dependent decisions or edits. Do not avoid a
-contract through narrower task wording.
+contract through narrower task wording. Familiarity with this standard is not a reason to skip a
+reference; read it in this session before relying on it.
 
 | Reference                     | Load when                                                                                                                                                                                                                                   |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -202,6 +203,13 @@ each accepted migration step through the gate its own change class requires.
 
 ## Governed work
 
+The gates, interview questions, consultation points, capability blockers, and unclear destruction
+targets this skill names are the only places to stop for the user. A capability blocker exists only
+after the resolution or launch attempt fails in this session; an assumed limit is not a stop.
+Between stops, carry out every step you state, whatever the run time or the hour; a stated next step
+left undone is unfinished work. When a question arises mid-task, first do everything that does not
+depend on the answer, then ask at the consultation point.
+
 ### Governed-work invocation record
 
 Before classifying or changing a governed repository, resolve and invoke this skill by exact name
@@ -231,7 +239,9 @@ presenting results affected by a changed analysis decision, amend `docs/ANALYSIS
 `references/analysis.md` prescribes and label its post hoc status. A result is presented once its
 artifacts are committed, pushed, or shared in any form, not only when someone is shown a number.
 Every obligation keyed to presenting is due before the affected result artifacts are committed;
-presentation is never a deadline the agent defers by staying silent about finished results.
+presentation is never a deadline the agent defers by staying silent about finished results. Write
+each record, specification and plan amendment included, so a fresh context can resume from the
+repository alone: exact values, decisions taken and rejected, and what remains open.
 
 ### Independent critique
 
@@ -246,7 +256,11 @@ critique procedure, batching, disposition of findings, and capability blockers.
 
 Keep changes narrow and follow the repository's declared interfaces. Tests and documentation change
 with behavior. Validate inputs before expensive computation. If the approved scope expands, return
-to the applicable gate.
+to the applicable gate. Report a pre-existing bug, performance concern, or behavior the task does
+not mention as a follow-up in the completion report; do not fix it in this change unless the
+requested behavior cannot work without it. Add tests only where the task or the repository's test
+practice calls for them, sized like the neighboring tests, and never commit scratch checks. Edit
+files in place; rewrite a whole file only when most of it changes.
 
 ### Mid-implementation consultation
 
@@ -301,8 +315,10 @@ verification interfaces. Inspect the generated tables, figures, profiles, and pr
 exit codes are not evidence. Check `git status` for unintended files and confirm raw inputs and
 unrelated work are unchanged.
 
-The completion report states what changed, what was verified, what was skipped and why, and every
-manual or inaccessible reproducibility boundary. Do not claim a selected host integration is
-complete without the real resolver smoke test required above. Do not claim the work complete while a
-required critique, simplification pass, artifact inspection, or verification gate remains unresolved
-without a recorded waiver.
+The completion report states what changed, what was verified and how, what was skipped and why, and
+every manual or inaccessible reproducibility boundary. It covers the whole task, not the last step,
+and stands on its own for a reader who saw nothing else. Notebook entries, README text, and reports
+use literal plain sentences, without metaphor or flourish. Do not claim a selected host integration
+is complete without the real resolver smoke test required above. Do not claim the work complete
+while a required critique, simplification pass, artifact inspection, or verification gate remains
+unresolved without a recorded waiver.

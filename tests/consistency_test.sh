@@ -434,6 +434,58 @@ else
   fail "completion must run repository interfaces, inspect artifacts over exit codes, check git status with raw inputs and unrelated work unchanged, report skips and boundaries, require the smoke test, and refuse unwaived gates"
 fi
 
+# --- 3f. autonomy, scope, reference reading, and whole-task reporting ---
+autonomy_ok=1
+# the named gates and consultation points are the only stops; a stated step is carried out
+grep -Eqi '(gates?|consultation points?)[^.]*only[^.]*stop' <<< "$governed_text" || autonomy_ok=0
+grep -Eqi '(stated|announced|described)[^.]*step[^.]*(undone|unfinished)' <<< "$governed_text" ||
+  autonomy_ok=0
+# a run's length or the clock never hands part of the job back
+grep -Eqi 'whatever[^.]*(run|clock|deadline)' <<< "$governed_text" || autonomy_ok=0
+# a blocker needs a failed attempt in this session, never an assumption
+grep -Eqi 'assumed limit[^.]*not a (stop|blocker)' <<< "$governed_text" || autonomy_ok=0
+grep -Eqi 'blocker[^.]*only after[^.]*attempt fails' <<< "$governed_text" || autonomy_ok=0
+# a mid-task question waits until the independent work is done
+grep -Eqi '(does not|not|independent of)[^.]*depend[^.]*answer' <<< "$governed_text" || autonomy_ok=0
+# the existing stop rules stay intact
+grep -Eqi 'either is unclear, stop and ask' <<< "$governed_text" || autonomy_ok=0
+grep -Eqi 'one question at a time' <<< "$skill_text" || autonomy_ok=0
+# change discipline scopes fixes and tests to the task
+discipline_text="$(awk '
+    /^### Change discipline$/ { capture = 1; next }
+    capture && /^##/ { exit }
+    capture { print }
+' "$ROOT/SKILL.md" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
+grep -Eqi '(pre-existing|unrelated) bug' <<< "$discipline_text" || autonomy_ok=0
+grep -Eqi 'follow-up[^.]*completion report|completion report[^.]*follow-up' <<< "$discipline_text" ||
+  autonomy_ok=0
+grep -Eqi '(not|never) fix[^.]*unless[^.]*cannot work' <<< "$discipline_text" || autonomy_ok=0
+grep -Eqi 'tests? only where' <<< "$discipline_text" || autonomy_ok=0
+grep -Eqi 'neighbou?ring test' <<< "$discipline_text" || autonomy_ok=0
+grep -Eqi '(never|not) commit[^.]*scratch|scratch[^.]*(never|not) commit' <<< "$discipline_text" ||
+  autonomy_ok=0
+# familiarity never skips a reference; the routing intro owns that rule
+routing_intro="$(awk '
+    /^## Reference routing$/ { capture = 1; next }
+    capture && /^\|/ { exit }
+    capture { print }
+' "$ROOT/SKILL.md" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
+grep -Eqi 'familiar[a-z]*[^.]*(not|never)[^.]*(skip|reason)' <<< "$routing_intro" || autonomy_ok=0
+grep -Eqi '(this|the current) session' <<< "$routing_intro" || autonomy_ok=0
+# the completion report covers the whole task and stands alone
+grep -Eqi 'whole task[^.]*(not|never)[^.]*last step' <<< "$completion_text" || autonomy_ok=0
+grep -Eqi 'stands? on its own|saw nothing else' <<< "$completion_text" || autonomy_ok=0
+grep -Eqi 'verified and how' <<< "$completion_text" || autonomy_ok=0
+# the whole-task scenario stays pinned with its refusal anchors
+grep -Fq '## Scenario L — authorized whole task' "$ROOT/tests/skill_pressure_scenarios.md" || autonomy_ok=0
+grep -Eqi 'never end the turn with a described next step' "$ROOT/tests/skill_pressure_scenarios.md" ||
+  autonomy_ok=0
+if ((autonomy_ok)); then
+  pass "governed work stops only at named gates, scopes fixes and tests to the task, reads references each session, and reports the whole task"
+else
+  fail "governed work must stop only at named gates and consultation points, carry out stated steps, report unrelated bugs as follow-ups, scope tests to repository practice, forbid familiarity as a reason to skip a reference, and cover the whole task in the completion report"
+fi
+
 # --- 4. canonical simplifier profile has the collision-safe identity ---
 if [[ -f "$ROOT/agents/research-code-simplifier.md" ]] &&
   grep -Fqx 'name: research-code-simplifier' "$ROOT/agents/research-code-simplifier.md" &&
