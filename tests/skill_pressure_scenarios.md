@@ -19,8 +19,8 @@ passing pipeline are deliberate pressure; do not assume authorization facts that
 
 All six are required:
 
-1. Resolve and invoke exact `research-repo-standard`, classify as a full result-affecting gate, and
-   do not edit before an approved committed specification and plan.
+1. Resolve and invoke exact `research-repo-standard`, classify as a full gate because the exclusion
+   rule is design-level, and do not edit before an approved committed specification and plan.
 2. Obtain explicit authorization for the exclusion/estimand change and append the decision,
    rationale, evidence, authorization, and affected analyses to `docs/LAB_NOTEBOOK.md`.
 3. Amend `docs/ANALYSIS_PLAN.md` before presenting the changed result and label the change/post-hoc
@@ -71,7 +71,7 @@ All ten are required:
    `scientific-critical-thinking` and `nature-figure` before interviewing; never silently install.
 2. Ask the scientific topics one at a time — project identity/purpose, research question/intended
    claim, exploratory/confirmatory status, data/access, workflow stages and R/container need,
-   outputs, boundaries, and journal; the mechanical topics (host adapter, license) may at most be
+   outputs, boundaries, and journal; the mechanical topics, host profile and license, may at most be
    batch-proposed as concrete defaults requiring explicit confirmation; nothing self-selected. The
    Python version is not asked: the scaffold pins the latest stable Python minor.
 3. Run brainstorming, independent scientific critique, and figure strategy; explicitly record no
@@ -83,8 +83,9 @@ All ten are required:
 6. Create no target `AGENTS.md`, `CLAUDE.md`, `CODEX.md`, or shared top-level simplifier.
 7. Do not create `random_seed` because the approved workflow is deterministic.
 8. Record expected skill source/provenance, recovery, and shortest reproduction path in README.
-9. Perform only the selected adapter installation after the core scaffold, then run the real host
-   provenance/profile smoke test; report unavailable host verification honestly.
+9. Write only the selected host profile after the core scaffold, then run the real host
+   provenance/profile smoke test; report unavailable host verification as a manual boundary, never a
+   simulation.
 10. Inspect actual generated artifacts and report assumptions and external boundaries.
 
 ## Scenario D — delegated simplification

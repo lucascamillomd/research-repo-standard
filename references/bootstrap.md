@@ -1,14 +1,14 @@
 # Reference: repository bootstrap
 
-Begin this procedure only after the interview answers, integrated design, written specification, and
-implementation plan are approved. Substitute every placeholder with an approved project value; never
-create a path containing angle brackets. Once generated, project files such as `pyproject.toml` and
-the Makefile become their repository's source of truth.
+Begin only after the interview answers, integrated design, specification, and implementation plan
+are approved. Replace every placeholder with an approved project value; never create a path
+containing angle brackets. Once generated, project files such as `pyproject.toml` and the Makefile
+are their repository's source of truth.
 
 ## Core scaffold
 
-Create only the approved parts of this structure. Repository names may contain hyphens; import
-package names use lowercase underscores.
+Create only the approved parts of this structure. Repository names may contain hyphens;
+import-package names use lowercase underscores.
 
 ```text
 <repo-name>/
@@ -20,6 +20,7 @@ package names use lowercase underscores.
 ├── .python-version
 ├── .gitignore
 ├── .pre-commit-config.yaml
+├── .github/workflows/ci.yml        # or the forge's equivalent CI configuration
 ├── config/
 │   ├── datasets.yaml
 │   └── analysis.yaml
@@ -59,21 +60,20 @@ package names use lowercase underscores.
 └── tests/
 ```
 
-Adapt rule-module names under `workflow/rules/` to the approved workflow. The `workflow/Snakefile`
-declares `configfile`, `rule all`, and includes the rule modules; it owns orchestration. Each rule
-declares `input:`, `output:`, `log:`, and `params:`, and its body is a single call into
-`src/<package_name>/` functions. Rules contain no scientific logic. Put importable and testable
-logic under `src/<package_name>/`. Generate no R or other runtime support unless the approved design
-requires it.
+Name rule modules under `workflow/rules/` after the approved workflow. `workflow/Snakefile` declares
+`configfile` and `rule all`, includes the rule modules, and owns orchestration. Each rule declares
+`input:`, `output:`, `log:`, and `params:`; its body is a single call into `src/<package_name>/`.
+Rules hold no scientific logic. Importable, testable logic lives under `src/<package_name>/`.
+Generate no R or other runtime support unless the approved design requires it.
 
 ## Python environment and lock
 
-Use the latest stable Python minor in both `.python-version` and `project.requires-python`; the
-Python version is not an interview decision, so verify the current latest release rather than
-assuming one from memory. Use Hatchling and the `src/<package_name>/` layout unless the approved
-design records another PEP 517 backend.
+Pin the latest stable Python minor in both `.python-version` and `project.requires-python`. The
+Python version is not an interview decision; check the current release rather than recalling one
+from memory. Use Hatchling and the `src/<package_name>/` layout unless the approved design records
+another PEP 517 backend.
 
-uv manages ordinary Python environments, dependencies, builds, and commands:
+uv manages environments, dependencies, builds, and commands:
 
 ```bash
 uv init --package --build-backend hatch --vcs none --python 3.XY --name <repo-name> <target-repo>
@@ -82,24 +82,16 @@ uv lock                   uv sync --locked
 uv run --locked <command> uv build
 ```
 
-uv normalizes the approved hyphenated repository name to the import-package name. Run the command
-against the approved target path; do not rely on the current directory or uv's application defaults.
+uv normalizes the hyphenated repository name to the import-package name. Run `uv init` against the
+approved target path; do not rely on the current directory or uv's application defaults.
 
-Commit `uv.lock` and never hand-edit it. After project metadata changes, run `uv lock`, then
-`uv sync --locked`. CI runs both checks in this order:
+Commit `uv.lock` and never hand-edit it. After metadata changes, run `uv lock`, then
+`uv sync --locked`. Do not use `pip install`, Poetry, Pipenv, or Conda for the primary environment.
+An incompatible upstream tool may get an isolated environment only when the approved design
+documents the boundary and exact invocation.
 
-```bash
-uv lock --check
-uv sync --locked
-```
-
-`--frozen` alone is insufficient because it skips the metadata-to-lock comparison. Do not use direct
-`pip install`, Poetry, Pipenv, or Conda for the primary environment. An incompatible upstream tool
-may use an explicitly isolated environment only when the approved design documents the boundary and
-exact invocation.
-
-Declare meaningful compatibility bounds. Use exact top-level pins only for demonstrated
-compatibility, serialization, binary, or model constraints.
+Declare compatibility bounds. Pin an exact top-level version only for a demonstrated compatibility,
+serialization, binary, or model constraint.
 
 ```toml
 [dependency-groups]
@@ -112,16 +104,23 @@ the pipeline.
 ## Configuration
 
 Load `references/configuration.md` before creating YAML, schemas, `paths.py`, the Snakefile's
-configfile declaration, or configuration provenance; it owns where each value belongs and how
+`configfile` declaration, or configuration provenance. It owns where each value belongs and how
 validation and the override guard work. Create `config/datasets.yaml` and `config/analysis.yaml`;
-TOML still owns packaging and tool configuration.
+TOML owns packaging and tool configuration.
 
 Create `.env.example` only when the project consumes environment variables. List safe variable names
-and placeholders, never values. Ignore the real `.env`.
+and placeholders, never values.
 
-The generated `.gitignore` also ignores `tmp/`, the scratch location the standard's
-mid-implementation consultation uses for throwaway option scripts. Nothing under `tmp/` is ever
-committed, so those scripts never appear in the completion `git status` check.
+## Ignore policy
+
+The generated `.gitignore` ignores `.env`, `tmp/`, `logs/`, `.venv/`, `__pycache__/`, `.snakemake/`,
+and every tier under `data/`. `tmp/` holds the mid-implementation consultation's throwaway option
+scripts, so they never reach the completion `git status` check. Un-ignore the fixture or shared
+processed-data checkpoint approved in interview questions 7 and 11 with an explicit negation
+pattern. Register each such file in `config/datasets.yaml` per `references/data.md` and keep it
+under the pre-commit large-file guard's limit. Larger data arrives through the registered
+acquisition method; use Git LFS or DVC only when the approved design records it. `results/` is not
+ignored. SKILL.md treats a commit under it as presenting a result.
 
 ## Rule logging
 
@@ -135,10 +134,9 @@ logger.add(sys.stderr, level=params.log_level)
 logger.add(log[0], level="DEBUG")
 ```
 
-`log_level` is a stable operational setting owned by `config/analysis.yaml` and declared in the
-rule's `params:`; the rule passes it explicitly. Never source logging verbosity from the
-environment. Each rule logs resolved parameters, read inputs, written outputs, and skipped or failed
-units.
+`log_level` is an operational setting owned by `config/analysis.yaml` and declared in the rule's
+`params:`; the rule passes it explicitly. Never source logging verbosity from the environment. Each
+rule logs resolved parameters, read inputs, written outputs, and skipped or failed units.
 
 ## Ruff and type checking
 
@@ -165,10 +163,10 @@ python-version = "3.XY"
 include = ["src", "tests"]
 ```
 
-Enable stable rules only. Do not enable all or preview rules indiscriminately. Permit only safe
-automatic fixes globally. Keep inline suppressions narrow and explain non-obvious ones; document
-repository-wide ignores beside their configuration. Use focused per-file type exceptions for
-scientific libraries with incomplete typing instead of disabling type checking globally.
+Enable stable rules only, never all or preview rules. Permit only safe automatic fixes. Keep inline
+suppressions narrow and explain the non-obvious ones; document repository-wide ignores beside their
+configuration. Give scientific libraries with incomplete typing per-file type exceptions instead of
+disabling type checking globally.
 
 ## Pre-commit
 
@@ -178,11 +176,29 @@ Install hooks with:
 uv run --locked pre-commit install
 ```
 
-Required hooks cover Ruff safe lint fixes, Ruff formatting, trailing whitespace, final newlines,
-YAML and TOML syntax, merge-conflict markers, private keys, and a configurable large-file guard. Use
-local Ruff hooks that call `uv run --locked ruff ...` so one locked Ruff version owns linting and
-formatting. Generic non-Python hooks may use pinned upstream repositories. Do not put pytest or the
-full test suite in pre-commit; Make and CI own tests.
+Required hooks: Ruff safe lint fixes, Ruff formatting, trailing whitespace, final newlines, YAML and
+TOML syntax, merge-conflict markers, private keys, and a configurable large-file guard. Ruff hooks
+are local hooks that call `uv run --locked ruff ...`, so one locked Ruff version owns linting and
+formatting. Generic non-Python hooks may use pinned upstream repositories. Do not run pytest in
+pre-commit; Make and CI own tests.
+
+## Continuous integration
+
+Create the forge's CI configuration as part of the core scaffold. It runs on every push and pull
+request, in this order:
+
+```bash
+uv lock --check
+uv sync --locked
+uv run --locked pre-commit run --all-files
+uv run --locked ty check
+make test
+```
+
+`--frozen` alone is not enough. It skips the metadata-to-lock comparison. Add the verification scope
+approved in interview question 11, run against its permitted fixture or checkpoint. Steps that need
+external data, licensed tools, or an unavailable runtime stay out of CI; the README lists them as
+boundaries. CI never reads `data/raw/`.
 
 ## Make interface
 
@@ -199,31 +215,36 @@ pipeline:        ## Run the full Snakemake pipeline
 verify-results:  ## Verify declared results using permitted inputs
 ```
 
-Name the verification gate to fit the project. Pipeline-facing targets are one-line wrappers over
-Snakemake: `pipeline` runs `uv run --locked snakemake --cores all`. Approved targets for analysis
-and figures wrap named Snakemake target rules. A reader must be able to reach the analysis, figures,
-full pipeline, and verification without knowing rule or internal file names. Snakemake's DAG owns
-file-level incrementality; Make targets stay phony one-line wrappers. Cleanup targets are explicit
-Make targets that cannot reach `data/raw/`; do not use `snakemake --delete-all-output`.
+`verify-results` is a placeholder. Name the verification gate to fit the project. Pipeline-facing
+targets are phony one-line wrappers over Snakemake, so Snakemake's DAG owns file-level
+incrementality. `pipeline` runs `uv run --locked snakemake --cores all`; approved analysis and
+figure targets wrap named Snakemake rules. A reader reaches the analysis, figures, full pipeline,
+and verification without knowing rule or internal file names.
+
+Do not use `snakemake --delete-all-output`; cleanup targets are explicit Make targets that cannot
+reach `data/raw/`.
 
 ## Conditional external runtimes
 
-Create an R container and a `test-r` target only when the approved design requires R. Put it under
-`docker/r/`, pin the base image by immutable digest when feasible, lock packages with `renv.lock`,
-document CRAN/Bioconductor and system-library limitations, and expose build and execution through
-Make and a checked-in wrapper. Mount only required directories and use `testthat` for reusable R
-logic.
+Create an R container and a `test-r` target only when the approved design requires R. Put the
+container under `docker/r/`, pin the base image by digest when feasible, lock packages with
+`renv.lock`, document CRAN, Bioconductor, and system-library limits, and expose build and execution
+through Make and a checked-in wrapper. Mount only required directories. Test reusable R logic with
+`testthat`.
 
-Pin R `logger` in `renv.lock` and keep the two-sink contract small:
+Pin R `logger` in `renv.lock`. The R entry point takes the log path from the rule's `log:` and
+`log_level` from its `params:`, as Python rules do, through the wrapper's arguments or through
+`snakemake@log` and `snakemake@params` when the rule uses `script:`. Keep the two-sink contract
+small:
 
 ```r
-log_appender(appender_tee(file.path(logs_dir, "03_fit.log")))
-log_threshold(INFO)
+log_appender(appender_tee(log_path))
+log_threshold(log_level)
 log_info("fitted {n} models on {nrow(df)} rows", n = length(fits))
 ```
 
-Do not create a dedicated R package by default. Minimal R orchestration may remain behind its
-Snakemake rule; scientific plotting remains in Python.
+Do not create an R package by default. Minimal R orchestration may sit behind its Snakemake rule;
+scientific plotting stays in Python.
 
 ## Generated README checklist
 
@@ -231,22 +252,18 @@ The project README records:
 
 - project identity, research question, analysis status, and one-paragraph scope;
 - a compact repository map and links to `docs/`;
-- the pinned Python minor, uv, Make, and any approved external runtime prerequisites;
-- `research-repo-standard` as an exact-name agent prerequisite, its expected source/provenance, and
-  recovery instructions when resolution fails, linked to `references/prerequisites.md` from the
-  approved standard source;
-- required hard-gate skills, clearly separated from packages installed by `make setup`;
+- prerequisites: the pinned Python minor, uv, Make, and any approved external runtime;
+- `research-repo-standard` as an exact-name agent prerequisite, its expected source and provenance,
+  and recovery steps when resolution fails, linked to `references/prerequisites.md` in the approved
+  standard source;
+- required skills, separated from the packages `make setup` installs;
 - the shortest reproduction path, including setup and the canonical `make pipeline` command;
 - expected tables, figures, and provenance artifacts; and
 - external data, licensing, compute, manual, and unavailable-tool boundaries.
 
 ## Selected host integration
 
-After the core scaffold is complete, write the selected host's simplifier profile as
-`references/prerequisites.md` prescribes. Derive it from the canonical
-`agents/research-code-simplifier.md` in the absolute, provenance-verified skill source directory
-reported by the successful host-native resolver; do not infer that location from the current
-directory. Write only the selected host's profile into the target repository, and write none when no
-host was selected. Then follow `references/prerequisites.md` for the real host-native smoke test of
-the resolved `research-repo-standard` provenance and the `research-code-simplifier` host profile.
-Report an unavailable selected host as a manual boundary instead of simulating success.
+After the core scaffold, write only the selected host's simplifier profile, and none when no host
+was selected. Derive it from the canonical `agents/research-code-simplifier.md` in the
+provenance-verified skill source reported by the host-native resolver, then run the host-native
+smoke test. Both follow `references/prerequisites.md` exactly.

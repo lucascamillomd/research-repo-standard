@@ -6,11 +6,10 @@ capabilities are separate from packages installed in a research repository.
 
 ## Required capabilities
 
-Resolve these three hard-gate capabilities before a bootstrap interview. For governed work, resolve
-each capability before the work that depends on it. Resolve the two scientific skills by exact name.
-Resolve `superpowers` as a whole package. Confirm the host lists its skills, at minimum
-`superpowers:brainstorming` and `superpowers:writing-plans`, which the workflow invokes by exact
-name.
+Resolve these three capabilities before a bootstrap interview. In adoption and governed-work modes,
+resolve each before the work that depends on it. Resolve the two scientific skills by exact name and
+`superpowers` as a whole package. Confirm the host lists at least `superpowers:brainstorming` and
+`superpowers:writing-plans`, which the workflow invokes by exact name.
 
 | Capability                     | Authoritative source                                    |
 | ------------------------------ | ------------------------------------------------------- |
@@ -18,30 +17,28 @@ name.
 | `scientific-critical-thinking` | <https://github.com/k-dense-ai/scientific-agent-skills> |
 | `nature-figure`                | <https://github.com/Yuan1z0825/nature-skills>           |
 
-Use the selected host's native skill listing or resolver. The result must contain the exact skill
-name and enough source information to verify that it came from the expected package or repository. A
-file on disk is not resolved, and a directory named after a skill does not prove that the host can
-invoke it. Successful invocation during the required workflow is the functional check.
+Use the current host's native skill listing or resolver. The result must show the exact skill name
+and enough source information to verify the expected package or repository. Successful invocation
+during the workflow is the functional check.
 
-Resolve `research-repo-standard` itself by exact name through the same host-native mechanism and
-verify that its reported source or package provenance is the source approved for the project.
+Resolve `research-repo-standard` itself the same way and check that its reported provenance matches
+the provenance the project README records under the checklist in `references/bootstrap.md`. When the
+README has no entry yet, match the source the user approved.
 
-Never silently install a skill or change global agent configuration. When a required name or its
-expected provenance cannot be resolved, report the exact name, host, attempted resolver, and result;
-obtain authorization before recovery; and do not imitate or substitute another workflow. A missing
-capability blocks only the dependent work.
+Never change global agent configuration without authorization. When a required name or its
+provenance does not resolve, report the exact name, host, resolver tried, and result, then obtain
+authorization before installation or recovery.
 
 ## Authorized installation and recovery
 
-Use the installation mechanism documented by the authoritative source and selected host. Review a
-third-party package's source and provenance before installation.
+Install by the mechanism the authoritative source and the current host document. Review a
+third-party package's source and provenance first.
 
-Superpowers uses the host's plugin marketplace rather than the Agent Skills installer:
+Superpowers installs from the host's plugin marketplace, not the Agent Skills installer:
 
-- In Codex, open **Plugins** in the Codex app or `/plugins` in Codex CLI, find **Superpowers**, and
-  install it from the Codex plugin marketplace.
-- In Claude Code, install Superpowers from Anthropic's official plugin marketplace with
-  `/plugin install superpowers@claude-plugins-official`.
+- In Codex, open Plugins in the app or `/plugins` in the CLI and install Superpowers from the
+  marketplace.
+- In Claude Code, run `/plugin install superpowers@claude-plugins-official`.
 
 For Agent Skills packages, the documented portable form is:
 
@@ -49,71 +46,75 @@ For Agent Skills packages, the documented portable form is:
 npx skills add <package> --agent <codex|claude-code>
 ```
 
-Add `--global`, `--skill <exact-name>`, `--yes`, or `--copy` only when those options match the
-approved scope and the selected host. For the two scientific packages, authorized installations may
-use:
+Add `--global`, `--skill <exact-name>`, `--yes`, or `--copy` only when they match the approved scope
+and the current host. For the two scientific packages, an authorized installation may use:
 
 ```bash
 npx skills add K-Dense-AI/scientific-agent-skills --global --agent codex --skill scientific-critical-thinking --yes --copy
 npx skills add Yuan1z0825/nature-skills --global --agent codex --skill nature-figure --yes --copy
 ```
 
-Replace `codex` with `claude-code` when that is the selected host. The commands require `npx` only
-when this recovery route is chosen; Node.js is not a universal research-repository prerequisite.
-Follow other hosts' authoritative installation instructions rather than guessing an equivalent.
+Replace `codex` with `claude-code` on that host. Only this recovery route needs `npx`; Node.js is
+not a general research-repository prerequisite. On other hosts, follow their authoritative
+installation instructions rather than guessing an equivalent.
+
+After an authorized installation, restart the session if the host requires it, rerun native
+discovery, verify the exact name and provenance, and resume from the blocked step. Do not repeat
+approved design work because the session changed.
 
 ## Shared planning companion
 
-The required Superpowers package provides `superpowers:writing-plans` for use after design approval.
-At planning time, resolve it by exact name from that same installation before invoking it.
-
-After an authorized installation, restart or reload the agent session when the host requires it,
-rerun native discovery, verify the exact name and source provenance, and then resume from the
-blocked step. Do not repeat already approved design work solely because the session changed.
+The preflight-resolved `superpowers` package provides `superpowers:writing-plans`. Invoke it after
+design approval.
 
 ## Delegated-agent propagation
 
-Before launching an independent scientific reviewer or simplification reviewer, confirm that the
-delegated context can resolve every exact skill and profile assigned to it. Pass the applicable
-repository instructions and task scope through the host's supported delegation mechanism. The
-delegate must report what it resolved and from which source; the parent must not infer resolution
-from its own environment.
+Before launching an independent scientific or simplification reviewer, confirm the delegated context
+can resolve every skill and profile assigned to it. Pass the applicable repository instructions and
+task scope through the host's delegation mechanism. The delegate reports what it resolved and from
+which source. The parent must not infer resolution from its own environment.
 
-If the parent resolves a capability but the delegate cannot, dependent review remains blocked unless
-the user explicitly waives or defers it, in which case record the waiver and its scope. Report that
-delegated-resolution boundary instead of replacing the independent review with a self-review.
+If the parent resolves a capability but the delegate cannot, dependent review stays blocked unless
+the user explicitly waives or defers it. Record any waiver and its scope. Report the boundary rather
+than replacing the independent review with a self-review.
 
 ## Host profile installation
 
-After the approved core scaffold exists, the agent writes the delegated simplifier profile into the
-target repository itself; no installer script exists. Derive the profile from the canonical
-`agents/research-code-simplifier.md` in the provenance-verified skill source reported by the
-host-native resolver, never from a location inferred from the current directory.
+After the approved core scaffold exists, the agent writes the simplifier profile into the target
+repository itself; there is no installer script. Derive it from the canonical
+`agents/research-code-simplifier.md` in the provenance-verified skill source the host-native
+resolver reported, never from a path inferred from the current directory.
+
+Before writing the profile, detect artifacts of an earlier integration. Report each one's path, the
+path it resolves to, and whether its content was customized, then leave it unchanged. Three kinds
+count. A legacy policy is a target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md` that restates this
+standard. An alias is a symlink or wrapper file that resolves to a simplifier profile. A generic
+simplifier is a simplifier profile outside the selected host's expected path, such as a shared
+top-level `agents/` profile or a `code-simplifier` profile. Removing one is destruction under
+SKILL.md and follows that report.
 
 - For a Claude Code host, copy the canonical profile verbatim to
   `<target-repo>/.claude/agents/research-code-simplifier.md`.
-- For a Codex host, write `<target-repo>/.codex/agents/research-code-simplifier.toml` carrying the
-  same name, description, and body text in the Codex profile format.
+- For a Codex host, write `<target-repo>/.codex/agents/research-code-simplifier.toml` as a Codex
+  custom-agent file with the same name, description, and body text: `name = "<frontmatter name>"`,
+  `description = "<frontmatter description>"`, and
+  `developer_instructions = '''<body after the frontmatter, unchanged>'''`.
 
-Write only the selected host's profile, and write none when no host was selected. The canonical
-profile stays host-neutral; never add host names to it, and never restate its content in another
-policy file. Never create or modify target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md`, and never
-overwrite an existing customized profile without explicit authorization. After installation, run the
-selected-host smoke test below.
+Write only the selected host's profile, and none when no host was selected. The canonical profile
+stays host-neutral. Never add host names to it or restate its content in another policy file. Never
+create or modify a target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md`. Never overwrite a customized
+profile without explicit authorization. Then run the selected-host smoke test below.
 
 ## Selected-host smoke test
 
-After the core scaffold and the one selected host integration are complete, run a real smoke test
-through that host. Publishing the delegated profile does not establish any skill's resolution. The
-result must:
+After the core scaffold and the selected host integration are complete, run a real smoke test
+through that host. Writing the profile does not establish any skill's resolution. The result must:
 
-1. resolve `research-repo-standard` by exact name and report its resolved source or package
-   provenance;
-2. resolve `research-code-simplifier` through the host and report the expected installed host
-   profile path; and
-3. launch the profile far enough for the delegated reviewer to report that it resolved and invoked
+1. resolve `research-repo-standard` by exact name and report its provenance;
+2. resolve `research-code-simplifier` through the host and report the installed profile path; and
+3. launch the profile far enough that the delegated reviewer reports it resolved and invoked
    `research-repo-standard` from the expected provenance, without requesting an implementation.
 
 An unavailable host or resolver is a manual verification boundary, not a simulated success. Report
-the unavailable check and use the authorized recovery procedure before claiming that host
-integration is complete.
+the unavailable check and run the authorized recovery procedure before claiming the host integration
+is complete.
