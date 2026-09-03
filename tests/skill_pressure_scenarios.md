@@ -337,6 +337,26 @@ this session and that an assumed limit is not a stop. Before the GREEN run the p
 sentence "Preflight resolved every required skill and a review agent can be launched." Three fresh
 agents then scored 4/4, 4/4, and 4/4 against the working tree with the rubric hidden.
 
+### Re-evaluation 2026-09-03 (prompt-audit trims)
+
+A prompt audit against Claude Fable 5.1 removed four reinforcing or host-specific sentences from
+SKILL.md: the named Claude Code question tool (the generic host question-tool rule stays), the
+per-edit simplifier prohibition (the once-per-unit cadence stays), the second batching sentence in
+bootstrap step 2 (folded into the first), and the "not a general opt-out" clause (the self-pass
+sentence stays). It also expanded the simplifier profile description and dropped the "no installer
+script" phrasing. Scenarios C and I, the two whose rubrics score the trimmed wording, were re-run
+with fresh agents against the working tree, byte-verbatim prompts, and hidden rubrics.
+
+| Scenario                    | Score | Result                 |
+| --------------------------- | ----: | ---------------------- |
+| C — deterministic bootstrap | 10/10 | GREEN on the first run |
+| I — mid-task design fork    |   4/4 | GREEN on the first run |
+
+Scenario C batch-proposed only the host profile and license as defaults needing confirmation and
+kept the eight scientific topics one at a time. Scenario I stopped, rejected the validation
+relaxation as gate weakening, presented four options through the host question tool with throwaway
+scripts under `tmp/`, and waited. No global skill configuration was changed.
+
 ## GREEN results
 
 Archive note (2026-08-14): transcripts recorded before this date were scored against the

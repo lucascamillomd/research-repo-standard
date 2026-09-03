@@ -81,9 +81,9 @@ than replacing the independent review with a self-review.
 ## Host profile installation
 
 After the approved core scaffold exists, the agent writes the simplifier profile into the target
-repository itself; there is no installer script. Derive it from the canonical
-`agents/research-code-simplifier.md` in the provenance-verified skill source the host-native
-resolver reported, never from a path inferred from the current directory.
+repository itself. Derive it from the canonical `agents/research-code-simplifier.md` in the
+provenance-verified skill source the host-native resolver reported, never from a path inferred from
+the current directory.
 
 Before writing the profile, detect artifacts of an earlier integration. Report each one's path, the
 path it resolves to, and whether its content was customized, then leave it unchanged. Three kinds

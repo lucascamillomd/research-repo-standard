@@ -280,8 +280,6 @@ grep -Eqi 'explicit confirmation' <<< "$bootstrap_step_two" || proportion_ok=0
 grep -Eqi 'one at a time' <<< "$bootstrap_step_two" || proportion_ok=0
 grep -Eqi 'silent' <<< "$bootstrap_step_two" || proportion_ok=0
 # batching covers those two mechanical topics and nothing else
-grep -Eqi '(two topics|host profile and license)[^.]*only|only[^.]*(two topics|host profile and license)' \
-  <<< "$bootstrap_step_two" || proportion_ok=0
 grep -Eqi '(every|all) other[^.]*(topic|question)[^.]*one at a time' <<< "$bootstrap_step_two" ||
   proportion_ok=0
 # the scenario rubric must score the same relaxed cadence, not the old never-bundle rule
@@ -326,7 +324,7 @@ grep -Eqi 'analysis\.md[^.]*(procedure|batching|disposition)' <<< "$critique_tex
 # a mid-implementation fork stops for user options instead of a silent fallback
 grep -Eqi 'stop and consult' <<< "$governed_text" || governed_ok=0
 grep -Eqi 'two to four concrete options' <<< "$governed_text" || governed_ok=0
-grep -Fq 'AskUserQuestion' <<< "$governed_text" || governed_ok=0
+grep -Eqi "host's question tool" <<< "$governed_text" || governed_ok=0
 grep -Eqi 'never committed' <<< "$governed_text" || governed_ok=0
 grep -Eqi 'plan never made' <<< "$governed_text" || governed_ok=0
 # committed result artifacts count as presented, and the deadline is never agent-chosen
@@ -342,7 +340,7 @@ grep -Eqi 'post hoc status' <<< "$governed_text" || governed_ok=0
 grep -Fq 'references/analysis.md' <<< "$governed_text" || governed_ok=0
 # the simplifier waiver applies only when resolution or delegation actually fails
 grep -Eqi 'only when the profile cannot be resolved' <<< "$governed_text" || governed_ok=0
-grep -Eqi 'not a general opt-out' <<< "$governed_text" || governed_ok=0
+grep -Eqi 'self-pass never substitutes' <<< "$governed_text" || governed_ok=0
 grep -Eqi 'waives or defers' "$ROOT/references/prerequisites.md" || governed_ok=0
 if ((governed_ok)); then
   pass "governed work critiques dependent judgments, consults on mid-implementation forks, amends the plan, and scopes the waiver"
@@ -364,14 +362,13 @@ grep -Eqi 'narrow[a-z]*[^.]*wording' <<< "$skill_text" || records_ok=0
 # fork scripts are deleted, and later passes review the chosen option rather than choosing it
 grep -Eqi 'delete[^.]*script' <<< "$governed_text" || records_ok=0
 grep -Eqi '(critique|simplifier)[^.]*never choose' <<< "$governed_text" || records_ok=0
-# the simplifier preserves behavior, covering tests re-run after its edits, and it never runs per edit
+# the simplifier preserves behavior and covering tests re-run after its edits
 grep -Eqi 'preserv[a-z]*[^.]*behavior|behavior[^.]*preserv' <<< "$governed_text" || records_ok=0
 grep -Eqi 're-?run[^.]*covering tests' <<< "$governed_text" || records_ok=0
-grep -Eqi '(never|not)[^.]*(every|each) individual edit' <<< "$governed_text" || records_ok=0
 if ((records_ok)); then
   pass "governed work owns the notebook field set, explicit destruction, and simplifier mechanics"
 else
-  fail "governed work must own the notebook entry field set, require explicit narrowly-targeted destruction with recoverability stated, forbid task-wording dodges, delete fork scripts, keep later passes from choosing the option, and keep the simplifier behavior-preserving, test-re-run, and not per edit"
+  fail "governed work must own the notebook entry field set, require explicit narrowly-targeted destruction with recoverability stated, forbid task-wording dodges, delete fork scripts, keep later passes from choosing the option, and keep the simplifier behavior-preserving and test-re-run"
 fi
 
 # --- 3d. adoption mode assesses an existing repository before changing it ---

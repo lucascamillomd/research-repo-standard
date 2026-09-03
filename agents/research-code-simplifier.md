@@ -2,7 +2,10 @@
 name: research-code-simplifier
 description:
   Simplifies recently changed research code for clarity and maintainability while preserving exact
-  behavior and scientific contracts.
+  behavior and scientific contracts. Use it as the independent post-change review an implementing
+  agent delegates after each completed plan task or coherent unit of work under
+  research-repo-standard. Not for scientific judgment, new requirements, or defect fixes; it reports
+  those to the delegating agent.
 ---
 
 # Research code simplifier

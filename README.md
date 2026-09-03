@@ -15,10 +15,10 @@ The `research-repo-standard` skill has three modes:
 Resolve `research-repo-standard` by exact name through the current host's native skill listing or
 resolver, under the resolution rule SKILL.md states. `references/prerequisites.md` owns source
 provenance, authorized installation or recovery, host verification, host profile installation, and
-the smoke test. There is no installer script. Once the approved core scaffold exists, the agent
-derives only the selected host's profile from the canonical `agents/research-code-simplifier.md` in
-the provenance-verified skill source the host-native resolver reports. Claude Code gets a verbatim
-copy at `<target-repo>/.claude/agents/research-code-simplifier.md`. Codex gets
+the smoke test. Once the approved core scaffold exists, the agent derives only the selected host's
+profile from the canonical `agents/research-code-simplifier.md` in the provenance-verified skill
+source the host-native resolver reports. Claude Code gets a verbatim copy at
+`<target-repo>/.claude/agents/research-code-simplifier.md`. Codex gets
 `<target-repo>/.codex/agents/research-code-simplifier.toml` with the same name, description, and
 body text in the Codex profile format. With no host selected, write none. The skill never creates or
 modifies a target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md`. Then run the real host-native smoke test

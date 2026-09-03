@@ -114,9 +114,8 @@ blocker rather than weakening one.
 2. **Interview one question at a time.** Ask the questions below and pursue conditional follow-ups.
    Never choose anything silently, including a seed, host, license, or scientific default. When the
    user explicitly asks for brevity, the two mechanical topics, host profile and license, may be
-   presented together as concrete proposed defaults that still require explicit confirmation.
-   Batching is permitted for those two topics only; every other numbered topic below stays one at a
-   time.
+   presented together as concrete proposed defaults that still require explicit confirmation; every
+   other numbered topic below stays one at a time.
 3. **Design with the full gate.** Invoke `superpowers:brainstorming`, explore alternatives, and keep
    implementation blocked while the design is unsettled.
 4. **Critique the science independently.** Launch a separate review agent that applies
@@ -267,16 +266,16 @@ files in place; rewrite a whole file only when most of it changes.
 When implementation hits a fork the approved plan did not settle, stop and consult the user before
 writing dependent code. Forks include a test that cannot pass as designed, a contract that does not
 fit, a failed approach, and an unforeseen design choice. Present two to four concrete options with
-their consequences and wait for the choice. Ask through the host's question tool when it has one; in
-Claude Code that is AskUserQuestion. Otherwise present plain enumerated options. When options differ
-in real code, write one small throwaway script per option in a scratch location such as `tmp/`,
-never committed and never under the governed `results/` or `data/` trees, so the user reads real
-code before choosing. Delete the scripts once the user chooses; they never reach the completion
-diff. Silently picking a fallback is a scope expansion, not a fix. An inherited plan approval does
-not cover a choice the plan never made, and recording the decision afterward in
-`docs/LAB_NOTEBOOK.md` or the completion report does not replace asking first. Later critique and
-simplifier passes review a chosen option; they never choose it. The user is the paper's author;
-these forks are theirs to decide. Escalate a design-level fork to the full gate.
+their consequences and wait for the choice. Ask through the host's question tool when it has one;
+otherwise present plain enumerated options. When options differ in real code, write one small
+throwaway script per option in a scratch location such as `tmp/`, never committed and never under
+the governed `results/` or `data/` trees, so the user reads real code before choosing. Delete the
+scripts once the user chooses; they never reach the completion diff. Silently picking a fallback is
+a scope expansion, not a fix. An inherited plan approval does not cover a choice the plan never
+made, and recording the decision afterward in `docs/LAB_NOTEBOOK.md` or the completion report does
+not replace asking first. Later critique and simplifier passes review a chosen option; they never
+choose it. The user is the paper's author; these forks are theirs to decide. Escalate a design-level
+fork to the full gate.
 
 ### Destruction
 
@@ -290,13 +289,12 @@ either is unclear, stop and ask.
 After changing code or tests, launch an independent review agent through the current host's exact
 `research-code-simplifier` profile. When the work executes an implementation plan, run the pass
 after each completed plan task and before starting the next; one end-of-plan pass over the combined
-diff does not satisfy it. For work outside a plan, run it once per coherent unit of work. Never run
-it after every individual edit. It must invoke this skill. The profile governs its scope, method,
-and behavior preservation. Re-run covering tests after any simplifier edit. Only when the profile
-cannot be resolved or an independent agent cannot be launched may the user explicitly waive or defer
-the pass; dependent completion is otherwise blocked, and the waiver and its scope are recorded in
-the completion report so it is never silent. This is not a general opt-out, and a self-pass never
-substitutes for the independent review.
+diff does not satisfy it. For work outside a plan, run it once per coherent unit of work. It must
+invoke this skill. The profile governs its scope, method, and behavior preservation. Re-run covering
+tests after any simplifier edit. Only when the profile cannot be resolved or an independent agent
+cannot be launched may the user explicitly waive or defer the pass; dependent completion is
+otherwise blocked, and the waiver and its scope are recorded in the completion report so it is never
+silent. A self-pass never substitutes for the independent review.
 
 Before inspecting the delegated diff, the reviewer reports this additional resolution record, with
 every slot filled:
