@@ -59,10 +59,9 @@ implementing the task. Work that does not depend on the judgment may proceed bes
 dependent decisions wait for its findings. Incorporate each material finding into the design or
 disposition it with a recorded rationale.
 
-If `scientific-critical-thinking` is missing or cannot be resolved or invoked, report the exact
-capability blocker and stop only the critique-dependent work. If the skill resolves but the host
-cannot provide an independent review agent, report that blocker and stop only the dependent
-judgment. A self-critique does not replace either missing capability.
+If the skill cannot resolve or invoke, or an independent agent cannot launch, report the attempted
+check and stop dependent work. Apply SKILL.md's Review waivers procedure if the user authorizes an
+exception. Independent work may continue.
 
 A skill is guidance, not evidence. Validate code and results against primary documentation, known
 analytical examples, scientific invariants, diagnostics, and the approved study design.

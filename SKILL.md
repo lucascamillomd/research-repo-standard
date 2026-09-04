@@ -34,8 +34,8 @@ work that depends on it.
 
 Classify every requested file modification by what the change means scientifically, not by which
 file carries the edit. A configuration value that changes an estimand, an inclusion or exclusion
-rule, or a missing-data policy is a design-level change. Ceremony scales with what the change can
-break; when uncertain, use the full gate.
+rule, or a missing-data policy is a design-level change. Choose the gate by scientific impact; when
+uncertain, use the full gate.
 
 - **Full gate.** Design-level changes: estimands, study design, statistical methodology, inclusion
   or exclusion rules, missing-data policy, causal interpretation, data contracts, pipeline
@@ -50,24 +50,23 @@ break; when uncertain, use the full gate.
   `docs/LAB_NOTEBOOK.md`. Cover the change with tests. No specification or plan artifact is
   required; escalate to the full gate the moment a design-level item is in play.
 - **Light path.** Mechanical, non-result-affecting changes: documentation, comments, formatting,
-  behavior-preserving renames, tested refactors, and tests that do not change behavior. Deleting,
-  disabling, or skip-marking a test, loosening an assertion, or relaxing a schema or validation
-  constraint is never light path; classify it by what the check guarded, and a failing check makes
-  that classification standard gate or higher. State the intent, the files, and why results cannot
-  change; obtain one confirmation, then implement without specification or plan artifacts. Escalate
-  to the standard gate if results may change and to the full gate if interfaces or contracts may
-  change.
+  renames, tested cleanup within the simplifier profile's supported-use limits, and tests that do
+  not change behavior. Deleting, disabling, or skip-marking a test, loosening an assertion, or
+  relaxing a schema or validation constraint is never light path; classify it by what the check
+  guarded, and a failing check makes that classification standard gate or higher. State the intent,
+  the files, and why results cannot change; obtain one confirmation, then implement without
+  specification or plan artifacts. Escalate to the standard gate if results may change and to the
+  full gate if public interfaces or declared contracts may change.
 - **No gate.** Read-only explanation, inspection, diagnosis, status reporting, and regeneration of
   declared outputs from an approved workflow whose code and configuration are unchanged since
-  approval; verify that before regenerating. A question asks for an answer, not an edit; answer,
-  then wait for an explicit change request.
+  approval; verify that before regenerating and apply the replacement rule under Destruction. Answer
+  questions without editing unless the user requests a change.
 
 ## Reference routing
 
-In every mode, read the table below broadly. Load each reference whose trigger matches the requested
-work, read it completely, and apply its contract before dependent decisions or edits. Do not avoid a
-contract through narrower task wording. Familiarity with this standard is not a reason to skip a
-reference; read it in this session before relying on it.
+Load each reference whose trigger matches the work. Read it completely in this session before
+applying it. Familiarity never justifies skipping a reference, and narrower task wording does not
+remove an applicable contract.
 
 | Reference                     | Load when                                                                                                                                                                                                                                   |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -80,15 +79,13 @@ reference; read it in this session before relying on it.
 
 ## Safety floor
 
-These requirements do not bend for convenience, deadlines, or failing checks. Stop and report a
-blocker rather than weakening one.
+Stop and report a blocker rather than weakening these requirements.
 
 1. **Raw data is immutable.** Nothing under `data/raw/` is ever modified. Corrections,
    harmonization, exclusions, and derived variables create new files under `data/interim/` or
    `data/processed/`. Cleanup paths are narrow, named, guarded, and cannot reach raw data.
-2. **Never weaken a gate to make it pass.** Reproducibility, provenance, and validation checks exist
-   to fail. A failing check is information, not an obstacle. Removing, disabling, skipping, or
-   loosening a check is weakening it, whatever the edit is called, and covering tests are checks.
+2. **Never weaken a gate to make it pass.** Removing, disabling, skipping, or loosening a check
+   weakens it. This includes reproducibility, provenance, validation, and covering tests.
 3. **Estimands, inclusion rules, and data contracts change only with authorization.** Record the
    authorized change before presenting results built on it.
 4. **Exploratory never silently becomes confirmatory.** Label analyses. Record post hoc changes and
@@ -99,7 +96,8 @@ blocker rather than weakening one.
    recorded configuration: Seed 42. A deterministic workflow gets no seed. Prefer deterministic
    algorithms when scientifically equivalent, and declare nondeterministic boundaries.
 7. **Outputs are written transactionally.** Build a temporary artifact, validate it, and only then
-   replace the declared destination. A failed run must not leave output that looks complete.
+   replace the declared destination. A failed run preserves the existing valid output and leaves no
+   partial output at the declared destination.
 8. **Configuration has one owner.** Every result-affecting setting has exactly one declared owner.
    Unknown, missing, duplicate-owned, or unrecorded result-affecting values fail before computation
    instead of defaulting silently, and a result-affecting value is never hidden in a code default.
@@ -118,9 +116,8 @@ blocker rather than weakening one.
    other numbered topic below stays one at a time.
 3. **Design with the full gate.** Invoke `superpowers:brainstorming`, explore alternatives, and keep
    implementation blocked while the design is unsettled.
-4. **Critique the science independently.** Launch a separate review agent that applies
-   `scientific-critical-thinking` to the question, claim, study design, estimand, and major validity
-   risks without implementing. Disposition findings as `references/analysis.md` prescribes.
+4. **Critique the science independently.** Follow `references/analysis.md` for the question, claim,
+   study design, estimand, and major validity risks.
 5. **Define the figure strategy.** Load `references/figures.md` and invoke `nature-figure` before
    planning figures. Define figure data, outputs, exports, and QA. If no figures are planned, record
    an explicit no-figure strategy.
@@ -130,17 +127,14 @@ blocker rather than weakening one.
    Do not create target `AGENTS.md`, `CLAUDE.md`, `CODEX.md`, or a shared top-level simplifier.
 7. **Plan, scaffold, and configure.** Invoke `superpowers:writing-plans`, then load every applicable
    reference, including `references/bootstrap.md`, and create only the approved repository.
-8. **Integrate the selected host.** If the user selected Codex or Claude Code, derive that host's
-   profile from the canonical `agents/research-code-simplifier.md` in the provenance-verified skill
-   source, as `references/prerequisites.md` prescribes, and write only the selected host's profile
-   into the target. If none was selected, write no host profile and establish that the host can
-   independently resolve the required simplifier; otherwise future code changes are blocked.
-9. **Run a real selected-host smoke test.** Run the three-check smoke test
-   `references/prerequisites.md` defines through the selected host, including launching the
-   delegated reviewer far enough to report its own resolution. Report an unavailable host as that
-   reference prescribes.
-10. **Inspect and report.** Inspect the generated artifacts, not exit codes, then report every
-    remaining assumption and manual or external boundary.
+8. **Integrate the selected host.** After the core scaffold, follow the profile installation
+   procedure in `references/prerequisites.md`. With no host selected, write no profile and verify
+   independent simplifier resolution; otherwise future code changes remain blocked subject to Review
+   waivers.
+9. **Run the selected-host smoke test.** Follow `references/prerequisites.md`, including the
+   delegated reviewer's own resolution check. Report unavailable checks as manual boundaries.
+10. **Inspect and report.** Inspect generated artifacts and report assumptions and manual or
+    external boundaries.
 
 ### Interview
 
@@ -165,10 +159,10 @@ Ask these, following the cadence rules in step 2:
 
 ### Bootstrap execution record
 
-Maintain these reporting slots throughout bootstrap. When asked to explain or plan a bootstrap
-before the answers exist, first reproduce this record with undecided fields marked pending, then ask
-exactly one next question. This is a checklist, not a repository file. Saying only that the required
-topics will be covered, or listing only the first question, does not satisfy the record:
+Maintain this reporting checklist throughout bootstrap; do not create a repository file for it. When
+explaining or planning before answers exist, reproduce the record with undecided fields marked
+pending, then ask exactly one next question. A promise to cover the topics does not satisfy the
+record:
 
 ```text
 Preflight: research-repo-standard + superpowers package + two scientific skills resolved
@@ -196,18 +190,16 @@ evidence. For configuration items, reuse the established-repository migration in
 `references/configuration.md`. For host-integration items, run the legacy-artifact detection in
 `references/prerequisites.md` and cite its report.
 
-Then produce a prioritized migration plan: data safety and provenance first, reproducibility and
-contracts next, conveniences last. Change nothing while assessing. The review is read-only. Take
-each accepted migration step through the gate its own change class requires.
+Assess read-only. Prioritize migration by data safety and provenance, then reproducibility and
+contracts, then convenience. Apply the appropriate gate to each accepted migration step.
 
 ## Governed work
 
-The gates, interview questions, consultation points, capability blockers, and unclear destruction
-targets this skill names are the only places to stop for the user. A capability blocker exists only
-after the resolution or launch attempt fails in this session; an assumed limit is not a stop.
-Between stops, carry out every step you state, whatever the run time or the hour; a stated next step
-left undone is unfinished work. When a question arises mid-task, first do everything that does not
-depend on the answer, then ask at the consultation point.
+The named gates, interview questions, consultation points, capability blockers, and unclear
+destruction targets are the only stops for user input. A capability blocker exists only after a
+resolution, invocation, or launch attempt fails in this session. An assumed limit is not a blocker.
+Complete every authorized step, including long runs; do not leave a stated next step undone. Before
+asking a mid-task question, finish work that does not depend on the answer.
 
 ### Governed-work invocation record
 
@@ -235,21 +227,16 @@ Obtain authorization before any design-level change listed under the full gate a
 are presented, append the decision, rationale and evidence, authorization source, affected work, and
 any superseded entry to `docs/LAB_NOTEBOOK.md`; the standard gate above refers to this entry. Before
 presenting results affected by a changed analysis decision, amend `docs/ANALYSIS_PLAN.md` as
-`references/analysis.md` prescribes and label its post hoc status. A result is presented once its
-artifacts are committed, pushed, or shared in any form, not only when someone is shown a number.
-Every obligation keyed to presenting is due before the affected result artifacts are committed;
-presentation is never a deadline the agent defers by staying silent about finished results. Write
-each record, specification and plan amendment included, so a fresh context can resume from the
-repository alone: exact values, decisions taken and rejected, and what remains open.
+`references/analysis.md` prescribes and label its post hoc status. Results are presented when their
+artifacts are committed, pushed, or shared. Complete all required records before the first such
+action. Records, specifications, and plans must support resumption from the repository alone: exact
+values, accepted and rejected decisions, and open questions.
 
 ### Independent critique
 
-Work that depends on a scientific judgment under review waits for an independent critique at every
-gate, not only at design level. Standard-gate changes that embody a scientific judgment are
-included: covariate sets, thresholds, model settings. A separate review agent must apply
-`scientific-critical-thinking` to that judgment and return findings, without implementing them,
-before the agent decides or implements the dependent work. `references/analysis.md` owns the
-critique procedure, batching, disposition of findings, and capability blockers.
+Obtain critique findings before deciding or implementing work that depends on a scientific judgment.
+This applies at every gate, including standard-gate covariate sets, thresholds, and model settings.
+`references/analysis.md` owns the procedure, batching, and disposition of findings.
 
 ### Change discipline
 
@@ -263,19 +250,14 @@ files in place; rewrite a whole file only when most of it changes.
 
 ### Mid-implementation consultation
 
-When implementation hits a fork the approved plan did not settle, stop and consult the user before
-writing dependent code. Forks include a test that cannot pass as designed, a contract that does not
-fit, a failed approach, and an unforeseen design choice. Present two to four concrete options with
-their consequences and wait for the choice. Ask through the host's question tool when it has one;
-otherwise present plain enumerated options. When options differ in real code, write one small
-throwaway script per option in a scratch location such as `tmp/`, never committed and never under
-the governed `results/` or `data/` trees, so the user reads real code before choosing. Delete the
-scripts once the user chooses; they never reach the completion diff. Silently picking a fallback is
-a scope expansion, not a fix. An inherited plan approval does not cover a choice the plan never
-made, and recording the decision afterward in `docs/LAB_NOTEBOOK.md` or the completion report does
-not replace asking first. Later critique and simplifier passes review a chosen option; they never
-choose it. The user is the paper's author; these forks are theirs to decide. Escalate a design-level
-fork to the full gate.
+When the approved plan leaves an implementation fork unresolved, stop and consult before writing
+dependent code. This includes a test that cannot pass as designed, an incompatible contract, a
+failed approach, or an unforeseen design choice. Present two to four concrete options with
+consequences through the host's question tool, or plain enumerated options, and wait for a choice.
+For options that differ in code, write small throwaway scripts under `tmp/`, never committed or
+under `results/` or `data/`. Delete the scripts after the choice. Plan approval does not cover a
+choice the plan never made. Later records cannot replace approval; critique and simplifier passes
+never choose the option. Escalate design-level forks to the full gate.
 
 ### Destruction
 
@@ -284,17 +266,19 @@ results, resetting or rewriting Git history, and force-pushing require explicit 
 resolve the exact narrow targets and state what would be destroyed and whether it is recoverable; if
 either is unclear, stop and ask.
 
+Authorized regeneration already covers replacement of its declared outputs without another
+confirmation. Verify the approved code, configuration, and exact output paths first. This permission
+excludes raw inputs, unrelated files, and broader cleanup. Apply the transactional output rule under
+Safety floor.
+
 ### Simplifier review
 
-After changing code or tests, launch an independent review agent through the current host's exact
-`research-code-simplifier` profile. When the work executes an implementation plan, run the pass
-after each completed plan task and before starting the next; one end-of-plan pass over the combined
-diff does not satisfy it. For work outside a plan, run it once per coherent unit of work. It must
-invoke this skill. The profile governs its scope, method, and behavior preservation. Re-run covering
-tests after any simplifier edit. Only when the profile cannot be resolved or an independent agent
-cannot be launched may the user explicitly waive or defer the pass; dependent completion is
-otherwise blocked, and the waiver and its scope are recorded in the completion report so it is never
-silent. A self-pass never substitutes for the independent review.
+After changing code or tests, launch an independent review agent through the host's exact
+`research-code-simplifier` profile. Run it after each completed plan task and before starting the
+next; an end-of-plan pass does not satisfy this cadence. Outside a plan, run it once per coherent
+unit of work. The profile must invoke this skill and owns cleanup scope, permitted behavior changes,
+and verification. Re-run covering tests after its edits. Apply Review waivers if a required
+capability fails.
 
 Before inspecting the delegated diff, the reviewer reports this additional resolution record, with
 every slot filled:
@@ -306,17 +290,26 @@ Resolved profile path: <path>
 Invoked research-repo-standard from: <source provenance>
 ```
 
+### Review waivers
+
+Only when resolution, invocation, or independent-agent launch fails in this session may the user
+explicitly waive or defer a scientific critique or simplifier pass. Otherwise dependent work waits.
+Record the failed capability, attempted check, user authorization, and scope in the completion
+report. For a scientific-review waiver, also record these in `docs/LAB_NOTEBOOK.md` before affected
+results. Continue authorized work within that scope; a waiver does not cover later tasks or other
+reviews. A self-pass never substitutes for independent review. Never use a review waiver to bypass
+scientific authorization, data safety, or validation, or to claim a review or host smoke test
+passed.
+
 ## Completion
 
-Before declaring completion, run the repository's applicable formatting, lint, type, test, and
-verification interfaces. Inspect the generated tables, figures, profiles, and provenance manifests;
-exit codes are not evidence. Check `git status` for unintended files and confirm raw inputs and
-unrelated work are unchanged.
+Run applicable formatting, lint, type, test, and verification interfaces. Inspect generated tables,
+figures, profiles, and provenance manifests; passing exit codes alone do not verify artifacts. Check
+`git status` and confirm raw inputs and unrelated work are unchanged.
 
-The completion report states what changed, what was verified and how, what was skipped and why, and
-every manual or inaccessible reproducibility boundary. It covers the whole task, not the last step,
-and stands on its own for a reader who saw nothing else. Notebook entries, README text, and reports
-use literal plain sentences, without metaphor or flourish. Do not claim a selected host integration
-is complete without the real resolver smoke test required above. Do not claim the work complete
-while a required critique, simplification pass, artifact inspection, or verification gate remains
-unresolved without a recorded waiver.
+The completion report covers the whole task and stands on its own. State what changed, what was
+verified and how, what was skipped and why, and every manual or inaccessible boundary. Use plain,
+literal sentences in notebook entries, README text, and reports. Finish reviews, artifact
+inspection, and verification before claiming completion, except for recorded review waivers. Host
+integration requires the real smoke test in `references/prerequisites.md`; an unavailable check
+remains a manual boundary.

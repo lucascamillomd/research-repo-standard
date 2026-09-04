@@ -74,9 +74,8 @@ can resolve every skill and profile assigned to it. Pass the applicable reposito
 task scope through the host's delegation mechanism. The delegate reports what it resolved and from
 which source. The parent must not infer resolution from its own environment.
 
-If the parent resolves a capability but the delegate cannot, dependent review stays blocked unless
-the user explicitly waives or defers it. Record any waiver and its scope. Report the boundary rather
-than replacing the independent review with a self-review.
+If the delegate cannot resolve or invoke a required capability, report the failure and apply
+SKILL.md's Review waivers procedure. Never infer the delegate's capability from the parent's.
 
 ## Host profile installation
 

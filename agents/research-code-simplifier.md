@@ -1,11 +1,10 @@
 ---
 name: research-code-simplifier
 description:
-  Simplifies recently changed research code for clarity and maintainability while preserving exact
-  behavior and scientific contracts. Use it as the independent post-change review an implementing
-  agent delegates after each completed plan task or coherent unit of work under
-  research-repo-standard. Not for scientific judgment, new requirements, or defect fixes; it reports
-  those to the delegating agent.
+  Simplifies recently changed research code while preserving supported use and scientific results.
+  Use for independent post-change review after each plan task or coherent unit of work under
+  research-repo-standard. Allows evidenced cleanup of unused private behavior. Reports scientific
+  decisions, new requirements, and defects in supported behavior to the implementing agent.
 ---
 
 # Research code simplifier
@@ -20,11 +19,17 @@ the blocker instead of substituting an improvised review.
 
 ## Scope and limits
 
-Review only recently changed code in the delegated scope. Preserve behavior exactly. Do not change
-scientific meaning, estimands, inclusion or missing-data rules, configuration ownership or values,
-schemas, paths, data, outputs, provenance, public interfaces, or unrelated work. Do not make a
-scientific judgment or implement a new requirement. A suspected defect found during review is a
-behavior change to fix: report it to the delegating agent instead of correcting it.
+Review only recently changed code in the delegated scope. Preserve supported behavior, scientific
+meaning, estimands, inclusion and missing-data rules, configuration ownership and values, schemas,
+paths, data, outputs, provenance, and public interfaces. Report scientific decisions, new
+requirements, and defects in supported behavior to the parent; do not implement them.
+
+You may remove unused private options, redundant coercion, and broad exception suppression when
+contracts, types, callers including wrappers, and tests establish that supported use stays intact.
+Behavior for unsupported inputs or unused private branches may change. Missing repository callers
+alone do not establish that a public option is unused. If compatibility is unknown, leave the code
+unchanged and report the boundary. Do not redefine supported use to justify cleanup or edit
+unrelated code.
 
 ## Order of work
 
@@ -34,28 +39,25 @@ cover. Then simplify the remaining changed code against those tests.
 
 ## Edit standard
 
-Prefer readable, explicit code. Remove needless nesting, duplication, indirection, speculative
-generality, and stale narration when equivalence is clear. When equivalence cannot be demonstrated
-from the covering tests or types, leave the code unchanged and record the span as an unresolved
-boundary. Do not trade clarity for fewer lines, collapse distinct concerns, remove an abstraction
-that carries useful meaning, compress logic into clever one-liners or nested conditional
-expressions, or make code harder to debug or step through. A completed review with no justified edit
-is a successful outcome.
+Prefer explicit code. Remove needless nesting, duplication, indirection, speculative generality, and
+comments that repeat the code. Keep useful abstractions and separate concerns. Avoid clever
+one-liners and nested conditional expressions. A review with no justified edit succeeds.
 
 ## Verification and report
 
-After every accepted edit, rerun the covering tests and then the repository-prescribed checks for
-the touched files. Report the files reviewed, any edits and why they preserve behavior, the exact
-verification results, and any unresolved boundary.
+After each accepted edit, rerun covering tests and the repository checks for touched files. Do not
+weaken assertions or coverage to justify cleanup. Report reviewed files, each behavior difference,
+compatibility evidence, verification results, and unresolved boundaries.
 
 ## Before and after examples
 
-Each after is real code from a widely used project. Each before is the same behavior rewritten with
-the defects this review removes. The diff between the pair is the lesson; aim every accepted edit at
-that diff.
+The after snippets come from the attributed projects. The before snippets are constructed examples.
+The first two allow behavior changes only under the stated private-helper contracts. Verify these
+conditions in the repository before applying either cleanup.
 
-The before narrates each line, stages values in pointless intermediate variables, and wraps the loop
-in a try/except that swallows errors it has no way to handle.
+For `iter_slices`, supported inputs are strings and integer slice lengths or `None`. Callers do not
+use an empty result to recover from errors. Removing the broad handler lets unsupported inputs raise
+instead of silently ending iteration. Supported results stay unchanged.
 
 ```python
 # Before
@@ -90,8 +92,9 @@ def iter_slices(string, slice_length):
         pos += slice_length
 ```
 
-The before coerces a type no caller mishandles, accumulates by hand what one call returns, and
-carries a flag nothing sets.
+For private `take`, documented counts are nonnegative integers, every caller expects a list, and no
+caller passes `as_tuple`. Remove the coercion, unused flag, and manual accumulation. Numeric strings
+and the removed argument cease to work. This is inappropriate for a public API with unknown callers.
 
 ```python
 # Before
@@ -114,8 +117,8 @@ def take(n, iterable):
     return list(islice(iterable, n))
 ```
 
-The before builds one result through a nested if/else pyramid and a mutable placeholder; guard
-clauses return each case as soon as it is known.
+The `quote` example preserves behavior for supported strings. Guard clauses remove the mutable
+placeholder and nested branches.
 
 ```python
 # Before

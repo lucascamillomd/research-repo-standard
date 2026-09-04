@@ -263,7 +263,6 @@ The project README records:
 
 ## Selected host integration
 
-After the core scaffold, write only the selected host's simplifier profile, and none when no host
-was selected. Derive it from the canonical `agents/research-code-simplifier.md` in the
-provenance-verified skill source reported by the host-native resolver, then run the host-native
-smoke test. Both follow `references/prerequisites.md` exactly.
+After the core scaffold, follow `references/prerequisites.md` for the selected
+`research-code-simplifier` profile and the host-native smoke test. That reference owns source
+verification, profile installation, and unavailable-host reporting.

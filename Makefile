@@ -9,3 +9,4 @@ format: ## Wrap Markdown files
 
 test: ## Run documentation-contract tests
 	bash tests/consistency_test.sh
+	python3 tests/simplifier_examples_test.py

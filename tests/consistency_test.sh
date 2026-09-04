@@ -100,7 +100,7 @@ grep -Eqi 'Seed 42' <<< "$safety_floor_text" || safety_floor_ok=0
 grep -Eqi 'deterministic' <<< "$safety_floor_text" || safety_floor_ok=0
 # removing, disabling, skipping, or loosening a check counts as weakening it
 grep -Eqi '(remov|disabl|skip|loosen)[^.]*check[^.]*weaken' <<< "$safety_floor_text" || safety_floor_ok=0
-grep -Eqi 'covering tests[^.]*checks' <<< "$safety_floor_text" || safety_floor_ok=0
+grep -Eqi '(checks[^.]*covering tests|includes[^.]*covering tests)' <<< "$safety_floor_text" || safety_floor_ok=0
 # the nondeterminism and hidden-default invariants stay in the floor itself
 grep -Eqi 'nondeterminis[a-z]*[^.]*(boundar|declar)|declar[^.]*nondeterminis' \
   <<< "$safety_floor_text" || safety_floor_ok=0
@@ -308,9 +308,9 @@ governed_section="$(awk '
 governed_text="$(tr '\n' ' ' <<< "$governed_section" | tr -s '[:space:]' ' ')"
 governed_ok=1
 # the critique keys to dependent scientific judgment at every gate, not only design level
-grep -Eqi 'depends on a scientific judgment under review' <<< "$governed_text" || governed_ok=0
-grep -Eqi 'not only at design level' <<< "$governed_text" || governed_ok=0
-grep -Eqi 'covariate sets, thresholds, model settings' <<< "$governed_text" || governed_ok=0
+grep -Eqi 'depends on a scientific judgment' <<< "$governed_text" || governed_ok=0
+grep -Eqi 'every gate' <<< "$governed_text" || governed_ok=0
+grep -Eqi 'covariate sets[^.]*thresholds[^.]*model settings' <<< "$governed_text" || governed_ok=0
 # findings arrive before the dependent decision or implementation, never keyed to presentation;
 # analysis.md owns the procedure
 critique_text="$(awk '
@@ -339,9 +339,9 @@ grep -Fq 'docs/ANALYSIS_PLAN.md' <<< "$governed_text" || governed_ok=0
 grep -Eqi 'post hoc status' <<< "$governed_text" || governed_ok=0
 grep -Fq 'references/analysis.md' <<< "$governed_text" || governed_ok=0
 # the simplifier waiver applies only when resolution or delegation actually fails
-grep -Eqi 'only when the profile cannot be resolved' <<< "$governed_text" || governed_ok=0
+grep -Eqi 'only when[^.]*(resolution|invocation|launch)[^.]*fails' <<< "$governed_text" || governed_ok=0
 grep -Eqi 'self-pass never substitutes' <<< "$governed_text" || governed_ok=0
-grep -Eqi 'waives or defers' "$ROOT/references/prerequisites.md" || governed_ok=0
+grep -Fq 'Review waivers' "$ROOT/references/prerequisites.md" || governed_ok=0
 if ((governed_ok)); then
   pass "governed work critiques dependent judgments, consults on mid-implementation forks, amends the plan, and scopes the waiver"
 else
@@ -362,13 +362,13 @@ grep -Eqi 'narrow[a-z]*[^.]*wording' <<< "$skill_text" || records_ok=0
 # fork scripts are deleted, and later passes review the chosen option rather than choosing it
 grep -Eqi 'delete[^.]*script' <<< "$governed_text" || records_ok=0
 grep -Eqi '(critique|simplifier)[^.]*never choose' <<< "$governed_text" || records_ok=0
-# the simplifier preserves behavior and covering tests re-run after its edits
-grep -Eqi 'preserv[a-z]*[^.]*behavior|behavior[^.]*preserv' <<< "$governed_text" || records_ok=0
+# the profile owns permitted behavior changes; covering tests re-run after edits
+grep -Eqi 'profile[^.]*owns[^.]*behavior' <<< "$governed_text" || records_ok=0
 grep -Eqi 're-?run[^.]*covering tests' <<< "$governed_text" || records_ok=0
 if ((records_ok)); then
   pass "governed work owns the notebook field set, explicit destruction, and simplifier mechanics"
 else
-  fail "governed work must own the notebook entry field set, require explicit narrowly-targeted destruction with recoverability stated, forbid task-wording dodges, delete fork scripts, keep later passes from choosing the option, and keep the simplifier behavior-preserving and test-re-run"
+  fail "governed work must own the notebook entry field set, require explicit narrowly-targeted destruction with recoverability stated, forbid task-wording dodges, delete fork scripts, keep later passes from choosing the option, and defer cleanup boundaries to the profile with covering tests re-run"
 fi
 
 # --- 3d. adoption mode assesses an existing repository before changing it ---
@@ -438,7 +438,7 @@ grep -Eqi '(gates?|consultation points?)[^.]*only[^.]*stop' <<< "$governed_text"
 grep -Eqi '(stated|announced|described)[^.]*step[^.]*(undone|unfinished)' <<< "$governed_text" ||
   autonomy_ok=0
 # a run's length or the clock never hands part of the job back
-grep -Eqi 'whatever[^.]*(run|clock|deadline)' <<< "$governed_text" || autonomy_ok=0
+grep -Eqi 'complete[^.]*authorized step[^.]*long run' <<< "$governed_text" || autonomy_ok=0
 # a blocker needs a failed attempt in this session, never an assumption
 grep -Eqi 'assumed limit[^.]*not a (stop|blocker)' <<< "$governed_text" || autonomy_ok=0
 grep -Eqi 'blocker[^.]*only after[^.]*attempt fails' <<< "$governed_text" || autonomy_ok=0
@@ -470,7 +470,7 @@ routing_intro="$(awk '
 grep -Eqi 'familiar[a-z]*[^.]*(not|never)[^.]*(skip|reason)' <<< "$routing_intro" || autonomy_ok=0
 grep -Eqi '(this|the current) session' <<< "$routing_intro" || autonomy_ok=0
 # the completion report covers the whole task and stands alone
-grep -Eqi 'whole task[^.]*(not|never)[^.]*last step' <<< "$completion_text" || autonomy_ok=0
+grep -Eqi 'whole task' <<< "$completion_text" || autonomy_ok=0
 grep -Eqi 'stands? on its own|saw nothing else' <<< "$completion_text" || autonomy_ok=0
 grep -Eqi 'verified and how' <<< "$completion_text" || autonomy_ok=0
 # the whole-task scenario stays pinned with its refusal anchors
@@ -648,12 +648,14 @@ bootstrap_integration_section="$(awk '
 ' "$ROOT/references/bootstrap.md")"
 bootstrap_integration_text="$(tr '\n' ' ' <<< "$bootstrap_integration_section" | tr -s '[:space:]' ' ')"
 bootstrap_source_ok=1
-grep -Eqi 'provenance-verified.*(skill )?source.*(resolver|resolution)|resolver.*provenance-verified.*(skill )?source' \
-  <<< "$bootstrap_integration_text" || bootstrap_source_ok=0
-grep -Fq 'agents/research-code-simplifier.md' <<< "$bootstrap_integration_text" ||
-  bootstrap_source_ok=0
+# The bootstrap reference routes to the owner instead of repeating its source rules.
 grep -Fq 'references/prerequisites.md' <<< "$bootstrap_integration_text" || bootstrap_source_ok=0
-grep -Fq 'only the selected host' <<< "$bootstrap_integration_text" || bootstrap_source_ok=0
+grep -Eqi 'selected[^.]*research-code-simplifier' <<< "$bootstrap_integration_text" || bootstrap_source_ok=0
+grep -Eqi 'provenance-verified.*(skill )?source' \
+  "$ROOT/references/prerequisites.md" || bootstrap_source_ok=0
+grep -Fq 'agents/research-code-simplifier.md' "$ROOT/references/prerequisites.md" || bootstrap_source_ok=0
+grep -Eqi 'only the selected host[^.]*profile' \
+  "$ROOT/references/prerequisites.md" || bootstrap_source_ok=0
 if ((bootstrap_source_ok)); then
   pass "bootstrap derives the host profile from the provenance-verified canonical source"
 else
@@ -785,7 +787,7 @@ bootstrap_step_ten="$(awk '
 ' <<< "$bootstrap_sequence_section" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
 grep -Eqi 'inspect' <<< "$bootstrap_step_ten" || bootstrap_contract_ok=0
 grep -Eqi 'generated artifacts' <<< "$bootstrap_step_ten" || bootstrap_contract_ok=0
-grep -Eqi 'exit codes' <<< "$bootstrap_step_ten" || bootstrap_contract_ok=0
+grep -Eqi 'exit codes[^.]*alone[^.]*artifacts' <<< "$completion_text" || bootstrap_contract_ok=0
 grep -Eqi 'boundar' <<< "$bootstrap_step_ten" || bootstrap_contract_ok=0
 # the smoke-test step defers unavailable-host reporting to the prerequisite reference that owns it
 bootstrap_step_nine="$(awk '
@@ -793,20 +795,19 @@ bootstrap_step_nine="$(awk '
     capture && /^[0-9]+\. / { exit }
     capture { print }
 ' <<< "$bootstrap_sequence_section" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
-grep -Eqi 'unavailable[^.]*(reference|prerequisites\.md)' <<< "$bootstrap_step_nine" ||
+grep -Fq 'references/prerequisites.md' <<< "$bootstrap_step_nine" &&
+  grep -Eqi 'unavailable[^.]*manual boundar' <<< "$bootstrap_step_nine" ||
   bootstrap_contract_ok=0
 # the numbered interview above owns topic coverage; the record must not restate it
 if grep -Eqi 'identity/purpose|research question/intended claim|supported Python minor' \
   <<< "$bootstrap_record_text"; then
   bootstrap_contract_ok=0
 fi
-for required in \
-  'agents/research-code-simplifier.md' \
-  'references/prerequisites.md' \
-  'only the selected host' \
-  'three-check smoke test'; do
-  grep -Fq "$required" <<< "$skill_text" || bootstrap_contract_ok=0
+# Prerequisites owns installation details and all three real-host checks.
+for required in 'agents/research-code-simplifier.md' 'only the selected host' 'launch the profile'; do
+  grep -Fq "$required" "$ROOT/references/prerequisites.md" || bootstrap_contract_ok=0
 done
+grep -Fq 'references/prerequisites.md' <<< "$bootstrap_sequence_section" || bootstrap_contract_ok=0
 grep -Fq 'target-version = "py3XY"' "$ROOT/references/bootstrap.md" || bootstrap_contract_ok=0
 grep -Fq 'python-version = "3.XY"' "$ROOT/references/bootstrap.md" || bootstrap_contract_ok=0
 grep -Fq 'uv init --package --build-backend hatch' "$ROOT/references/bootstrap.md" ||
@@ -938,7 +939,7 @@ grep -Eq '^## Shared planning companion$' "$ROOT/references/prerequisites.md" ||
 if grep -Eq 'data[^[:space:]]*.*fixtures|data reference.*fixtures' "$ROOT/README.md"; then
   final_review_contract_ok=0
 fi
-grep -Eqi 'independently resolve[^.]*simplifier' <<< "$skill_text" || final_review_contract_ok=0
+grep -Eqi 'independent[^.]*simplifier[^.]*resolution|independently resolve[^.]*simplifier' <<< "$skill_text" || final_review_contract_ok=0
 grep -Eqi 'blocked' <<< "$skill_text" || final_review_contract_ok=0
 if ((final_review_contract_ok)); then
   pass "final-review ownership corrections stay aligned"
@@ -1144,7 +1145,8 @@ grep -Eqi 'one design or coherent batch' <<< "$analysis_text" || analysis_contra
 grep -Eqi 'independent agent, separate from the implementing agent' <<< "$analysis_text" ||
   analysis_contract_ok=0
 grep -Eqi 'without implementing the task' <<< "$analysis_text" || analysis_contract_ok=0
-grep -Eqi 'self-critique does not replace' <<< "$analysis_text" || analysis_contract_ok=0
+grep -Fq 'Review waivers' <<< "$analysis_text" &&
+  grep -Eqi 'self-pass never substitutes' <<< "$governed_text" || analysis_contract_ok=0
 grep -Eqi 'only the data permitted by the training design' <<< "$analysis_text" ||
   analysis_contract_ok=0
 if ((analysis_contract_ok)); then
@@ -1361,6 +1363,54 @@ if ((snakemake_scenarios_ok)); then
   pass "pressure scenarios cover Snakemake rule, override, and environment contracts"
 else
   fail "pressure scenarios must cover Snakemake rule, override, and environment contracts"
+fi
+
+# --- bounded cleanup, authorized replacement, and shared review waivers ---
+cleanup_text="$(tr '\n' ' ' < "$ROOT/agents/research-code-simplifier.md" | tr -s '[:space:]' ' ')"
+cleanup_ok=1
+grep -Eqi 'light path.*simplifier profile' <<< "$gate_text" || cleanup_ok=0
+for concept in 'supported' 'callers' 'private' 'unsupported' 'public' 'scientific' 'behavior difference'; do
+  grep -Fqi "$concept" <<< "$cleanup_text" || cleanup_ok=0
+done
+grep -Eqi 'may (remove|change)[^.]*unused' <<< "$cleanup_text" || cleanup_ok=0
+grep -Eqi '(unknown|uncertain)[^.]*leave|leave[^.]*(unknown|uncertain)' <<< "$cleanup_text" || cleanup_ok=0
+if grep -Eqi 'preserve behavior exactly|preserving exact behavior|each before is the same behavior' <<< "$cleanup_text"; then
+  cleanup_ok=0
+fi
+if ((cleanup_ok)); then
+  pass "simplifier allows evidenced private cleanup while preserving supported and scientific contracts"
+else
+  fail "simplifier must bound behavior changes by supported callers and report differences without claiming universal equivalence"
+fi
+
+replacement_ok=1
+# Destruction owns the exception; the no-gate path references it.
+grep -Eqi 'authorized regeneration[^.]*covers[^.]*replacement[^.]*declared outputs' <<< "$governed_text" || replacement_ok=0
+grep -Eqi '(another|additional|second)[^.]*confirmation' <<< "$governed_text" || replacement_ok=0
+grep -Eqi 'failed run[^.]*preserv[^.]*existing' <<< "$skill_text" || replacement_ok=0
+if ((replacement_ok)); then
+  pass "authorized regeneration includes transactional replacement of declared outputs"
+else
+  fail "regeneration must reuse authorization only for declared outputs and preserve existing output on failure"
+fi
+
+waiver_text="$(awk '
+    /^### Review waivers$/ { capture = 1; next }
+    capture && /^##/ { exit }
+    capture { print }
+' "$ROOT/SKILL.md" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
+waiver_ok=1
+for concept in 'scientific critique' 'simplifier' 'fails' 'this session' 'explicit' 'scope' 'completion report' 'docs/LAB_NOTEBOOK.md' 'smoke test'; do
+  grep -Fqi "$concept" <<< "$waiver_text" || waiver_ok=0
+done
+for ref in analysis prerequisites; do
+  grep -Fq 'Review waivers' "$ROOT/references/$ref.md" || waiver_ok=0
+done
+grep -Eqi 'never[^.]*validation|not[^.]*validation' <<< "$waiver_text" || waiver_ok=0
+if ((waiver_ok)); then
+  pass "one waiver procedure covers failed scientific and simplifier reviews without relaxing checks"
+else
+  fail "SKILL.md must own scoped failure-only review waivers with records and honest verification boundaries"
 fi
 
 # --- final ---
