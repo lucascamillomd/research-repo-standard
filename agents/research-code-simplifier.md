@@ -39,9 +39,9 @@ cover. Then simplify the remaining changed code against those tests.
 
 ## Edit standard
 
-Prefer explicit code. Remove needless nesting, duplication, indirection, speculative generality, and
-comments that repeat the code. Keep useful abstractions and separate concerns. Avoid clever
-one-liners and nested conditional expressions. A review with no justified edit succeeds.
+Prefer explicit code over clever one-liners and nested conditional expressions. Remove needless
+nesting, duplication, indirection, speculative generality, and comments that repeat the code. Keep
+useful abstractions and separate concerns. A review with no justified edit succeeds.
 
 ## Verification and report
 
