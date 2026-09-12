@@ -48,10 +48,12 @@ resampling or split strategy, metrics with uncertainty, and any external-validat
 
 ## Independent critique
 
-Obtain the required critique before deciding or implementing work that depends on the scientific
-judgment under review. One critique covers one design or coherent batch of decisions, not one
-critique per field of the same design. During bootstrap, the design-stage critique is one such
-batch.
+Obtain critique before deciding or implementing a new or changed scientific judgment, including
+estimands, exclusions, missing-data policy, covariate sets, thresholds, and model settings.
+Mechanical implementation of an already reviewed decision does not require a new critique unless new
+evidence or changed scope affects that judgment. One critique covers one design or coherent batch of
+decisions, not one critique per field of the same design. During bootstrap, the design-stage
+critique is one such batch.
 
 An independent agent, separate from the implementing agent, invokes exact
 `scientific-critical-thinking`, reads the relevant repository context, and returns findings without
@@ -60,8 +62,8 @@ dependent decisions wait for its findings. Incorporate each material finding int
 disposition it with a recorded rationale.
 
 If the skill cannot resolve or invoke, or an independent agent cannot launch, report the attempted
-check and stop dependent work. Apply SKILL.md's Review waivers procedure if the user authorizes an
-exception. Independent work may continue.
+check and stop dependent work. Apply the Review waivers procedure in `references/governance.md` if
+the user authorizes an exception. Independent work may continue.
 
 A skill is guidance, not evidence. Validate code and results against primary documentation, known
 analytical examples, scientific invariants, diagnostics, and the approved study design.

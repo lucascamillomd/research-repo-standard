@@ -1,9 +1,44 @@
 # Reference: repository bootstrap
 
-Begin only after the interview answers, integrated design, specification, and implementation plan
-are approved. Replace every placeholder with an approved project value; never create a path
-containing angle brackets. Once generated, project files such as `pyproject.toml` and the Makefile
-are their repository's source of truth.
+Create the scaffold only after the integrated design and specification are approved and the
+implementation plan is written. Replace every placeholder with an approved project value; never
+create a path containing angle brackets. Once generated, project files such as `pyproject.toml` and
+the Makefile are their repository's source of truth.
+
+## Design and interview
+
+Use answers already supplied in the request or repository. Ask only for material missing decisions;
+group related questions when that reduces user effort. Do not silently choose a scientific claim,
+data-use permission, license, or host integration. The user may authorize proposed mechanical
+defaults together; state what was chosen.
+
+Establish the project identity and purpose; research question and intended claim; exploratory or
+confirmatory status; datasets and access constraints; workflow stages, randomness, and shareable
+processed checkpoint; required external runtimes and whether they can be pinned; tables, figures,
+and publication target if any; and compute, licensing, automation, and public-CI boundaries. Confirm
+the host profile (`codex`, `claude-code`, or none) and license or unlicensed status when not
+supplied. A project without a journal target need not invent one.
+
+Follow SKILL.md's full gate for design. Resolve each capability through
+`references/prerequisites.md` when its work becomes necessary. Obtain independent scientific
+critique under `references/analysis.md` before dependent judgments. Plan figures under
+`references/figures.md` only when figures are in scope; otherwise record the no-figure decision
+without loading or resolving the figure skill.
+
+Present the integrated design for approval. In an empty directory initialize only version control
+and the path needed for the specification, then write, self-review, commit, and obtain user review
+of that specification. Write the implementation plan before scaffolding. Reuse supplied approval for
+these exact artifacts; a session change alone does not reopen settled decisions.
+
+Create only the approved scaffold below. Afterward derive only the selected host profile and run the
+real selected-host smoke test through `references/prerequisites.md`. With no host selected, write no
+profile; resolve a reviewer only when a code-review step requires one. Report missing capabilities
+at that step, without claiming future reviews have happened.
+
+Track settled decisions and open questions in the design artifacts. At completion report the
+scaffold, configuration/data/provenance checks, scientific critique and figure strategy, selected
+host verification or its boundary, and actual inspected outputs. No repeated execution-record
+template or separate tracking file is required.
 
 ## Core scaffold
 
@@ -68,10 +103,11 @@ Generate no R or other runtime support unless the approved design requires it.
 
 ## Python environment and lock
 
-Pin the latest stable Python minor in both `.python-version` and `project.requires-python`. The
-Python version is not an interview decision; check the current release rather than recalling one
-from memory. Use Hatchling and the `src/<package_name>/` layout unless the approved design records
-another PEP 517 backend.
+Use the latest stable Python minor compatible with required dependencies by default. Preserve an
+approved compatibility pin; record its reason. Check current release and dependency support when
+choosing a new version, then pin the selected minor consistently in `.python-version`,
+`project.requires-python`, and tool configuration. Use Hatchling and the `src/<package_name>/`
+layout unless the approved design records another PEP 517 backend.
 
 uv manages environments, dependencies, builds, and commands:
 
@@ -114,13 +150,12 @@ and placeholders, never values.
 ## Ignore policy
 
 The generated `.gitignore` ignores `.env`, `tmp/`, `logs/`, `.venv/`, `__pycache__/`, `.snakemake/`,
-and every tier under `data/`. `tmp/` holds the mid-implementation consultation's throwaway option
-scripts, so they never reach the completion `git status` check. Un-ignore the fixture or shared
-processed-data checkpoint approved in interview questions 7 and 11 with an explicit negation
+and every tier under `data/`. `tmp/` holds disposable experiments, not analysis outputs. Un-ignore
+the fixture or shared processed-data checkpoint approved in the design with an explicit negation
 pattern. Register each such file in `config/datasets.yaml` per `references/data.md` and keep it
 under the pre-commit large-file guard's limit. Larger data arrives through the registered
 acquisition method; use Git LFS or DVC only when the approved design records it. `results/` is not
-ignored. SKILL.md treats a commit under it as presenting a result.
+ignored. `references/governance.md` defines when result records must be complete.
 
 ## Rule logging
 
@@ -140,7 +175,7 @@ rule logs resolved parameters, read inputs, written outputs, and skipped or fail
 
 ## Ruff and type checking
 
-Use line length 100 and the latest stable Python minor in both placeholders:
+Use line length 100 and the selected Python minor in both placeholders:
 
 ```toml
 [tool.ruff]
@@ -196,9 +231,9 @@ make test
 ```
 
 `--frozen` alone is not enough. It skips the metadata-to-lock comparison. Add the verification scope
-approved in interview question 11, run against its permitted fixture or checkpoint. Steps that need
-external data, licensed tools, or an unavailable runtime stay out of CI; the README lists them as
-boundaries. CI never reads `data/raw/`.
+approved in the design, run against its permitted fixture or checkpoint. Steps that need external
+data, licensed tools, or an unavailable runtime stay out of CI; the README lists them as boundaries.
+CI never reads `data/raw/`.
 
 ## Make interface
 
@@ -244,7 +279,7 @@ log_info("fitted {n} models on {nrow(df)} rows", n = length(fits))
 ```
 
 Do not create an R package by default. Minimal R orchestration may sit behind its Snakemake rule;
-scientific plotting stays in Python.
+plotting follows the approved backend in `references/figures.md`.
 
 ## Generated README checklist
 

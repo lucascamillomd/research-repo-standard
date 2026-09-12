@@ -6,11 +6,11 @@ tests protect those contracts. `docs/superpowers/` holds this repository's own d
 plans; they are non-normative and never override SKILL.md, `references/`, or `agents/`. These
 instructions govern only this source repository and are never copied to a target.
 
-Before editing a file, read `README.md`, `SKILL.md`, the affected reference or profile, the
-`tests/consistency_test.sh` anchors and `tests/skill_pressure_scenarios.md` scenarios that cover it,
-and `git status`. Preserve unrelated work. Give each requirement one normative owner. Keep the skill
-concise, direct, host-neutral, and compatible with the host-native resolution procedure in
-`references/prerequisites.md`.
+Use `README.md` for source setup, `SKILL.md` for scope and shared constraints, and the affected
+reference or profile for its owned procedure. Read the consistency anchors and pressure scenarios
+covering a changed contract; a typo does not require unrelated references. Inspect git status and
+preserve unrelated work. Give each requirement one normative owner and keep routing discoverable.
+Keep the product concise and host-neutral; `references/prerequisites.md` owns host integration.
 
 Never add a script or instruction that copies this `AGENTS.md`, `README.md`, `SKILL.md`, or
 `references/` into a target repository, or that creates or modifies a target's `AGENTS.md`,
@@ -18,11 +18,14 @@ Never add a script or instruction that copies this `AGENTS.md`, `README.md`, `SK
 host profile from the canonical profile by the "Host profile installation" procedure in
 `references/prerequisites.md`.
 
-Work test-first. Pin each contract in `tests/consistency_test.sh` with an anchor on its meaning,
-never its exact sentence. Before changing what an agent must do, add a blind scenario with a hidden
-rubric to `tests/skill_pressure_scenarios.md`, show a fresh agent fails it against the prior
-wording, then make the change and record the fresh-agent GREEN score under `## GREEN results` in
-that file. After trimming or consolidating text, re-run the affected scenarios the same way. Keep
-test scripts compatible with Apple Bash 3.2. Run `make format`, `make test`, and `git diff --check`
-before finishing. Report unavailable real host-resolver checks as manual boundaries, never as
-simulations.
+Work test-first for changed contracts: add meaning and ownership anchors, plus a realistic blind
+scenario with a hidden rubric before changing behavior. Record the fresh-agent baseline honestly,
+including a passing baseline; never manufacture a failure or sample until one appears. After the
+change or relocation, rerun affected scenarios with fresh agents and record scores and evidence
+under `## GREEN results` in `tests/skill_pressure_scenarios.md`. Separate policy responses, executed
+fixture outcomes, and real host checks. Protect meaningful invariants, not exact sentences or
+headings. Test scripts support Apple Bash 3.2. Local tests use disposable fixtures without
+production access; run and fix failures caused by the requested change without repeated approval.
+For source changes run `make format`, `make test`, and `git diff --check`; `make format-check`
+checks formatting without edits. Report unavailable real host-resolver checks as manual boundaries,
+never as simulations.

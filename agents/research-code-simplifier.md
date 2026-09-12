@@ -1,10 +1,8 @@
 ---
 name: research-code-simplifier
 description:
-  Simplifies recently changed research code while preserving supported use and scientific results.
-  Use for independent post-change review after each plan task or coherent unit of work under
-  research-repo-standard. Allows evidenced cleanup of unused private behavior. Reports scientific
-  decisions, new requirements, and defects in supported behavior to the implementing agent.
+  Independently simplify a completed research-code change while preserving supported use and
+  scientific results. Use when delegated under research-repo-standard.
 ---
 
 # Research code simplifier
@@ -12,10 +10,10 @@ description:
 ## Activation and resolution
 
 Run only when an implementing agent explicitly delegates the post-change simplification review.
-Resolve and invoke `research-repo-standard` by exact name; file presence alone is not resolution.
-Load the skill references that govern the changed code and read any other repository-local
-instructions that apply. If the skill or this profile cannot be resolved through the host, report
-the blocker instead of substituting an improvised review.
+Resolve and invoke `research-repo-standard` by exact name using its prerequisite procedure. Read the
+reference sections and local instructions that govern the changed code. If the skill or this profile
+cannot be resolved through the host, report the blocker instead of substituting an improvised
+review.
 
 ## Scope and limits
 
@@ -33,9 +31,9 @@ unrelated code.
 
 ## Order of work
 
-Work in test-first order. Read the covering tests to learn the behavioral contract, and simplify the
-changed tests themselves before anything else, without weakening an assertion or shrinking what they
-cover. Then simplify the remaining changed code against those tests.
+Read covering tests to establish the behavioral contract before editing. Simplify changed code or
+tests where justified, without weakening assertions or shrinking coverage. Choose the edit order
+that makes the supported-use argument easiest to verify.
 
 ## Edit standard
 
@@ -45,8 +43,9 @@ useful abstractions and separate concerns. A review with no justified edit succe
 
 ## Verification and report
 
-After each accepted edit, rerun covering tests and the repository checks for touched files. Do not
-weaken assertions or coverage to justify cleanup. Report reviewed files, each behavior difference,
+After the coherent set of edits, rerun covering tests and the repository checks for touched files.
+Run an earlier focused check when an intermediate change creates uncertainty. Do not weaken
+assertions or coverage to justify cleanup. Report reviewed files, each behavior difference,
 compatibility evidence, verification results, and unresolved boundaries.
 
 ## Before and after examples

@@ -1,21 +1,33 @@
 # Reference: plot and figure contract
 
-This contract owns figure planning, Python plotting, figure data, atomic asset naming, export paths,
-assembly, cross-figure encoding, and rendered-output QA. Load it and invoke exact `nature-figure`
-before planning a figure, writing plotting code, changing figure outputs, or running QA.
+This contract owns figure delivery scope, plotting, traceable figure data, asset naming, assembly,
+and rendered-output QA. Read the shared sections and those for the requested delivery scope.
 
 ## Scope
 
-A figure produced from repository data is figure work regardless of framing. "Exploratory", "quick",
-"draft", or a deadline changes how fast this contract is approved, not whether the contract, the
-traceable figure data, the four required export formats, and the rendered SVG and PDF inspection
-happen. Publication polish means journal sizing, final typography, and assembly. Deferring it is a
-user scope decision only after the contract records the deferral and the editable exports still
-exist.
+**Exploratory delivery** produces the requested artifact, such as a single PNG for a lab meeting,
+with traceable source data, exploratory labeling, accurate units and statistics, and visual
+inspection of that actual rendering. Reuse the user's supplied axes, plot type, inputs, and output
+path. Record the figure identifier, inputs, transformation, units, output, and exploratory status in
+the existing figure record or notebook; a separate full figure contract and another approval are not
+required. Do not invent a conclusion or promote the plot to confirmatory evidence.
+
+**Publication delivery** requires the pre-plot contract, editable exports and publication QA below.
+Resolve and invoke `nature-figure` for publication figure strategy or delivery, using
+`references/prerequisites.md`. Promoting an exploratory figure to publication triggers these
+requirements; calling a publication deliverable a draft does not waive them.
+
+Choose scope from the requested use and existing project contract. A quick exploratory PNG request
+does not require publication exports or the publication figure skill. Existing approved delivery
+requirements continue to apply unless the user changes them. Scientific decisions in either scope
+follow SKILL.md's gates and `references/analysis.md`; selecting a new exclusion or model is not a
+routine styling choice.
 
 ## Pre-plot contract
 
-Before plotting, fill every field of this template in `docs/FIGURE_CONTRACT.md` and get it approved:
+For publication delivery, record this contract in `docs/FIGURE_CONTRACT.md` before plotting. Reuse
+an approved contract or supplied decisions; obtain approval only for unresolved material choices
+under the applicable gate:
 
 ```text
 Figure identifier:
@@ -23,7 +35,7 @@ Core conclusion:
 Scientific role:
 Figure archetype:
 Target journal or output:
-Backend: Python
+Backend:
 Final size:
 Panel map:
 Evidence hierarchy:
@@ -41,21 +53,22 @@ grid, schematic-led composite, image plate plus quantification, or asymmetric mi
 The panel map identifies atomic panels by asset name and may record provisional manuscript letters
 separately.
 
-## Python implementation and figure data
+## Implementation and figure data
 
-Python is the plotting backend. Do not switch languages or render a fallback preview in another
-runtime. Implement testable, importable functions under `src/<package_name>/figures/<figure_id>/`;
-keep Snakemake rules as thin orchestration entry points. Shared style, export, and validation
-utilities live under `src/<package_name>/figures/common/{style,export,validation}.py`.
+Python is the default plotting backend. Preserve an approved alternative or the user's explicit
+backend choice and record it with its runtime and reproduction command. A failed renderer does not
+authorize switching backends silently. In Python, implement testable, importable functions under
+`src/<package_name>/figures/<figure_id>/` with shared utilities under
+`src/<package_name>/figures/common/{style,export,validation}.py`. An approved alternative uses its
+project's tested modules. Keep Snakemake rules as thin orchestration entry points.
 
 Each quantitative panel exports its figure data as tidy CSV or TSV under
 `results/figure_data/<figure_id>/`. The data recreate every quantitative mark. For a bar, box,
 violin, or mean with error bars, they include the individual observations, not the summary alone. A
 model-estimate mark carries the estimate, its uncertainty, and `n`. When a data-use restriction
-forbids releasing observations, record the restriction under `Figure data needed:` in the contract
-and export the finest permitted aggregate. Add a `README.md` when columns, units, or derivation need
-explanation. Build the journal's "Source Data" submission from these files in whatever container it
-requires.
+forbids releasing observations, record the restriction in the figure record and export the finest
+permitted aggregate. Add a `README.md` when columns, units, or derivation need explanation. Build
+the journal's "Source Data" submission from these files in whatever container it requires.
 
 ## Atomic panels and naming
 
@@ -63,16 +76,16 @@ Figure identifiers are `main_figure_<n>`, `extended_data_figure_<n>`, and
 `supplementary_figure_<n>`. Atomic asset stems are the identifier's initials and number plus a
 descriptive name: `mf1_{short_descriptive_name}`, `edf1_{short_descriptive_name}`,
 `sf1_{short_descriptive_name}`. A figure without a manuscript slot, exploratory ones included, uses
-`fig_<short_descriptive_name>` as identifier and stem prefix. When it gets a slot, rename it in
-`docs/FIGURE_CONTRACT.md`, the `src/<package_name>/figures/<figure_id>/` package, and the
-`results/figures/` and `results/figure_data/` paths together. Each panel:
+`fig_<short_descriptive_name>` as identifier and stem prefix. When it gets a slot, rename it in the
+figure record, the `src/<package_name>/figures/<figure_id>/` package, and the `results/figures/` and
+`results/figure_data/` paths together. Each panel:
 
 - has an explicit function or specification;
 - reads a declared, validated input;
 - reproduces on its own, without state from an earlier plotting session;
 - exposes the statistics shown and maps to a figure-data file;
 - omits manuscript panel letters from its filename and rendered plot; and
-- uses the same atomic stem for its figure-data file and for every format: SVG, PDF, TIFF, PNG.
+- uses the same atomic stem for its figure-data file and for every requested export format.
 
 ```text
 results/
@@ -88,18 +101,21 @@ results/
 
 ## Exports
 
-Export editable SVG and PDF, 600 dpi TIFF, and a PNG preview. Each format has its own directory
-named by lowercase extension: `results/figures/<figure_id>/<format>/<asset>.<format>`. Never place
-exports directly in `results/figures/<figure_id>/`. A journal may add delivery formats; it never
-removes the editable exports.
+For publication delivery, export editable SVG and PDF, 600 dpi TIFF, and a PNG preview. Exploratory
+delivery exports only the requested formats. Each format has its own directory named by lowercase
+extension: `results/figures/<figure_id>/<format>/<asset>.<format>`. Never place exports directly in
+`results/figures/<figure_id>/`. For publication, a journal may add delivery formats; it never
+removes the editable exports. Preserve an explicitly requested existing output path for exploratory
+work; new assets use the naming convention above.
 
 ## Assembly
 
-Assemble when the panel map places more than one atomic panel in a figure and the contract records
-no polish deferral. Assembly runs after all atomic panel exporters and after the panels pass
-validation. It reuses the exported panels and never redraws them or changes their scientific
-encoding. Export the assembled figure in the same four formats and per-format directories, with the
-figure identifier as stem, for example `results/figures/main_figure_1/svg/main_figure_1.svg`.
+For publication delivery, assemble when the panel map places more than one atomic panel in a figure
+and the contract records no polish deferral. Assembly runs after all atomic panel exporters and
+after the panels pass validation. It reuses the exported panels and never redraws them or changes
+their scientific encoding. Export the assembled figure in the same four formats and per-format
+directories, with the figure identifier as stem, for example
+`results/figures/main_figure_1/svg/main_figure_1.svg`.
 
 Panel letters are applied only at assembly and never change an asset name or its content.
 
@@ -114,14 +130,17 @@ magnitudes. Use a diverging map only when the data have a scientifically meaning
 center the scale on it. Never use rainbow maps.
 
 The same condition, method, cohort, control, and statistical meaning keeps the same color, marker,
-line, and ordering across panels and figures. Document any compelling exception in the figure
-contract before implementing it.
+line, and ordering across panels and figures. Document any compelling exception in the figure record
+before implementing it.
 
 ## QA checklist
 
-Open and visually inspect both the rendered SVG and rendered PDF at final physical size. File
-existence, a successful `savefig` call, or inspection of only the PNG preview is not evidence of
-correct editable exports. Record the QA outcome in `docs/FIGURE_CONTRACT.md`.
+For either scope, open and visually inspect the actual requested renderings and verify the data
+behind every quantitative mark. Apply the relevant checklist items below; record outcomes in the
+figure record. For publication delivery, inspect both rendered SVG and rendered PDF at final
+physical size and record the outcome in `docs/FIGURE_CONTRACT.md`. File existence, a successful
+export call, or a PNG preview alone is not evidence of correct editable exports. An inaccessible
+renderer remains an explicit QA boundary, never an inferred pass.
 
 - the one-sentence conclusion and panel evidence map still hold;
 - final physical dimensions are correct;

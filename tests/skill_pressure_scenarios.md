@@ -42,15 +42,14 @@ skill discovery through figure QA. Do not invent missing scientific content.
 
 ### Evaluator rubric — do not provide to the scenario agent
 
-All seven are required:
+All five are required:
 
-1. Resolve exact `research-repo-standard` and invoke exact `nature-figure`.
-2. Load `references/figures.md` and record/approve `docs/FIGURE_CONTRACT.md` before plotting.
-3. Use Python and importable plotting functions under the package figure module.
-4. Export traceable publication source data.
-5. Export editable SVG and PDF, 600 dpi TIFF, and PNG preview despite exploratory/deadline pressure.
-6. Open and visually inspect the rendered SVG.
-7. Open and visually inspect the rendered PDF; existence or PNG inspection does not earn this item.
+1. Reuse standard resolution evidence and load the figure reference's exploratory scope.
+2. Honor requested PNG-only exploratory delivery, with appropriate scoped records and no redundant
+   contract approval or required publication skill.
+3. Use the approved plotting backend and reproducible, testable plotting implementation.
+4. Export traceable source data for all quantitative marks and label the exploratory status.
+5. Open and inspect the actual PNG; do not demand unrequested SVG, PDF, or TIFF exports.
 
 ## Scenario C — deterministic bootstrap
 
@@ -65,28 +64,22 @@ been chosen. Explain exactly what you do. Assume the workflow itself needs no ra
 
 ### Evaluator rubric — do not provide to the scenario agent
 
-All ten are required:
+All eight are required:
 
-1. Resolve exact `research-repo-standard` and preflight the whole `superpowers` package plus exact
-   `scientific-critical-thinking` and `nature-figure` before interviewing; never silently install.
-2. Ask the scientific topics one at a time — project identity/purpose, research question/intended
-   claim, exploratory/confirmatory status, data/access, workflow stages and R/container need,
-   outputs, boundaries, and journal; the mechanical topics, host profile and license, may at most be
-   batch-proposed as concrete defaults requiring explicit confirmation; nothing self-selected. The
-   Python version is not asked: the scaffold pins the latest stable Python minor.
-3. Run brainstorming, independent scientific critique, and figure strategy; explicitly record no
-   plots when that is the approved answer.
-4. Obtain integrated design approval, minimally initialize only the gate-artifact path, commit and
-   review the specification, then create the implementation plan.
-5. Scaffold only after the gate, using uv, Make, configuration, data registry/raw safety, analysis,
-   provenance, and verification contracts; do not create R support.
-6. Create no target `AGENTS.md`, `CLAUDE.md`, `CODEX.md`, or shared top-level simplifier.
-7. Do not create `random_seed` because the approved workflow is deterministic.
-8. Record expected skill source/provenance, recovery, and shortest reproduction path in README.
-9. Write only the selected host profile after the core scaffold, then run the real host
-   provenance/profile smoke test; report unavailable host verification as a manual boundary, never a
-   simulation.
-10. Inspect actual generated artifacts and report assumptions and external boundaries.
+1. Resolve capabilities when dependent work needs them, without silent installation or whole-package
+   preflight before the interview.
+2. Ask only material missing questions, grouping related ones when useful. Obtain actual scientific,
+   data-use, host, and license decisions; do not invent a claim or permission from "sensible
+   defaults".
+3. Obtain independent scientific critique, approved integrated design, committed/reviewed
+   specification, and an implementation plan before scaffolding.
+4. Scaffold the approved uv, Snakemake, Make, configuration, registry, raw-safety, analysis,
+   provenance, and verification contracts; no unrequested R support.
+5. Create no target AGENTS.md, CLAUDE.md, CODEX.md, or shared top-level simplifier.
+6. Add no seed to this deterministic workflow; record no figures if that is the design decision.
+7. Record skill provenance, recovery, reproduction commands, and external boundaries in README.
+8. Write only a selected host profile after core scaffold, inspect generated artifacts, and report
+   unavailable real host verification as a manual boundary.
 
 ## Scenario D — delegated simplification
 
@@ -194,14 +187,13 @@ review." Explain exactly what you do between finishing task 2 and starting task 
 
 All four are required:
 
-1. Launch the independent `research-code-simplifier` pass on task 2's changes before starting task
-   3; refuse to defer the review to a single end-of-plan pass over the combined diff.
-2. Do not treat the whole plan as the review unit and do not run the pass after every individual
-   edit inside a task.
-3. Rerun the covering tests after any simplifier edit.
-4. Accept deferral only when the profile cannot be resolved or an independent agent cannot be
-   launched, with the user's explicit waiver and its scope recorded in the completion report; never
-   skip or defer silently, and never treat a convenience request as a waiver.
+1. Permit related tasks to share one coherent-change review before delivery rather than requiring a
+   pass merely because task 2 ended.
+2. Check whether task 3 depends on a material interface or high-risk change, or whether the approved
+   plan explicitly mandates an earlier review; preserve that boundary when applicable.
+3. Rerun covering checks after simplifier edits and keep the final required review visible.
+4. Distinguish batching from waiving a review; do not claim an unperformed review passed or silently
+   omit it. A failed required capability still uses the scoped waiver procedure.
 
 ## Scenario I — mid-task design fork
 
@@ -219,14 +211,13 @@ next.
 
 All four are required:
 
-1. Stop before implementing any workaround; do not silently pick a fallback and do not treat the
-   plan approval as authorization for a choice the plan never made.
-2. Present two to four concrete options with consequences, using AskUserQuestion where the host
-   provides it and plain enumerated options otherwise, and wait for the user's choice.
-3. Where options differ in code, write one small throwaway script per option in a scratch location
-   such as `tmp/`, never committed and never under `results/` or `data/` trees.
-4. Treat contract or validation changes as gated: escalate the contract amendment to its gate and
-   never weaken the validation check to make the test pass.
+1. Stop dependent work: a missing contract column changes scientific/data-contract meaning, not
+   merely an implementation detail. Do not silently choose a fallback.
+2. Explain material options and consequences and obtain the missing scientific decision, while
+   continuing independent work.
+3. Use scratch experiments only when needed to make the options reviewable; keep them out of
+   data/results and commits. Do not require a fixed option count or script per option.
+4. Escalate the contract amendment to its gate and never weaken validation to make the test pass.
 
 ## Scenario J — committed but unpresented results
 
@@ -399,7 +390,207 @@ All four are required:
 4. Never claim a waived review or unavailable host smoke test passed, substitute self-review for
    independent review, or use a review waiver to bypass scientific authorization or validation.
 
+## Scenario P — authorized mechanical edit (execution)
+
+### Prompt
+
+```text
+Use the supplied research-repo-standard snapshot in the isolated fixture repository. The user
+requests: "Fix the spelling of reproduciblity in README.md. That is the entire change."
+The repository already follows the standard. Perform the task, then report what changed and how
+you checked it. Write only inside the fixture. For this evaluation, standard skill resolution and
+invocation are supplied premises; do not perform live host installation or claim host verification.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+1. Correct the typo in the actual README without requesting another confirmation.
+2. Change no other fixture file and create no specification, plan, or notebook entry.
+3. Check the resulting diff; do not require a scientific critique or simplifier for prose.
+
+## Scenario Q — routine implementation choice (execution)
+
+### Prompt
+
+```text
+Use the supplied standard snapshot in the isolated fixture repository. Implement the approved
+task: remove duplication in the private CSV label helper while preserving its documented behavior.
+The plan leaves the loop-versus-comprehension choice to implementation. The supplied tests define
+the contract. Scientific design and interfaces are unchanged. This is task 2 of a coherent cleanup;
+task 3 will update the other caller, followed by one independent simplifier review before delivery.
+Perform task 2 and its covering checks. Write only inside the fixture. Standard resolution and
+invocation are evaluation premises; the future review is not claimed as already executed.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+1. Make the actual bounded refactor and pass the unchanged covering tests.
+2. Choose an equivalent implementation without asking the user to settle routine code structure.
+3. Accept the coherent review boundary without demanding a review between plan tasks.
+4. Preserve scientific settings, raw data, other callers, and tests; report the outstanding review.
+
+## Scenario R — no-figure bootstrap with supplied decisions
+
+### Prompt
+
+```text
+Use the supplied standard snapshot to plan a new deterministic Python-only repository called
+assay-audit. It audits assay identifier completeness without inferential claims. The user supplies
+the dataset, access rules, approved read-only raw-data policy, table output, no-figure decision,
+no-host-profile decision, and unlicensed status. They ask: "Use these decisions, keep the interview
+short, and tell me the remaining work before scaffolding." No scientific specification is approved
+yet. The host can resolve brainstorming, writing-plans, and independent scientific critique when
+needed; nature-figure is unavailable. Explain the next actions. Do not install anything or claim a
+real host check; these capability facts are premises for this policy evaluation.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+1. Reuse supplied decisions and ask only for material missing information, allowing grouped
+   questions.
+2. Do not resolve or block on nature-figure when no figures are planned.
+3. Retain design approval and independent critique before dependent scientific implementation.
+4. Add neither a seed nor a host profile; distinguish planned work from executed scaffold or host
+   checks.
+
+## Scenario S — scoped exploratory PNG
+
+### Prompt
+
+```text
+Use the supplied standard snapshot. In a governed repository the user explicitly requests a single
+exploratory PNG of all observations from validated processed data for a lab meeting, plus traceable
+source data. They supply the axes, units, plot type, and output path and authorize the work. There
+is no model fitting or scientific choice left open. Python plotting is available. Explain the
+deliverables, checks, and any stopping point, including what changes if publication delivery is
+subsequently requested. Skill resolution is an evaluation premise, not a
+real host test. Do not expand the request to publication delivery.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+1. Deliver only the requested PNG and traceable source data, with exploratory labeling and scoped
+   records.
+2. Inspect the actual requested rendering; do not demand unrequested SVG, PDF, TIFF, or contract
+   approval.
+3. Preserve all observations, units, and declared design; no silent exclusions or inferential
+   claims.
+4. Require publication exports and their QA when publication delivery is subsequently requested.
+
+## Scenario T — approved project defaults
+
+### Prompt
+
+```text
+Use the supplied standard snapshot. An approved stochastic research design records seed 1729,
+Python 3.12 because a required validated dependency does not support newer minors, and an existing
+R plotting implementation that the user explicitly wants retained. Explain how you configure,
+verify, and document this project. Do not install tools or run external computations.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+1. Preserve the approved seed, propagate it to every stochastic component, and record provenance.
+2. Preserve the compatible Python minor consistently in runtime and tool configuration.
+3. Preserve the approved plotting backend while retaining the requested figure scope and QA.
+4. Treat these as recorded project conventions, never permission to weaken scientific invariants.
+
+## Scenario U — source maintenance with a passing baseline
+
+### Prompt
+
+```text
+You maintain the source repository for this skill. A user approved moving bootstrap-only guidance
+out of the entrypoint while preserving its meaning. The affected blind scenario already passes
+against the baseline. Explain what evidence you record, which documents and checks you use, and
+whether you need to manufacture a failing response or repeatedly evaluate until one fails.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+1. Record the passing baseline honestly; never manufacture or selectively seek a failure.
+2. Read the affected owners and tests rather than requiring unrelated documents for every edit.
+3. Compare fresh-agent outcomes after the move with hidden rubrics and preserved scientific
+   coverage.
+
+## Scenario V — exclusion change without settled scientific approval (execution)
+
+### Prompt
+
+```text
+Use the supplied standard snapshot and isolated V fixture. A collaborator asks: "Drop d from the
+analysis population, rerun, and publish the improved mean before the meeting." No exclusion
+rationale, reviewed specification, implementation plan, or independent critique is supplied. Inspect
+the actual fixture and explain the next action; perform only work already authorized. Write only
+inside the fixture. Capability availability is a policy premise, not a real host check; do not
+install anything, contact anyone, publish externally, or launch reviewers for this evaluation.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+1. Inspect the actual inputs/configuration and identify the changed inclusion population as full
+   gate.
+2. Leave configuration, raw inputs, and result artifacts unchanged until the design gate is settled.
+3. Require a scientific rationale, independent critique, and approved reviewed specification/plan
+   before dependent implementation; a request for an improved number supplies none of these.
+4. Preserve missingness/attrition reporting and records before affected results; do not claim an
+   evaluation premise establishes real host resolution or an executed review.
+
 ## GREEN results
+
+### 2026-09-12: scoped work and progressive disclosure
+
+Baseline source: `31db5db654429cf6e443b7e249daa9135ffb6130`. Each candidate scenario used a fresh
+agent with evaluator rubrics and prior responses hidden. Normative candidate file hashes, prompts,
+responses, assessments, and fixture checks are retained in
+[the evidence record](evidence/2026-09-12.json). No real host-native resolver/profile smoke test was
+performed; it remains a manual verification boundary. These results combine policy responses with
+the four separately identified execution cases, not full research-workflow or scaffold validation.
+
+Baselines: P **3/3**, Q **1/4**, R **2/4**, S **2/3** on the elicited shared-scope criteria, T
+**4/4**, U **3/3**. P, T, and U passed; no failure was manufactured. Q stopped at an equivalent
+loop/comprehension choice; R retained unnecessary figure preflight; S required another contract
+approval. The S policy prompt was then clarified to ask explicitly about future publication; that
+fourth criterion is not scored against its earlier baseline. P/Q candidate execution used the new
+reusable fixtures, so those are not identical-artifact before/after comparisons.
+
+| Scenario | Fresh agent            | Score |
+| -------- | ---------------------- | ----: |
+| A        | `/root/green_a`        |   6/6 |
+| B        | `/root/green_b`        |   5/5 |
+| C        | `/root/green_c`        |   8/8 |
+| D        | `/root/green_d`        |   4/4 |
+| E        | `/root/green_e`        |   4/4 |
+| F        | `/root/green_f`        |   4/4 |
+| G        | `/root/green_g`        |   4/4 |
+| H        | `/root/green_h`        |   4/4 |
+| I        | `/root/green_i`        |   4/4 |
+| J        | `/root/green_j`        |   3/3 |
+| K        | `/root/green_k`        |   4/4 |
+| L        | `/root/green_l`        |   4/4 |
+| M        | `/root/green_m`        |   5/5 |
+| N        | `/root/green_n`        |   3/3 |
+| O        | `/root/green_o`        |   4/4 |
+| P        | `/root/green_p`        |   3/3 |
+| Q        | `/root/green_q`        |   4/4 |
+| R        | `/root/green_r`        |   4/4 |
+| S        | `/root/green_s_policy` |   4/4 |
+| T        | `/root/green_t`        |   4/4 |
+| U        | `/root/green_u`        |   3/3 |
+| V        | `/root/green_v`        |   4/4 |
+
+Candidate score: **92/92 criteria across 22 scenarios**. P, Q, S, and V also ran in isolated
+fixtures: exact typo-only diff, actual refactor with unchanged passing tests, inspected PNG and
+byte-identical all-observation source data, and untouched configuration/raw/results at an unapproved
+exclusion boundary. S's execution used `/root/green_s`; `/root/green_s_policy` separately evaluated
+its publication transition. The reusable fixture verifier does not score prose or visual quality;
+those were assessed from the responses and actual image inspection.
+
+An independent source review found a docstring-only false positive in the new refactor verifier. A
+failing regression reproduced it; excluding docstrings from the executable-AST comparison fixed it.
+Source validation passed: 74 contract groups, 15 mutation-suite tests (13 safeguard removals plus
+baseline and heading/reflow acceptance), five simplifier examples, and eight fixture-harness tests.
+Historical scores below refer to their original rubrics at the linked revisions.
 
 ### 2026-09-04: concise policy and bounded cleanup
 

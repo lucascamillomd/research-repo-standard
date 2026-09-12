@@ -22,8 +22,10 @@ Classify each value by the first matching bucket. The buckets are mutually exclu
 
 ## Configuration files
 
-When the workflow uses randomness, declare `random_seed: 42` and propagate it to every stochastic
-component. Do not add a seed field to a fully deterministic workflow.
+When the workflow uses randomness, the default convention is `random_seed: 42`. Preserve another
+seed recorded in the approved design; record the effective value in `config/analysis.yaml` and
+propagate it to every stochastic component. Changing an existing seed is result-affecting and uses
+the applicable gate. Do not add a seed field to a fully deterministic workflow.
 
 `.python-version`, `pyproject.toml`, and `uv.lock` own the Python version, packaging metadata, tool
 configuration, and locked dependencies. Do not duplicate them in analysis YAML, and do not create a
@@ -109,7 +111,7 @@ Configuration tests cover:
   derived paths that must never fall through to YAML;
 - rejection of versioned secrets and YAML redirection of canonical paths;
 - repository containment and inability to redirect canonical raw-data locations;
-- propagation of `random_seed: 42` to every stochastic component when randomness is used;
+- propagation of the approved `random_seed` to every stochastic component when randomness is used;
 - absence of a seed setting in a fully deterministic workflow; and
 - provenance failure when the manifest cannot record a consumed configuration source.
 

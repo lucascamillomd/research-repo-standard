@@ -6,24 +6,32 @@ capabilities are separate from packages installed in a research repository.
 
 ## Required capabilities
 
-Resolve these three capabilities before a bootstrap interview. In adoption and governed-work modes,
-resolve each before the work that depends on it. Resolve the two scientific skills by exact name and
-`superpowers` as a whole package. Confirm the host lists at least `superpowers:brainstorming` and
-`superpowers:writing-plans`, which the workflow invokes by exact name.
+Resolve a required capability immediately before its dependent work, not as a blanket bootstrap
+preflight. A no-figure project does not need `nature-figure`; a mechanical edit does not need
+planning or scientific-review skills. Resolve the exact skills used, rather than verifying an entire
+package's unrelated capabilities.
 
-| Capability                     | Authoritative source                                    |
-| ------------------------------ | ------------------------------------------------------- |
-| `superpowers` (whole package)  | <https://github.com/obra/superpowers>                   |
-| `scientific-critical-thinking` | <https://github.com/k-dense-ai/scientific-agent-skills> |
-| `nature-figure`                | <https://github.com/Yuan1z0825/nature-skills>           |
+| Capability                     | Needed for                                    | Authoritative source                                    |
+| ------------------------------ | --------------------------------------------- | ------------------------------------------------------- |
+| `superpowers:brainstorming`    | full-gate design                              | <https://github.com/obra/superpowers>                   |
+| `superpowers:writing-plans`    | implementation planning after design approval | <https://github.com/obra/superpowers>                   |
+| `scientific-critical-thinking` | independent scientific critique               | <https://github.com/k-dense-ai/scientific-agent-skills> |
+| `nature-figure`                | publication figure strategy and delivery      | <https://github.com/Yuan1z0825/nature-skills>           |
 
 Use the current host's native skill listing or resolver. The result must show the exact skill name
 and enough source information to verify the expected package or repository. Successful invocation
-during the workflow is the functional check.
+during the workflow is the functional check. A file on disk, or a repository that names a skill, is
+not resolution or invocation evidence. Do not silently install, imitate, or substitute a required
+skill. A missing capability blocks only work that depends on it.
 
 Resolve `research-repo-standard` itself the same way and check that its reported provenance matches
 the provenance the project README records under the checklist in `references/bootstrap.md`. When the
 README has no entry yet, match the source the user approved.
+
+Record the host, resolver, resolved source, and invocation evidence at first use. Reuse that record
+while the session and provenance are unchanged; report again if resolution fails or the source,
+host, or session changes. Do not print a fixed resolver form for every edit. An actual failed
+attempt is required before declaring a capability unavailable.
 
 Never change global agent configuration without authorization. When a required name or its
 provenance does not resolve, report the exact name, host, resolver tried, and result, then obtain
@@ -64,18 +72,20 @@ approved design work because the session changed.
 
 ## Shared planning companion
 
-The preflight-resolved `superpowers` package provides `superpowers:writing-plans`. Invoke it after
-design approval.
+Resolve and invoke `superpowers:writing-plans` after design approval when an implementation plan is
+required. Reuse successful resolution from this session when its provenance is unchanged.
 
 ## Delegated-agent propagation
 
 Before launching an independent scientific or simplification reviewer, confirm the delegated context
 can resolve every skill and profile assigned to it. Pass the applicable repository instructions and
-task scope through the host's delegation mechanism. The delegate reports what it resolved and from
-which source. The parent must not infer resolution from its own environment.
+task scope through the host's delegation mechanism. The delegate reports its own skill provenance,
+profile path, and invocation evidence. The parent must not infer resolution from its own
+environment.
 
-If the delegate cannot resolve or invoke a required capability, report the failure and apply
-SKILL.md's Review waivers procedure. Never infer the delegate's capability from the parent's.
+If the delegate cannot resolve or invoke a required capability, report the failure and apply the
+Review waivers procedure in `references/governance.md`. Never infer the delegate's capability from
+the parent's.
 
 ## Host profile installation
 
@@ -89,8 +99,8 @@ path it resolves to, and whether its content was customized, then leave it uncha
 count. A legacy policy is a target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md` that restates this
 standard. An alias is a symlink or wrapper file that resolves to a simplifier profile. A generic
 simplifier is a simplifier profile outside the selected host's expected path, such as a shared
-top-level `agents/` profile or a `code-simplifier` profile. Removing one is destruction under
-SKILL.md and follows that report.
+top-level `agents/` profile or a `code-simplifier` profile. Removing one follows the destruction
+procedure in `references/governance.md` after that report.
 
 - For a Claude Code host, copy the canonical profile verbatim to
   `<target-repo>/.claude/agents/research-code-simplifier.md`.
