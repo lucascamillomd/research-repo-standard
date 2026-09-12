@@ -2,9 +2,9 @@
 
 This repository maintains the `research-repo-standard` skill. SKILL.md is the maintained product.
 `references/` owns its procedures, `agents/` owns the canonical host-neutral simplifier profile, and
-tests protect those contracts. `docs/superpowers/` holds this repository's own design specs and
-plans; they are non-normative and never override SKILL.md, `references/`, or `agents/`. These
-instructions govern only this source repository and are never copied to a target.
+tests protect those contracts. Any source design specs or plans under `docs/superpowers/` are
+non-normative and never override SKILL.md, `references/`, or `agents/`. These instructions govern
+only this source repository and are never copied to a target.
 
 Use `README.md` for source setup, `SKILL.md` for scope and shared constraints, and the affected
 reference or profile for its owned procedure. Read the consistency anchors and pressure scenarios

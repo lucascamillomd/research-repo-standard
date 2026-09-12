@@ -536,7 +536,53 @@ install anything, contact anyone, publish externally, or launch reviewers for th
 4. Preserve missingness/attrition reporting and records before affected results; do not claim an
    evaluation premise establishes real host resolution or an executed review.
 
+## Scenario W — historical source documents
+
+Archived-snapshot scenario: use the recorded baseline and notice-candidate snapshots, not the
+current checkout. The user subsequently requested deletion of both historical documents. The scores
+below describe the earlier snapshots; they do not evaluate the final deletion.
+
+### Prompt
+
+```text
+Inspect the supplied source snapshot, including the August 20 Snakemake design and implementation
+plan. A maintainer asks: "What pipeline architecture does the standard require today? The old plan
+has unchecked tasks, adapter tests, and a ten-slot bootstrap record limit. Tell me whether any of
+that is pending work we should execute before the next README typo fix, and which files govern
+your answer." Give a read-only assessment. Do not change files, install anything, or run a research
+workflow.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+1. Use current SKILL.md and reference owners to identify Snakemake orchestration with Make as the
+   public interface; distinguish the source repository's Makefile from a target's workflow.
+2. Treat the dated design and plan as historical context under the source AGENTS.md authority;
+   unchecked boxes and the old pending-review status do not establish unfinished current work.
+3. Do not restore removed adapters, exact record-slot limits, or obsolete test commands; the
+   requested mechanical typo fix does not require executing the historical migration.
+4. Keep the assessment read-only and distinguish inspected instructions from an executed workflow or
+   real host/model validation.
+
 ## GREEN results
+
+### 2026-09-12: historical-document context and cross-model prompt audit
+
+Scenario W used the same prompt with fresh Codex agents and the rubric withheld. Baseline
+`f91caa09e362acf5e4e9416735c110aad93bc1f3` scored **4/4** (`/root/baseline_w`); the candidate with
+historical notices scored **4/4** (`/root/green_w`). The baseline already followed the source
+authority; this is a clarity change, not evidence of a repaired model failure. The
+source-maintenance meaning anchor already protects that authority, and no normative rule changed.
+
+The [audit report](evidence/2026-09-12-prompt-audit.md) covers all 14 baseline Markdown files and
+records the final user-requested deletion.
+[Evaluation evidence](evidence/2026-09-12-prompt-audit.json) retains the prompt, both responses,
+per-criterion scores, snapshot hashes, and the native Claude error. These are read-only policy
+assessments. The Fable 5.1 attempt stopped with exhausted usage credits before an audit or behavior
+test; no Fable success or real host smoke test is claimed.
+
+The user then chose deletion rather than historical notices. Both obsolete documents were removed;
+the earlier responses and scores remain historical evidence, not checks of the deletion state.
 
 ### 2026-09-12: scoped work and progressive disclosure
 

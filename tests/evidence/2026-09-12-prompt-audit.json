@@ -1,0 +1,139 @@
+{
+  "date": "2026-09-12",
+  "baseline_commit": "f91caa09e362acf5e4e9416735c110aad93bc1f3",
+  "targets": [
+    "GPT-6 Astra",
+    "Claude Fable 5.1"
+  ],
+  "evaluation_host": "Codex collaboration agents; inherited model, no model identifier emitted by tool",
+  "scenario": "W",
+  "prompt": "Inspect the supplied source snapshot, including the August 20 Snakemake design and implementation\nplan. A maintainer asks: \"What pipeline architecture does the standard require today? The old plan\nhas unchecked tasks, adapter tests, and a ten-slot bootstrap record limit. Tell me whether any of\nthat is pending work we should execute before the next README typo fix, and which files govern\nyour answer.\" Give a read-only assessment. Do not change files, install anything, or run a research\nworkflow.\n",
+  "rubric_withheld": true,
+  "kind": "read-only policy assessments; no research workflow or host smoke test",
+  "baseline": {
+    "agent": "/root/baseline_w",
+    "hashes": {
+      "AGENTS.md": "19b8a4710472a4b90a805e2fdcbd5567f4438aa83c97580041aaa59cfe748c71",
+      "README.md": "a035ecb38fb170c13e29750f47e560e40396b38bbcb9fd3d3b6ce36b9c634b68",
+      "SKILL.md": "fe56dd17dfa8744a3558ca6d3208dbc5f96788c14a0bfd7214d8f7b519a894e4",
+      "agents/research-code-simplifier.md": "8990cf540e217b9f66671857cef4d0fea9163079cd8bc2cda78b18af7d24a80b",
+      "docs/superpowers/plans/2026-08-20-snakemake-orchestration.md": "e1a87e750cb0a1793a6eb33ad75171d63d84159eee7a65d3a8bbdde2e1e37d17",
+      "docs/superpowers/specs/2026-08-20-snakemake-orchestration-design.md": "314d4b00a0c671f9f657340e739f406149b2d003291c728071e43d08131208f8",
+      "references/analysis.md": "7f8a8aaa6321d53ba318c461a6971a1e3c1420a6554c74ee8a713b0893946961",
+      "references/bootstrap.md": "9082651d7d9ad5b5eef616548637147336fe1bd87e948db7a98fee9a99b572dc",
+      "references/configuration.md": "63ec5e8172046a58f381692887384de433bdb21fbba3aae8f1aab3af9130336c",
+      "references/data.md": "614d0b249946f33d1f8b0662e84c1256d2d4e0503fdd04da6bde4bcb6eec9e1c",
+      "references/figures.md": "1f9df4c2fbfee4eaddd8233b8da3f78b9c71577aa7ec0232278df8f9ad9a737b",
+      "references/governance.md": "12a4f19a65d920ee2b684c75ae0b499923c536bfb6df5855772d0e84179a922c",
+      "references/prerequisites.md": "70f9fa7fd212458f7b357cd98352248d92001ba93202d85f9d26e88f9903a31f"
+    },
+    "response": "The current standard requires a Snakemake pipeline behind a public Make interface for approved new research scaffolds. The August 20 plan is historical design material, not a current work queue. Its unchecked boxes, adapter-test commands, and ten-slot execution-record limit do not create prerequisites for a README typo fix.\n\nThe governing files in the supplied snapshot are:\n\n- `AGENTS.md`: source maintenance authority. It explicitly makes `docs/superpowers/` non-normative and subordinate to `SKILL.md`, `references/`, and `agents/`. It also says a typo does not require unrelated references.\n- `SKILL.md`, especially Change classification and Routing: the standard's scope and shared constraints. This assessment is no-gate read-only work; a requested spelling fix is light path and needs no new design artifacts or confirmation. Changing pipeline architecture or the standard's rules would instead use the full gate.\n- `references/bootstrap.md`, Core scaffold, Python environment and lock, Rule logging, and Make interface: the current pipeline contract. `workflow/Snakefile` declares `configfile` and `rule all`, includes modules under `workflow/rules/`, and owns orchestration. Rules declare `input:`, `output:`, `log:`, and `params:` and make a single scientific package call into importable, testable code under `src/<package_name>/`; scientific logic does not live in rule bodies. Snakemake owns DAG incrementality. Make exposes help, setup, test, pipeline, and a project-named result-verification gate; `make pipeline` wraps `uv run --locked snakemake --cores all`. uv and the committed lockfile own the Python environment, including Snakemake and loguru. Rule logging adds console and file sinks. Cleanup uses explicit guarded Make targets and must not reach raw data.\n- `references/configuration.md`: configuration and provenance authority. Versioned analysis/dataset YAML is validated against schemas at DAG-build time. Result-affecting values enter rule `params:` and are passed explicitly to package functions. CLI config overrides are banned with a parse-time divergence guard; environment variables cannot supply scientific settings. A manifest records configuration sources, hashes, and effective values; result rules depend on it through `ancient()`. Default rerun triggers must not be narrowed. Its Established repositories section explicitly rejects bulk migration solely because the contract changed.\n- `references/bootstrap.md`, Design and interview: settled decisions and open questions belong in the design artifacts, with a completion report. It expressly requires no repeated execution-record template or separate tracking file. Therefore the old plan's ten `Label:` slots are no longer a live restriction.\n- `references/prerequisites.md`, Host profile installation and Selected-host smoke test, plus `agents/research-code-simplifier.md`: current host integration is performed by the host agent from the canonical profile, into only the selected host's profile path. The source instructions prohibit repository shell scripts from deriving/installing host profiles or creating/modifying target policy files. Real host resolution and reviewer invocation are separate verification boundaries. Old adapter-suite commands are historical and do not authorize reinstating adapter machinery or make those suites a new prerequisite.\n- `README.md`: current source setup and check interface. Its source Make targets are distinct from the target research workflow. For an actual source typo edit, the current maintenance requirements are `make format`, `make test`, and `git diff --check`, preserving unrelated changes. Neither research execution nor host installation is needed for that edit.\n\nI inspected both `docs/superpowers/specs/2026-08-20-snakemake-orchestration-design.md` and `docs/superpowers/plans/2026-08-20-snakemake-orchestration.md`. They describe the transition from numbered stage scripts and a custom config loader to Snakemake, while the current normative references already prescribe Snakemake. The old spec's pending-review status and the plan's unchecked tasks are not reliable evidence that implementation is still pending. Their instructions to invoke execution skills, run adapter tests, preserve a ten-slot record, and commit changes remain historical plan content; they do not override the present request or maintained contracts.\n\nNo snapshot files were changed, nothing was installed, and no workflow or test suite was executed. This establishes the current documented architecture, not runtime correctness or live host integration. Nothing in those historical plan details needs to be executed before the next README typo fix.\n",
+    "criteria": [
+      {
+        "requirement": "Current Snakemake orchestration behind Make; source and target interfaces distinguished.",
+        "pass": true
+      },
+      {
+        "requirement": "Source AGENTS authority governs historical design and plan; unchecked tasks are not current work.",
+        "pass": true
+      },
+      {
+        "requirement": "No restoration of retired adapters, record limits, or obsolete tests before a mechanical typo fix.",
+        "pass": true
+      },
+      {
+        "requirement": "Read-only assessment; documented requirements distinguished from execution and live host verification.",
+        "pass": true
+      }
+    ],
+    "score": "4/4"
+  },
+  "candidate": {
+    "agent": "/root/green_w",
+    "hashes": {
+      "AGENTS.md": "19b8a4710472a4b90a805e2fdcbd5567f4438aa83c97580041aaa59cfe748c71",
+      "README.md": "a035ecb38fb170c13e29750f47e560e40396b38bbcb9fd3d3b6ce36b9c634b68",
+      "SKILL.md": "fe56dd17dfa8744a3558ca6d3208dbc5f96788c14a0bfd7214d8f7b519a894e4",
+      "agents/research-code-simplifier.md": "8990cf540e217b9f66671857cef4d0fea9163079cd8bc2cda78b18af7d24a80b",
+      "docs/superpowers/plans/2026-08-20-snakemake-orchestration.md": "5b651909bb20d42432a002311b80bf2edd3a4ccdf72ca09bae4c0ecd4ece3c00",
+      "docs/superpowers/specs/2026-08-20-snakemake-orchestration-design.md": "65fefc6c753be47e44f4eee079c12fe46bc673e42ad69b20cdc32867147d87eb",
+      "references/analysis.md": "7f8a8aaa6321d53ba318c461a6971a1e3c1420a6554c74ee8a713b0893946961",
+      "references/bootstrap.md": "9082651d7d9ad5b5eef616548637147336fe1bd87e948db7a98fee9a99b572dc",
+      "references/configuration.md": "63ec5e8172046a58f381692887384de433bdb21fbba3aae8f1aab3af9130336c",
+      "references/data.md": "614d0b249946f33d1f8b0662e84c1256d2d4e0503fdd04da6bde4bcb6eec9e1c",
+      "references/figures.md": "1f9df4c2fbfee4eaddd8233b8da3f78b9c71577aa7ec0232278df8f9ad9a737b",
+      "references/governance.md": "12a4f19a65d920ee2b684c75ae0b499923c536bfb6df5855772d0e84179a922c",
+      "references/prerequisites.md": "70f9fa7fd212458f7b357cd98352248d92001ba93202d85f9d26e88f9903a31f"
+    },
+    "response": "The standard currently requires Snakemake as the pipeline engine behind a public Make interface for the approved research scaffold. The August 20 migration documents do not establish pending work that must be completed before a README typo fix.\n\nThe current architecture is owned by references/bootstrap.md, especially Core scaffold, Python environment and lock, Rule logging, and Make interface:\n\n- workflow/Snakefile declares configfile and rule all and includes workflow/rules/*.smk. Rule modules follow the approved workflow. Each rule declares input, output, log, and params; scientific computation lives in importable, testable functions under src/<package_name>/. Rule bodies configure logging and make a single package-function call.\n- Make exposes help, setup, test, pipeline, and a project-appropriate verification target. Pipeline targets are thin wrappers; Snakemake's DAG owns file-level incrementality. The current pipeline command is uv run --locked snakemake --cores all.\n- uv owns the primary environment and committed lockfile; snakemake and loguru are runtime dependencies. Cleanup must use explicit guarded Make targets that cannot reach data/raw/; snakemake --delete-all-output is prohibited. External runtimes are conditional on the approved design.\n\nreferences/configuration.md owns the configuration portion: versioned analysis and dataset YAML are schema-validated before jobs run, with unknown and missing fields and invalid values rejected. Every result-affecting rule setting is declared in params and passed as an explicit typed function argument. Rule bodies and package functions do not consume the Snakemake config object. A parse-time guard rejects effective configuration that diverges from versioned YAML; scientific settings cannot come from environment overrides or hidden code defaults. Result-producing rules depend on the configuration provenance manifest through an ancient() input, and default rerun triggers must not be narrowed. Its Established repositories section explicitly rejects bulk migration merely because the contract changed; migration occurs at the relevant setting-reading entry point or through an accepted adoption migration plan.\n\nThe historical documents are docs/superpowers/specs/2026-08-20-snakemake-orchestration-design.md and docs/superpowers/plans/2026-08-20-snakemake-orchestration.md. Both now open with an explicit historical, non-normative notice that routes current requirements to SKILL.md, references/, and agents/, with source maintenance governed by AGENTS.md. The retained status text, unchecked boxes, required-subskill directive, commands, old adapter paths, and test recipes belong to the original migration record. They are neither current execution instructions nor reliable evidence that work remains incomplete. The design's opening description of Make running numbered stage scripts describes the pre-migration state; it does not describe today's normative architecture.\n\nIn particular, the old requirement to keep a bootstrap execution record at ten Label slots is not a current requirement. references/bootstrap.md now says to track decisions and questions in design artifacts and report completion evidence; no repeated execution-record template or separate tracking file is required. Likewise, the old adapter test commands do not authorize recreating adapters, installing an old installer, or running obsolete paths. Current host integration is owned by references/prerequisites.md, while agents/research-code-simplifier.md owns the canonical host-neutral profile. The current README describes the source maintenance interfaces and separates them from target research workflows.\n\nThis assessment is no-gate read-only work under SKILL.md. A requested mechanical README spelling correction is light path; its routing explicitly says a spelling fix needs no scaffold review. Before such a source edit, follow the current AGENTS.md: inspect git status, preserve unrelated work, and use the current source checks (make format, make test, and git diff --check). That does not require reopening the Snakemake migration, executing its historical plan, adding a bootstrap record, or running a research pipeline. A substantive architecture or standard-rule change would require its own applicable full gate.\n\nI inspected only the supplied snapshot and the requested historical documents. I did not alter it, run tests or research workflows, install anything, or verify real host resolution. This is a finding about the documented current contract, not a claim that a target pipeline or host integration has passed execution checks.\n",
+    "criteria": [
+      {
+        "requirement": "Current Snakemake orchestration behind Make; source and target interfaces distinguished.",
+        "pass": true
+      },
+      {
+        "requirement": "Source AGENTS authority governs historical design and plan; unchecked tasks are not current work.",
+        "pass": true
+      },
+      {
+        "requirement": "No restoration of retired adapters, record limits, or obsolete tests before a mechanical typo fix.",
+        "pass": true
+      },
+      {
+        "requirement": "Read-only assessment; documented requirements distinguished from execution and live host verification.",
+        "pass": true
+      }
+    ],
+    "score": "4/4",
+    "status": "Superseded notice candidate, evaluated before the user requested deletion; not the final delivered tree."
+  },
+  "interpretation": "Baseline already passed. Notices clarify existing authority; no repaired failure or measured improvement is claimed.",
+  "snapshot_scope": "All baseline tracked Markdown except tests/skill_pressure_scenarios.md, whose rubric and prior results were withheld.",
+  "native_claude": {
+    "cli_version": "2.1.269",
+    "requested_model": "claude-fable-5-1",
+    "invocation": "/claude-api prompt-audit; read-only tools, plan permission mode, no session persistence",
+    "is_error": true,
+    "result": "You're out of usage credits. Switch to another model, or manage usage credits at claude.ai/settings/usage?from=cc_cli_limit_message, to continue.",
+    "modelUsage": {},
+    "permission_denials": [],
+    "completed_audit": false,
+    "completed_behavior_test": false
+  },
+  "guide_sources": {
+    "prompt-audit.md": {
+      "url": "https://github.com/anthropics/skills/blob/main/skills/claude-api/shared/prompt-audit.md",
+      "sha256": "571b08c181a8f3f0906a99045ff0bca88ca728d5a2d01afabb620b270c8048a2"
+    },
+    "model-migration.md": {
+      "url": "https://github.com/anthropics/skills/blob/main/skills/claude-api/shared/model-migration.md",
+      "sha256": "646531ed152701c571771d38306b1d6ac358270a7ca8763b39a9e694916b08c9"
+    }
+  },
+  "astra_guide": "https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra",
+  "checks": {
+    "consistency_groups": 74,
+    "python_tests": 28,
+    "make_format": "passed",
+    "make_test": "passed",
+    "bash_syntax": "passed",
+    "skill_validator": "passed",
+    "git_diff_check": "passed",
+    "historical_body_preservation": "passed",
+    "notice_links": "passed",
+    "independent_review": "all14 Markdown files, exact proposed hunks and evidence boundaries checked; Astra attribution verified separately against published Persistence section"
+  },
+  "boundaries": [
+    "Fable5.1 usage credits exhausted before inference; no successful native audit.",
+    "No real host-native skill/profile smoke test.",
+    "No full research bootstrap or pipeline execution."
+  ],
+  "final_disposition": {
+    "authorization": "User explicitly requested removal of the outdated files, then commit and push.",
+    "deleted_paths": [
+      "docs/superpowers/plans/2026-08-20-snakemake-orchestration.md",
+      "docs/superpowers/specs/2026-08-20-snakemake-orchestration-design.md"
+    ],
+    "behavioral_evaluation": "Earlier scores apply only to archived snapshots, not the final deletion state."
+  }
+}
