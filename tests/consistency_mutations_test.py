@@ -149,6 +149,10 @@ class ConsistencyMutations(unittest.TestCase):
         )
         self.assert_rejected_by("scoped-waiver")
 
+    def test_project_history_boundary_removal(self):
+        self.remove_paragraph("SKILL.md", "only file that records")
+        self.assert_rejected_by("current-state-text")
+
     def test_public_api_compatibility_boundary_removal(self):
         self.remove_phrase(
             "agents/research-code-simplifier.md",

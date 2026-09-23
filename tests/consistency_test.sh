@@ -94,6 +94,11 @@ require authorized-proportionate-work SKILL.md '(existing authorization|already 
   '(delet|disabl|skip|loosen|relax).*never.*light path' 'unchanged.*approv'
 require adoption-assessment references/governance.md 'adoption' 'read-only' 'complian' 'gap' \
   '(each|every|item).*evidence' 'migration' 'references/configuration\.md' 'legacy'
+require current-state-text SKILL.md 'LAB_NOTEBOOK\.md.{0,30}only.{0,40}histor' \
+  'every other file.{0,120}as it is now' 'earlier versions' 'legacy' \
+  'no notebook entry.{0,40}no history note' '(exploratory|post hoc).{0,60}current.{0,40}stay' \
+  'unrelated files.{0,20}follow-up'
+owned project-history-owner SKILL.md 'only file that records.{0,20}histor'
 require inspected-completion SKILL.md 'format.*lint.*test' 'inspect.*artifact' 'exit code' \
   'git status' 'raw' 'unrelated work' 'boundar' 'waived|waiver' 'whole task'
 
@@ -155,6 +160,8 @@ require simplifier-supported-use agents/research-code-simplifier.md \
   'explicitly delegates' 'research-repo-standard' 'supported' 'callers.*wrappers' 'private' 'unsupported' \
   'public' 'scientific' 'behavior difference' '(unknown|uncertain).*leave|leave.*(unknown|uncertain)' \
   'tests.*behavioral contract before editing' 'without weakening' 'rerun covering tests' 'no justified edit succeeds'
+require simplifier-current-comments agents/research-code-simplifier.md \
+  'comments that.{0,60}earlier versions'
 require attributed-examples agents/research-code-simplifier.md 'requests \(Apache-2.0\)' 'PSF license'
 forbid profile-defers-domain-grammar agents/research-code-simplifier.md \
   'config/analysis\.yaml|random_seed:|datasets\.yaml|mf1_|edf1_|sf1_'

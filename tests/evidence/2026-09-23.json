@@ -1,0 +1,135 @@
+{
+ "date": "2026-09-23",
+ "baseline_revision": "bf8462bed7e88701cc7f5c9edf6220116f0176fe",
+ "candidate_source_sha256": {
+  "SKILL.md": "8af1212c3cf6bcc6352a1da2322f0042271983aae67acdd9216fff023eed0460",
+  "agents/research-code-simplifier.md": "06f698c002c0255aaa1cc55cef8ad41ae91f0e69c10bcebb739d8bd472204ed3",
+  "references/analysis.md": "7f8a8aaa6321d53ba318c461a6971a1e3c1420a6554c74ee8a713b0893946961",
+  "references/bootstrap.md": "9082651d7d9ad5b5eef616548637147336fe1bd87e948db7a98fee9a99b572dc",
+  "references/configuration.md": "63ec5e8172046a58f381692887384de433bdb21fbba3aae8f1aab3af9130336c",
+  "references/data.md": "614d0b249946f33d1f8b0662e84c1256d2d4e0503fdd04da6bde4bcb6eec9e1c",
+  "references/figures.md": "1f9df4c2fbfee4eaddd8233b8da3f78b9c71577aa7ec0232278df8f9ad9a737b",
+  "references/governance.md": "12a4f19a65d920ee2b684c75ae0b499923c536bfb6df5855772d0e84179a922c",
+  "references/prerequisites.md": "70f9fa7fd212458f7b357cd98352248d92001ba93202d85f9d26e88f9903a31f"
+ },
+ "method": "One fresh Claude Code subagent (Opus 5.5) per run. Each received only the scenario prompt, a frozen policy snapshot, and, for execution cases, a git fixture created by tests/behavioral_fixture.py. Agents were told to read nothing outside the snapshot and fixture and not to invoke the installed skill; rubrics and other responses were withheld. The parent scored each criterion, ran the fixture verifier, and read every fixture diff. Responses below are evaluator summaries; fixture diffs are verbatim.",
+ "boundaries": [
+  "No real host-native skill/profile resolver smoke test was performed.",
+  "One sample per scenario; isolation was instructed, not enforced by the host.",
+  "The X notebook check was relaxed after the baseline run: replacing the placeholder line that became false is allowed. Both X runs were verified with the relaxed check."
+ ],
+ "baseline": {
+  "X": {
+   "run": "run-x1",
+   "score": [
+    4,
+    5
+   ],
+   "failed": [
+    3
+   ],
+   "verifier": "FAIL: History outside the notebook: README.md",
+   "summary": "Implemented the median, regenerated 4, 2.5, added a per-value finite check and tests, and wrote a complete notebook entry. README added 'The median replaced the planned mean as a post hoc change'. ANALYSIS_PLAN.md status and estimand narrated the prespecified mean and the 2026-09-23 amendment. assay/load.py untouched.",
+   "changed_files": [
+    "README.md",
+    "assay/summary.py",
+    "config/analysis.json",
+    "docs/ANALYSIS_PLAN.md",
+    "docs/LAB_NOTEBOOK.md",
+    "results/table.csv",
+    "test_summary.py"
+   ],
+   "diff": "diff --git a/README.md b/README.md\nindex fd33ce3..fb85d82 100644\n--- a/README.md\n+++ b/README.md\n@@ -2,5 +2,6 @@\n \n This repository follows research-repo-standard.\n \n-`python3 -m assay.summary` writes `results/table.csv`, the mean signal of the\n-included observations.\n+`python3 -m assay.summary` writes `results/table.csv`, the median signal of the\n+included observations. The median replaced the planned mean as a post hoc change;\n+see `docs/LAB_NOTEBOOK.md`.\ndiff --git a/assay/summary.py b/assay/summary.py\nindex e14015f..4ae495b 100644\n--- a/assay/summary.py\n+++ b/assay/summary.py\n@@ -8,12 +8,14 @@ import tempfile\n \n from .load import read_observations\n \n-STATISTICS = {\"mean\": statistics.mean}\n+STATISTICS = {\"mean\": statistics.mean, \"median\": statistics.median}\n \n \n def summarize(rows, included_ids, statistic):\n     \"\"\"Return the count and the configured statistic of signal_au for included rows.\"\"\"\n     values = [float(row[\"signal_au\"]) for row in rows if row[\"id\"] in included_ids]\n+    if not all(math.isfinite(value) for value in values):\n+        raise ValueError(\"Every included observation needs a finite signal\")\n     return len(values), STATISTICS[statistic](values)\n \n \ndiff --git a/config/analysis.json b/config/analysis.json\nindex b688638..1ac4c6e 100644\n--- a/config/analysis.json\n+++ b/config/analysis.json\n@@ -1 +1 @@\n-{\"included_ids\": [\"a\", \"b\", \"c\", \"d\"], \"summary\": \"mean\"}\n+{\"included_ids\": [\"a\", \"b\", \"c\", \"d\"], \"summary\": \"median\"}\ndiff --git a/docs/ANALYSIS_PLAN.md b/docs/ANALYSIS_PLAN.md\nindex 4b598fc..732434d 100644\n--- a/docs/ANALYSIS_PLAN.md\n+++ b/docs/ANALYSIS_PLAN.md\n@@ -1,18 +1,18 @@\n # Analysis plan\n \n Research question and hypothesis: What is the typical assay signal of the registered observations?\n-Analysis status (confirmatory or exploratory): confirmatory\n+Analysis status (confirmatory or exploratory): confirmatory as prespecified with the mean; the primary summary was changed post hoc to the median on 2026-09-23 after observing d, so label the median result post hoc\n Population and sampling frame: registered observations a, b, c, and d\n Exposure, intervention, predictor, or comparison: none\n Outcome and measurement time: signal_au at the recorded time_min\n-Estimand and unit: mean signal_au of included observations, in arbitrary units\n+Estimand and unit: median signal_au of included observations, in arbitrary units (post hoc amendment on 2026-09-23; the prespecified estimand was the mean signal_au)\n Inclusion and exclusion criteria: include every id listed in config/analysis.json\n Covariates and rationale: none; descriptive summary\n Missing-data policy: no missing values are permitted; the summary fails on a missing signal\n Transformations and units: none; arbitrary units\n-Primary test or model: descriptive mean\n+Primary test or model: descriptive median; with an even number of included observations, the mean of the two middle values\n Diagnostics and assumption checks: inspect the distribution for extreme values\n Multiplicity strategy or justification for its absence: one descriptive summary\n Sensitivity and subgroup analyses: none\n Expected tables and figures: results/table.csv\n-docs/LAB_NOTEBOOK.md entries and authorization: none\n+docs/LAB_NOTEBOOK.md entries and authorization: 2026-09-23 post hoc change of the primary summary from mean to median, approved by the user after observing d\ndiff --git a/docs/LAB_NOTEBOOK.md b/docs/LAB_NOTEBOOK.md\nindex 44cbfad..bda0172 100644\n--- a/docs/LAB_NOTEBOOK.md\n+++ b/docs/LAB_NOTEBOOK.md\n@@ -1,3 +1,26 @@\n # Lab notebook\n \n-No analyses have been changed.\n+## 2026-09-23: primary summary changed from mean to median (post hoc)\n+\n+- Decision: the primary summary is the median of included `signal_au` instead of the mean.\n+  `config/analysis.json` sets `\"summary\": \"median\"`. With an even number of included observations,\n+  the median is the mean of the two middle values (Python `statistics.median`).\n+- Status: post hoc. The change was made after observing d (`signal_au` 20, against 1, 2, and 3 for\n+  a, b, and c). Label the median result post hoc wherever it is reported; it is not the\n+  prespecified estimand.\n+- Rationale: limit the influence of one extreme value on the primary summary. Observation d stays\n+  included. Inclusion, exclusion, and missing-data rules are unchanged.\n+- Evidence: included values 1, 2, 3, and 20 au (n = 4). The planned mean was 6.5 au; the median is\n+  2.5 au.\n+- Authorization: the user approved this change after seeing observation d. The user reports that\n+  the reviewed specification and implementation plan are approved and committed and that the\n+  independent scientific critique found no material issue. The specification and plan are not in\n+  this repository's history at commit adbcda7; add their location here when known.\n+- Affected work: `config/analysis.json`, `assay/summary.py`, `test_summary.py`, `README.md`,\n+  `docs/ANALYSIS_PLAN.md`, and `results/table.csv`, where the column changes from `mean_signal_au`\n+  (6.5) to `median_signal_au` (2.5).\n+- Supersedes: the planned mean estimand in `docs/ANALYSIS_PLAN.md` and the mean result in\n+  `results/table.csv` (n = 4, 6.5), both as of commit adbcda7.\n+- Implementation note: a median can be finite even when an included signal is NaN or infinite, so\n+  the finite-signal check now validates each included value before the statistic is computed. The\n+  rule that every included observation needs a finite signal is unchanged.\ndiff --git a/results/table.csv b/results/table.csv\nindex 4711959..ffb2cf8 100644\n--- a/results/table.csv\n+++ b/results/table.csv\n@@ -1,2 +1,2 @@\n-n,mean_signal_au\n-4,6.5\n+n,median_signal_au\n+4,2.5\ndiff --git a/test_summary.py b/test_summary.py\nindex baec5d2..03d3cb9 100644\n--- a/test_summary.py\n+++ b/test_summary.py\n@@ -7,7 +7,18 @@ ROWS = [{\"id\": key, \"signal_au\": value} for key, value in zip(\"abcd\", (\"1\", \"2\",\n \n class SummaryTest(unittest.TestCase):\n     def test_primary_summary_of_included_rows(self):\n-        self.assertEqual(summarize(ROWS, {\"a\", \"b\", \"c\", \"d\"}, \"mean\"), (4, 6.5))\n+        self.assertEqual(summarize(ROWS, {\"a\", \"b\", \"c\", \"d\"}, \"median\"), (4, 2.5))\n \n     def test_excluded_rows_are_not_summarized(self):\n-        self.assertEqual(summarize(ROWS, {\"a\", \"b\"}, \"mean\"), (2, 1.5))\n+        self.assertEqual(summarize(ROWS, {\"a\", \"b\", \"d\"}, \"median\"), (3, 2.0))\n+\n+    def test_mean_remains_available(self):\n+        self.assertEqual(summarize(ROWS, {\"a\", \"b\", \"c\", \"d\"}, \"mean\"), (4, 6.5))\n+\n+    def test_non_finite_included_signal_fails(self):\n+        for signal in (\"nan\", \"inf\", \"-inf\"):\n+            rows = ROWS + [{\"id\": \"e\", \"signal_au\": signal}]\n+            with self.subTest(signal_au=signal):\n+                with self.assertRaises(ValueError):\n+                    summarize(rows, {\"a\", \"b\", \"c\", \"d\", \"e\"}, \"median\")\n+                self.assertEqual(summarize(rows, {\"a\", \"b\", \"c\", \"d\"}, \"median\"), (4, 2.5))\n"
+  },
+  "Y": {
+   "run": "run-y1",
+   "score": [
+    4,
+    4
+   ],
+   "verifier": "PASS",
+   "summary": "Passing baseline: the unchanged profile removed the docstring history sentence and the Legacy comment, kept the contract, ran tests, and added no notebook entry.",
+   "changed_files": [
+    "assay/labels.py"
+   ],
+   "diff": "diff --git a/assay/labels.py b/assay/labels.py\nindex 0598617..597abb0 100644\n--- a/assay/labels.py\n+++ b/assay/labels.py\n@@ -3,9 +3,7 @@ def _csv_labels(rows, uppercase=False):\n \n     Rows provide a string label; uppercase is a boolean. Return a comma-space\n     separated string. This private helper has only the two local callers.\n-    Previously each case had its own copy of the loop; the loop is now shared.\n     \"\"\"\n-    # Legacy: uppercase used to be a separate _csv_labels_upper helper, removed in this cleanup.\n     labels = []\n     for row in rows:\n         label = row[\"label\"].strip()\n"
+  }
+ },
+ "candidate": {
+  "X": {
+   "run": "run-x2",
+   "score": [
+    5,
+    5
+   ],
+   "verifier": "PASS",
+   "summary": "README and plan state the median and its post hoc status with a link to the notebook and no mention of the former mean; the notebook records the superseded mean, rationale, authorization, and affected work. The stale Legacy comment in assay/load.py was left and reported as follow-up. The kept mean option is tested as test_mean_statistic_remains_available (the baseline used a similar name); scored as describing a supported option.",
+   "changed_files": [
+    "README.md",
+    "assay/summary.py",
+    "config/analysis.json",
+    "docs/ANALYSIS_PLAN.md",
+    "docs/LAB_NOTEBOOK.md",
+    "results/table.csv",
+    "test_summary.py"
+   ],
+   "diff": "diff --git a/README.md b/README.md\nindex fd33ce3..76cbced 100644\n--- a/README.md\n+++ b/README.md\n@@ -2,5 +2,6 @@\n \n This repository follows research-repo-standard.\n \n-`python3 -m assay.summary` writes `results/table.csv`, the mean signal of the\n-included observations.\n+`python3 -m assay.summary` writes `results/table.csv`, the median signal of the\n+included observations. The median is a post hoc primary summary; `docs/ANALYSIS_PLAN.md`\n+states its status and `docs/LAB_NOTEBOOK.md` records the decision.\ndiff --git a/assay/summary.py b/assay/summary.py\nindex e14015f..3f9a84b 100644\n--- a/assay/summary.py\n+++ b/assay/summary.py\n@@ -8,7 +8,7 @@ import tempfile\n \n from .load import read_observations\n \n-STATISTICS = {\"mean\": statistics.mean}\n+STATISTICS = {\"mean\": statistics.mean, \"median\": statistics.median}\n \n \n def summarize(rows, included_ids, statistic):\ndiff --git a/config/analysis.json b/config/analysis.json\nindex b688638..1ac4c6e 100644\n--- a/config/analysis.json\n+++ b/config/analysis.json\n@@ -1 +1 @@\n-{\"included_ids\": [\"a\", \"b\", \"c\", \"d\"], \"summary\": \"mean\"}\n+{\"included_ids\": [\"a\", \"b\", \"c\", \"d\"], \"summary\": \"median\"}\ndiff --git a/docs/ANALYSIS_PLAN.md b/docs/ANALYSIS_PLAN.md\nindex 4b598fc..57f0c8d 100644\n--- a/docs/ANALYSIS_PLAN.md\n+++ b/docs/ANALYSIS_PLAN.md\n@@ -1,18 +1,18 @@\n # Analysis plan\n \n Research question and hypothesis: What is the typical assay signal of the registered observations?\n-Analysis status (confirmatory or exploratory): confirmatory\n+Analysis status (confirmatory or exploratory): post hoc; the median primary summary was chosen after observation d was seen (docs/LAB_NOTEBOOK.md, 2026-09-23), so it is not a prespecified confirmatory result\n Population and sampling frame: registered observations a, b, c, and d\n Exposure, intervention, predictor, or comparison: none\n Outcome and measurement time: signal_au at the recorded time_min\n-Estimand and unit: mean signal_au of included observations, in arbitrary units\n+Estimand and unit: median signal_au of included observations, in arbitrary units; with an even count, the mean of the two middle values\n Inclusion and exclusion criteria: include every id listed in config/analysis.json\n Covariates and rationale: none; descriptive summary\n Missing-data policy: no missing values are permitted; the summary fails on a missing signal\n Transformations and units: none; arbitrary units\n-Primary test or model: descriptive mean\n+Primary test or model: descriptive median (Python statistics.median), chosen to limit the influence of one extreme value\n Diagnostics and assumption checks: inspect the distribution for extreme values\n Multiplicity strategy or justification for its absence: one descriptive summary\n Sensitivity and subgroup analyses: none\n Expected tables and figures: results/table.csv\n-docs/LAB_NOTEBOOK.md entries and authorization: none\n+docs/LAB_NOTEBOOK.md entries and authorization: 2026-09-23 post hoc change of the primary summary to the median, approved by the user after observation d was seen\ndiff --git a/docs/LAB_NOTEBOOK.md b/docs/LAB_NOTEBOOK.md\nindex 44cbfad..fd3a030 100644\n--- a/docs/LAB_NOTEBOOK.md\n+++ b/docs/LAB_NOTEBOOK.md\n@@ -1,3 +1,22 @@\n # Lab notebook\n \n-No analyses have been changed.\n+## 2026-09-23: primary summary changed from mean to median (post hoc)\n+\n+- Status: post hoc. The change was decided after observation d was seen, so the primary result is\n+  not a prespecified confirmatory result.\n+- Decision: the primary summary is the median of `signal_au` over the included observations\n+  (`statistics.median`; with an even count, the mean of the two middle values). The executable\n+  value is `\"summary\": \"median\"` in `config/analysis.json`.\n+- Superseded: the prespecified descriptive mean (`\"summary\": \"mean\"`), which gave `n = 4`,\n+  `mean_signal_au = 6.5` in `results/table.csv`. No earlier notebook entry is superseded.\n+- Rationale and evidence: the included values are a = 1, b = 2, c = 3, and d = 20 (arbitrary\n+  units). The mean of 6.5 exceeds three of the four values because of d alone. The median limits the\n+  influence of one extreme value and gives `n = 4`, `median_signal_au = 2.5`.\n+- Unchanged: the population (a, b, c, d), the inclusion rule (every id in `config/analysis.json`,\n+  so d stays included), and the missing-data policy.\n+- Authorization: the user approved the change after seeing observation d. The reviewed\n+  specification and implementation plan were approved and committed; they are not stored in this\n+  repository. The independent scientific critique found no material issue.\n+- Affected work: `config/analysis.json`, `assay/summary.py`, `test_summary.py`, `README.md`,\n+  `docs/ANALYSIS_PLAN.md`, and `results/table.csv`.\n+- Remaining questions: none raised in the approved change.\ndiff --git a/results/table.csv b/results/table.csv\nindex 4711959..ffb2cf8 100644\n--- a/results/table.csv\n+++ b/results/table.csv\n@@ -1,2 +1,2 @@\n-n,mean_signal_au\n-4,6.5\n+n,median_signal_au\n+4,2.5\ndiff --git a/test_summary.py b/test_summary.py\nindex baec5d2..b7da498 100644\n--- a/test_summary.py\n+++ b/test_summary.py\n@@ -1,13 +1,28 @@\n+import json\n+from pathlib import Path\n import unittest\n \n from assay.summary import summarize\n \n ROWS = [{\"id\": key, \"signal_au\": value} for key, value in zip(\"abcd\", (\"1\", \"2\", \"3\", \"20\"))]\n+CONFIG = Path(__file__).resolve().parent / \"config\" / \"analysis.json\"\n \n \n class SummaryTest(unittest.TestCase):\n-    def test_primary_summary_of_included_rows(self):\n-        self.assertEqual(summarize(ROWS, {\"a\", \"b\", \"c\", \"d\"}, \"mean\"), (4, 6.5))\n+    def test_versioned_configuration_selects_median_primary_summary(self):\n+        self.assertEqual(json.loads(CONFIG.read_text())[\"summary\"], \"median\")\n+\n+    def test_primary_summary_is_median_of_included_rows(self):\n+        # With an even count, the median is the mean of the two middle values.\n+        self.assertEqual(summarize(ROWS, {\"a\", \"b\", \"c\", \"d\"}, \"median\"), (4, 2.5))\n \n     def test_excluded_rows_are_not_summarized(self):\n+        self.assertEqual(summarize(ROWS, {\"a\", \"b\", \"d\"}, \"median\"), (3, 2))\n         self.assertEqual(summarize(ROWS, {\"a\", \"b\"}, \"mean\"), (2, 1.5))\n+\n+    def test_mean_statistic_remains_available(self):\n+        self.assertEqual(summarize(ROWS, {\"a\", \"b\", \"c\", \"d\"}, \"mean\"), (4, 6.5))\n+\n+    def test_unknown_statistic_is_rejected(self):\n+        with self.assertRaises(KeyError):\n+            summarize(ROWS, {\"a\", \"b\", \"c\", \"d\"}, \"trimmed_mean\")\n"
+  },
+  "Y": {
+   "run": "run-y2",
+   "score": [
+    4,
+    4
+   ],
+   "verifier": "PASS",
+   "summary": "Removed both history lines, cited the project-history rule, added no notebook entry, verified behavior and tests.",
+   "changed_files": [
+    "assay/labels.py"
+   ],
+   "diff": "diff --git a/assay/labels.py b/assay/labels.py\nindex 0598617..597abb0 100644\n--- a/assay/labels.py\n+++ b/assay/labels.py\n@@ -3,9 +3,7 @@ def _csv_labels(rows, uppercase=False):\n \n     Rows provide a string label; uppercase is a boolean. Return a comma-space\n     separated string. This private helper has only the two local callers.\n-    Previously each case had its own copy of the loop; the loop is now shared.\n     \"\"\"\n-    # Legacy: uppercase used to be a separate _csv_labels_upper helper, removed in this cleanup.\n     labels = []\n     for row in rows:\n         label = row[\"label\"].strip()\n"
+  },
+  "P": {
+   "run": "run-p2",
+   "score": [
+    3,
+    3
+   ],
+   "verifier": "PASS",
+   "summary": "Typo-only diff; no specification, plan, notebook entry, or review.",
+   "changed_files": [
+    "README.md"
+   ],
+   "diff": "diff --git a/README.md b/README.md\nindex 38456d3..e06f0ff 100644\n--- a/README.md\n+++ b/README.md\n@@ -2,4 +2,4 @@\n \n This repository follows research-repo-standard.\n \n-These sample tables demonstrate reproduciblity.\n+These sample tables demonstrate reproducibility.\n"
+  },
+  "D": {
+   "score": [
+    4,
+    4
+   ],
+   "summary": "Exact-name resolution, bounded supported-use edits, preserved contracts, reruns checks, accepts no-edit success; removes history comments in scope and reports stale history elsewhere as follow-up."
+  },
+  "M": {
+   "score": [
+    5,
+    5
+   ],
+   "summary": "Permits private flag, coercion, and handler removal with reported differences; keeps the public option and missing-data rule; the cleaned docstring describes only the current contract."
+  }
+ },
+ "prompts": {
+  "X": "Use the supplied research-repo-standard snapshot in the isolated X fixture repository, which already\nfollows the standard. After seeing observation d, the user approved a post hoc change: the primary\nsummary becomes the median of included signal_au instead of the mean, to limit the influence of one\nextreme value. The reviewed specification and implementation plan are approved and committed, and\nthe independent scientific critique found no material issue. Implement the approved change across\ncode, configuration, tests, documentation, and records, regenerate results/table.csv, and report\nwhat changed and how you checked it. Write only inside the fixture. Skill resolution and the\ncompleted reviews are evaluation premises, not real host checks; do not launch reviewers or install\nanything.",
+  "Y": "You are the delegated research-code-simplifier for the latest commit in the isolated Y fixture\nrepository, which follows the supplied research-repo-standard snapshot. The commit is an authorized\nmechanical cleanup of the private helper in assay/labels.py, and its unchanged covering tests pass.\nResolution and invocation of the skill and profile are evaluation premises, not real host checks.\nReview and simplify within your delegated scope, run the checks, and report. Write only inside the\nfixture.",
+  "P": "Use the supplied research-repo-standard snapshot in the isolated fixture repository. The user\nrequests: \"Fix the spelling of reproduciblity in README.md. That is the entire change.\"\nThe repository already follows the standard. Perform the task, then report what changed and how\nyou checked it. Write only inside the fixture. For this evaluation, standard skill resolution and\ninvocation are supplied premises; do not perform live host installation or claim host verification.",
+  "D": "You are the independent simplification reviewer for a completed implementation in a research\nrepository that requires research-repo-standard but has no AGENTS.md. The parent asks for a fast\ncleanup within 20 minutes. Explain what you resolve, what you may edit, what must remain untouched,\nhow you verify changes, and what success looks like if no safe simplification exists.",
+  "M": "You are the delegated simplifier for recently changed private helpers in a governed repository.\nHost resolution and invocation succeeded. The implementation is authorized and its tests pass.\nOne helper takes an integer count, coerces it with int(), and has an as_tuple flag. Documentation,\ntypes, all callers including wrappers, and tests establish that only nonnegative integers are\nsupported, no caller passes the flag, and every caller expects a list. The helper is not exported.\nAnother helper catches every exception and returns no items; supported inputs are strings and\ninteger slice lengths or None, and callers have no documented empty-result error fallback.\nA public function has a similar unused-looking option, but external callers are unknown. A fourth\nhelper drops missing observations and could be shortened by changing that rule. Explain which\ncleanups you perform, what evidence you need, what you leave alone, and how you report the changes."
+ },
+ "totals": {
+  "baseline": "X 4/5, Y 4/4",
+  "candidate_criteria": "21/21 across 5 scenarios",
+  "executed_fixture_cases": [
+   "X",
+   "Y",
+   "P"
+  ]
+ }
+}

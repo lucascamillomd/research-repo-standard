@@ -38,8 +38,9 @@ that makes the supported-use argument easiest to verify.
 ## Edit standard
 
 Prefer explicit code over clever one-liners and nested conditional expressions. Remove needless
-nesting, duplication, indirection, speculative generality, and comments that repeat the code. Keep
-useful abstractions and separate concerns. A review with no justified edit succeeds.
+nesting, duplication, indirection, speculative generality, and comments that repeat the code or
+describe earlier versions. Keep useful abstractions and separate concerns. A review with no
+justified edit succeeds.
 
 ## Verification and report
 

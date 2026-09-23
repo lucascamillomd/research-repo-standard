@@ -76,6 +76,16 @@ Stop and report a blocker rather than weakening these requirements.
    Unknown, missing, duplicate-owned, or unrecorded result-affecting values fail before computation
    instead of defaulting silently, and a result-affecting value is never hidden in a code default.
 
+## Project history
+
+`docs/LAB_NOTEBOOK.md` is the only file that records project history. Every other file, including
+code comments, docstrings, and documentation, describes the repository as it is now. Leave out notes
+about earlier versions, replaced methods, removed options, renamed settings, and legacy behavior.
+When a change makes text stale, rewrite it to the current state. Record history worth keeping in the
+notebook; a change that needs no notebook entry needs no history note, because git keeps the diff.
+Exploratory and post hoc labels state the current analysis status and stay. Report stale history in
+unrelated files as follow-up.
+
 ## Routing
 
 Read the sections relevant to the task and their linked dependencies. Do not load every reference or

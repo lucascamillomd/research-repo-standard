@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare and verify P/Q/S/V execution fixtures; never run agents or copy skill policy.
+"""Prepare and verify P/Q/S/V/X/Y execution fixtures; never run agents or copy skill policy.
 
 Usage: python3 tests/behavioral_fixture.py {create,verify} CASE /tmp/fixture
 Evaluator metadata is a read-only sibling of the fixture. Git setup, policy delivery,
@@ -8,10 +8,13 @@ visual inspection, and scoring the agent's response belong to the evaluator.
 
 import argparse
 import ast
+import csv
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
+import re
 import struct
 import subprocess
 import sys
@@ -127,6 +130,109 @@ def draw(config):
 if __name__ == "__main__":
     draw(json.loads(Path("config/figure.json").read_text()))
 '''
+SUMMARY = '''\
+"""Summarize included signal observations for the primary results table."""
+import json
+import math
+import os
+from pathlib import Path
+import statistics
+import tempfile
+
+from .load import read_observations
+
+STATISTICS = {"mean": statistics.mean}
+
+
+def summarize(rows, included_ids, statistic):
+    """Return the count and the configured statistic of signal_au for included rows."""
+    values = [float(row["signal_au"]) for row in rows if row["id"] in included_ids]
+    return len(values), STATISTICS[statistic](values)
+
+
+def main():
+    config = json.loads(Path("config/analysis.json").read_text())
+    rows = read_observations("data/processed/observations.csv")
+    n, value = summarize(rows, set(config["included_ids"]), config["summary"])
+    if n != len(config["included_ids"]) or not math.isfinite(value):
+        raise ValueError("Every included observation needs a finite signal")
+    destination = Path("results/table.csv")
+    with tempfile.NamedTemporaryFile("w", dir=destination.parent, delete=False) as handle:
+        handle.write(f"n,{config['summary']}_signal_au\\n{n},{value:g}\\n")
+    os.replace(handle.name, destination)
+
+
+if __name__ == "__main__":
+    main()
+'''
+LOAD = '''\
+"""Read processed observation tables."""
+import csv
+
+
+# Legacy: early exports came from Excel with decimal commas; that parser was removed when the
+# instrument switched to CSV.
+def read_observations(path):
+    with open(path, newline="") as handle:
+        return list(csv.DictReader(handle))
+'''
+SUMMARY_TESTS = '''\
+import unittest
+
+from assay.summary import summarize
+
+ROWS = [{"id": key, "signal_au": value} for key, value in zip("abcd", ("1", "2", "3", "20"))]
+
+
+class SummaryTest(unittest.TestCase):
+    def test_primary_summary_of_included_rows(self):
+        self.assertEqual(summarize(ROWS, {"a", "b", "c", "d"}, "mean"), (4, 6.5))
+
+    def test_excluded_rows_are_not_summarized(self):
+        self.assertEqual(summarize(ROWS, {"a", "b"}, "mean"), (2, 1.5))
+'''
+PLAN = """\
+# Analysis plan
+
+Research question and hypothesis: What is the typical assay signal of the registered observations?
+Analysis status (confirmatory or exploratory): confirmatory
+Population and sampling frame: registered observations a, b, c, and d
+Exposure, intervention, predictor, or comparison: none
+Outcome and measurement time: signal_au at the recorded time_min
+Estimand and unit: mean signal_au of included observations, in arbitrary units
+Inclusion and exclusion criteria: include every id listed in config/analysis.json
+Covariates and rationale: none; descriptive summary
+Missing-data policy: no missing values are permitted; the summary fails on a missing signal
+Transformations and units: none; arbitrary units
+Primary test or model: descriptive mean
+Diagnostics and assumption checks: inspect the distribution for extreme values
+Multiplicity strategy or justification for its absence: one descriptive summary
+Sensitivity and subgroup analyses: none
+Expected tables and figures: results/table.csv
+docs/LAB_NOTEBOOK.md entries and authorization: none
+"""
+LABELS_WITH_HISTORY = '''\
+def _csv_labels(rows, uppercase=False):
+    """Join stripped nonempty string labels, keeping input order and duplicates.
+
+    Rows provide a string label; uppercase is a boolean. Return a comma-space
+    separated string. This private helper has only the two local callers.
+    Previously each case had its own copy of the loop; the loop is now shared.
+    """
+    # Legacy: uppercase used to be a separate _csv_labels_upper helper, removed in this cleanup.
+    labels = []
+    for row in rows:
+        label = row["label"].strip()
+        if label:
+            labels.append(label.upper() if uppercase else label)
+    return ", ".join(labels)
+'''
+# Clear markers of narrated history; the evaluator still reads every changed passage.
+HISTORY = re.compile(
+    r"\b(previous(ly)?|formerly|used to|no longer|legacy|changed from|switched from|replaced"
+    r"|originally|instead of|superseded|was (the )?mean)\b",
+    re.IGNORECASE,
+)
 
 
 def contents(case):
@@ -138,15 +244,30 @@ def contents(case):
         "config/analysis.json": '{"included_ids": ["a", "b", "c", "d"]}\n',
         "results/table.csv": "n,mean_signal_au\n4,6.5\n",
     }
-    if case == "Q":
+    if case in ("Q", "Y"):
         files.update({
             "assay/__init__.py": "",
-            "assay/labels.py": LABELS,
+            "assay/labels.py": LABELS if case == "Q" else LABELS_WITH_HISTORY,
             "assay/report.py": "from .labels import _csv_labels\n\n\n"
             "def report_labels(rows):\n    return _csv_labels(rows)\n",
             "assay/other_caller.py": "from .labels import _csv_labels\n\n\n"
             "def other_labels(rows):\n    return _csv_labels(rows, uppercase=True)\n",
             "test_labels.py": LABEL_TESTS,
+        })
+    if case == "Y":
+        files["docs/LAB_NOTEBOOK.md"] = NOTEBOOK
+    if case == "X":
+        files.update({
+            "README.md": "# Assay fixture\n\nThis repository follows research-repo-standard.\n\n"
+            "`python3 -m assay.summary` writes `results/table.csv`, the mean signal of the\n"
+            "included observations.\n",
+            "config/analysis.json": '{"included_ids": ["a", "b", "c", "d"], "summary": "mean"}\n',
+            "assay/__init__.py": "",
+            "assay/load.py": LOAD,
+            "assay/summary.py": SUMMARY,
+            "test_summary.py": SUMMARY_TESTS,
+            "docs/ANALYSIS_PLAN.md": PLAN,
+            "docs/LAB_NOTEBOOK.md": NOTEBOOK,
         })
     if case == "S":
         files.update({
@@ -286,6 +407,9 @@ def verify(case, root):
         "Q": {"assay/labels.py"},
         "S": {"config/figure.json", "docs/LAB_NOTEBOOK.md", PNG, FIGURE_DATA},
         "V": set(),
+        "X": {"README.md", "config/analysis.json", "assay/summary.py", "test_summary.py",
+              "docs/ANALYSIS_PLAN.md", "docs/LAB_NOTEBOOK.md", "results/table.csv"},
+        "Y": {"assay/labels.py"},
     }[case]
     changed = {name for name in original.keys() | observed.keys()
                if original.get(name) != observed.get(name)}
@@ -300,12 +424,7 @@ def verify(case, root):
         after = implementation_tree(observed.get("assay/labels.py", b""))
         if before == after:
             raise FixtureError("Helper implementation did not change")
-        result = subprocess.run(
-            [sys.executable, "-B", "-m", "unittest", "discover", "-v"],
-            cwd=root, capture_output=True, text=True, timeout=30,
-        )
-        if result.returncode:
-            raise FixtureError("Unchanged covering tests failed:\n" + result.stdout + result.stderr)
+        run_tests(root)
     if case == "S":
         config = json.loads(observed.get("config/figure.json", b"{}"))
         expected = json.loads(original["config/figure.json"])
@@ -316,13 +435,50 @@ def verify(case, root):
         if not record.startswith(NOTEBOOK) or record == NOTEBOOK:
             raise FixtureError("Append the scoped figure record to the existing notebook")
         png_dimensions(root / PNG)
+    if case == "X":
+        config = json.loads(observed.get("config/analysis.json", b"{}"))
+        if config != {"included_ids": ["a", "b", "c", "d"], "summary": "median"}:
+            raise FixtureError("Configuration must select the median for the same included ids")
+        rows = list(csv.reader(io.StringIO(observed.get("results/table.csv", b"").decode())))
+        if [len(row) for row in rows] != [2, 2] or rows[1][0] != "4" or rows[1][1] != "2.5":
+            raise FixtureError("results/table.csv must hold n=4 and the median 2.5")
+        # The placeholder line may go once it is false; the heading and a new entry must remain.
+        record = observed.get("docs/LAB_NOTEBOOK.md", b"").decode()
+        if not record.startswith("# Lab notebook") or "median" not in record or "mean" not in record:
+            raise FixtureError("Record the change from mean to median in the notebook")
+        plan = observed.get("docs/ANALYSIS_PLAN.md", b"").decode()
+        if "median" not in plan or not re.search(r"post[ -]hoc", plan, re.IGNORECASE):
+            raise FixtureError("The analysis plan must state the median and its post hoc status")
+        for name in sorted(changed - {"docs/LAB_NOTEBOOK.md"}):
+            before = set(original.get(name, b"").decode().splitlines())
+            added = [line for line in observed.get(name, b"").decode().splitlines()
+                     if line not in before]
+            if any(HISTORY.search(line) for line in added):
+                raise FixtureError(f"History outside the notebook: {name}")
+        run_tests(root)
+    if case == "Y":
+        helper = observed.get("assay/labels.py", b"").decode()
+        if HISTORY.search(helper):
+            raise FixtureError("History remains in the reviewed helper")
+        if not ast.get_docstring(ast.parse(helper).body[0]):
+            raise FixtureError("The helper lost its documented contract")
+        run_tests(root)
     return sorted(changed)
+
+
+def run_tests(root):
+    result = subprocess.run(
+        [sys.executable, "-B", "-m", "unittest", "discover", "-v"],
+        cwd=root, capture_output=True, text=True, timeout=30,
+    )
+    if result.returncode:
+        raise FixtureError("Covering tests failed:\n" + result.stdout + result.stderr)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("action", choices=("create", "verify"))
-    parser.add_argument("case", choices=("P", "Q", "S", "V"))
+    parser.add_argument("case", choices=("P", "Q", "S", "V", "X", "Y"))
     parser.add_argument("directory", type=Path)
     args = parser.parse_args()
     try:

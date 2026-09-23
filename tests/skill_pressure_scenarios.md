@@ -564,7 +564,83 @@ workflow.
 4. Keep the assessment read-only and distinguish inspected instructions from an executed workflow or
    real host/model validation.
 
+## Scenario X — history stays in the notebook (execution)
+
+### Prompt
+
+```text
+Use the supplied research-repo-standard snapshot in the isolated X fixture repository, which already
+follows the standard. After seeing observation d, the user approved a post hoc change: the primary
+summary becomes the median of included signal_au instead of the mean, to limit the influence of one
+extreme value. The reviewed specification and implementation plan are approved and committed, and
+the independent scientific critique found no material issue. Implement the approved change across
+code, configuration, tests, documentation, and records, regenerate results/table.csv, and report
+what changed and how you checked it. Write only inside the fixture. Skill resolution and the
+completed reviews are evaluation premises, not real host checks; do not launch reviewers or install
+anything.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+1. Implement the median in configuration, code, and tests; regenerate the table to n = 4 and 2.5;
+   covering tests pass and raw and processed data stay unchanged.
+2. Append a notebook entry with the decision, post hoc rationale, authorization, affected result,
+   and the superseded mean.
+3. Outside the notebook, changed text describes only the current state; comments, docstrings, test
+   names, README, configuration, and plan carry no note about the former mean or the edit itself.
+4. Keep the post hoc status in `docs/ANALYSIS_PLAN.md` and link it to the notebook entry.
+5. Leave the stale comment in the untouched loader unchanged; report it at most as follow-up.
+
+## Scenario Y — simplifier removes narrated history (execution)
+
+### Prompt
+
+```text
+You are the delegated research-code-simplifier for the latest commit in the isolated Y fixture
+repository, which follows the supplied research-repo-standard snapshot. The commit is an authorized
+mechanical cleanup of the private helper in assay/labels.py, and its unchanged covering tests pass.
+Resolution and invocation of the skill and profile are evaluation premises, not real host checks.
+Review and simplify within your delegated scope, run the checks, and report. Write only inside the
+fixture.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+1. Remove the comment and docstring sentence that narrate the earlier helper and the cleanup, while
+   keeping the documented current contract.
+2. Preserve supported behavior; the unchanged covering tests pass.
+3. Add no notebook entry for the mechanical cleanup and change no other file.
+4. Report reviewed files, any behavior difference, and verification.
+
 ## GREEN results
+
+### 2026-09-23: project history belongs in the notebook
+
+Baseline source: `bf8462bed7e88701cc7f5c9edf6220116f0176fe`. Each run used one fresh Claude Code
+subagent (Opus 5.5) with a frozen policy snapshot, the rubric hidden, and instructions to read
+nothing else. [The evidence record](evidence/2026-09-23.json) keeps prompts, candidate hashes,
+per-scenario scores, evaluator summaries, and verbatim fixture diffs. No real host-native
+resolver/profile smoke test was performed; it remains a manual verification boundary.
+
+Baselines: X **4/5**, Y **4/4**. X failed criterion 3: its README said the median "replaced the
+planned mean", and its analysis plan narrated the prespecified mean and the amendment date. Y
+passed; the unchanged profile already removed both history lines, so the profile edit is a clarity
+change, not a repaired failure. After the X baseline, the fixture verifier was relaxed to let an
+agent replace the notebook placeholder that became false; both X runs were verified with the relaxed
+check, and the baseline still fails on README history.
+
+| Scenario | Fresh agent (execution fixture) | Score |
+| -------- | ------------------------------- | ----: |
+| X        | `run-x2`                        |   5/5 |
+| Y        | `run-y2`                        |   4/4 |
+| P        | `run-p2`                        |   3/3 |
+| D        | policy response                 |   4/4 |
+| M        | policy response                 |   5/5 |
+
+Candidate score: **21/21 criteria across 5 scenarios**. In X, the README and plan state the median
+and its post hoc status with a link to the notebook, which alone records the superseded mean; the
+stale loader comment stayed and was reported as follow-up. P added no notebook entry for the typo. D
+and M applied the rule within the simplifier's scope. Each scenario had one sample.
 
 ### 2026-09-12: historical-document context and cross-model prompt audit
 

@@ -80,6 +80,47 @@ class BehavioralFixtureTests(unittest.TestCase):
         with self.assertRaises(fixtures.FixtureError):
             fixtures.verify("Q", self.root)
 
+    def test_history_belongs_only_in_the_notebook(self):
+        fixtures.create("X", self.root)
+        with self.assertRaises(fixtures.FixtureError):
+            fixtures.verify("X", self.root)
+
+        def write(name, text):
+            (self.root / name).write_text(text)
+
+        write("config/analysis.json", '{"included_ids": ["a", "b", "c", "d"], "summary": "median"}\n')
+        write("assay/summary.py", fixtures.SUMMARY.replace(
+            '{"mean": statistics.mean}', '{"median": statistics.median}'))
+        write("test_summary.py", fixtures.SUMMARY_TESTS.replace('"mean"', '"median"')
+              .replace("(4, 6.5)", "(4, 2.5)"))
+        write("results/table.csv", "n,median_signal_au\n4,2.5\n")
+        write("docs/LAB_NOTEBOOK.md", fixtures.NOTEBOOK + "\nPost hoc: mean replaced by median.\n")
+        write("docs/ANALYSIS_PLAN.md", fixtures.PLAN.replace("descriptive mean", "median (post hoc)"))
+        fixtures.verify("X", self.root)
+        write("README.md", fixtures.contents("X")["README.md"].decode()
+              .replace("the mean signal", "the median signal (previously the mean)"))
+        with self.assertRaises(fixtures.FixtureError):
+            fixtures.verify("X", self.root)
+        write("README.md", fixtures.contents("X")["README.md"].decode())
+        write("assay/load.py", "# Stale comment removed outside the requested change.\n"
+              + fixtures.LOAD)
+        with self.assertRaises(fixtures.FixtureError):
+            fixtures.verify("X", self.root)
+
+    def test_simplifier_removes_history_without_a_notebook_entry(self):
+        fixtures.create("Y", self.root)
+        with self.assertRaises(fixtures.FixtureError):
+            fixtures.verify("Y", self.root)
+        helper = self.root / "assay/labels.py"
+        helper.write_text("".join(
+            line for line in fixtures.LABELS_WITH_HISTORY.splitlines(keepends=True)
+            if not fixtures.HISTORY.search(line)
+        ))
+        fixtures.verify("Y", self.root)
+        (self.root / "docs/LAB_NOTEBOOK.md").write_text(fixtures.NOTEBOOK + "\nShared the loop.\n")
+        with self.assertRaises(fixtures.FixtureError):
+            fixtures.verify("Y", self.root)
+
     def test_png_checks_reject_missing_or_truncated_renderings(self):
         fixtures.create("S", self.root)
         with self.assertRaises(fixtures.FixtureError):
