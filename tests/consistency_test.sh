@@ -69,6 +69,9 @@ if grep -Eqi 'bootstrap' <<< "$description" &&
 else fail selective-discovery; fi
 require scope-boundary SKILL.md 'ordinary task.*ungoverned.*does not.*adoption' \
   'user instructions|explicit user' 'precedence|take precedence'
+require proactive-questions SKILL.md '(ask|question).*understand' '(assum|overlook|blind spot)' \
+  '(ask|question).*proactiv' '(even if|even when|without).*(proceed|block)'
+owned proactive-questions-owner SKILL.md '(ask|question).*proactiv.*(proceed|block)'
 require contextual-routing SKILL.md 'relevant|applicable' 'section' \
   'references/governance\.md' 'references/prerequisites\.md' 'references/bootstrap\.md' \
   'references/configuration\.md' 'references/data\.md' 'references/analysis\.md' 'references/figures\.md'

@@ -612,7 +612,43 @@ fixture.
 3. Add no notebook entry for the mechanical cleanup and change no other file.
 4. Report reviewed files, any behavior difference, and verification.
 
+## Scenario Z — questions that improve an answer
+
+### Prompt
+
+```text
+Use the supplied research-repo-standard skill. In a governed research repository, the approved
+analysis and its results are complete. Help me explain a plot of donor-level treatment effects to
+my lab. The plot shows an estimate and confidence interval for each donor and a pooled estimate.
+I have not said which part my lab finds confusing. Give me your initial response. This is an
+explanation request only; do not edit files or rerun analysis.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All four are required:
+
+1. Ask at least one concrete question about the audience's understanding or the intended message,
+   even though a general explanation is possible.
+2. Do not silently invent the audience's confusion, the observed direction of effects, or the
+   statistical significance.
+3. Keep questions relevant to improving the explanation, without reopening the approved design or
+   asking for supplied information.
+4. Respect the explanation-only scope without edits, reruns, or new approval gates.
+
 ## GREEN results
+
+### 2026-09-24: proactive clarification
+
+Scenario Z used one fresh agent per frozen snapshot with its rubric withheld. Baseline
+`17254a785097a83dd94211c2d364b9ca21ca3800` (`/root/questions_baseline`) and candidate
+(`/root/questions_candidate`) both scored **4/4**. Both asked which part of the plot needed
+explanation without reopening the approved analysis. This passing baseline establishes no measured
+behavioral improvement. The new meaning anchor failed before the skill edit and passed afterward.
+[Evidence](evidence/2026-09-24-questions.json) includes responses, criterion scores, and the
+candidate skill hash. The candidate assumed horizontal intervals, so this does not establish
+elimination of all assumptions. These are policy responses only; no execution fixture or cross-model
+check ran. Real host-resolver checks remain a manual boundary.
 
 ### 2026-09-23: project history belongs in the notebook
 

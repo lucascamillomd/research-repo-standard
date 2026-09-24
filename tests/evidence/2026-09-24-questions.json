@@ -1,0 +1,29 @@
+{
+  "scenario": "Z",
+  "baseline_commit": "17254a785097a83dd94211c2d364b9ca21ca3800",
+  "evaluation_type": "policy response only",
+  "baseline": {
+    "agent": "/root/questions_baseline",
+    "score": "4/4",
+    "response": "A useful starting explanation is: “Each donor’s point shows the estimated treatment effect, and its confidence interval shows the uncertainty around that estimate. The pooled estimate combines information across donors according to the analysis model. Differences between donor estimates can reflect both real variation and sampling uncertainty.”\n\nWhich part would you like to focus on: reading the confidence intervals, understanding differences between donors, or interpreting the pooled estimate?",
+    "criteria": [
+      "Asked a focused question despite being able to give a general explanation.",
+      "Did not invent the audience's confusion or observed results.",
+      "Asked about explanation focus without reopening approved decisions.",
+      "No edits, reruns, or approval gates."
+    ]
+  },
+  "candidate_skill_sha256": "11cdec78335100a55ca4dd5012bf9ec641011441a4590c00631accd85d79aefe",
+  "candidate": {
+    "agent": "/root/questions_candidate",
+    "score": "4/4",
+    "response": "I’m using the research-repo-standard skill for this explanation.\n\nYou could introduce the plot like this: “Each donor’s point is their estimated treatment effect, and the horizontal interval shows uncertainty around that estimate. Wider intervals mean less precise estimates. The pooled estimate summarizes the treatment effect across donors using the analysis model; it may weight donors differently.”\n\nAn interval crossing the no-effect value does not prove that donor has no effect. Likewise, different donor estimates alone do not establish that donors truly respond differently.\n\nWhich part is your lab finding confusing: the confidence intervals, differences between donors, or how the pooled estimate relates to individual donors?",
+    "criteria": [
+      "Asked which aspect the lab finds confusing despite giving an initial explanation.",
+      "Did not invent the audience confusion, effect direction, or statistical significance.",
+      "Question stayed focused on explanation without revisiting approved analysis.",
+      "No edits, reruns, or new approval gates."
+    ]
+  },
+  "limitations": "One fresh agent per snapshot with the rubric withheld. Policy responses only, not executed fixtures, cross-model validation, or real host-resolver checks. Both passed; no behavioral improvement is established. Candidate assumed horizontal intervals, which the prompt did not specify; the addition does not eliminate every assumption."
+}

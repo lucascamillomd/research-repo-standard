@@ -21,6 +21,9 @@ may override the documented seed, Python-version, and plotting-backend defaults;
 in its owning configuration or contract. These conventions are separate from the scientific
 invariants below.
 
+Ask questions to understand the task better and catch what you might otherwise assume or overlook.
+Ask proactively even if you can proceed without it.
+
 ## Change classification
 
 Classify by scientific meaning, not file type. An inclusion rule inside configuration is still a
