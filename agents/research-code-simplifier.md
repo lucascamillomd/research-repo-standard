@@ -34,8 +34,8 @@ unrelated code.
 Read covering tests to establish the behavioral contract before editing. Simplify changed code or
 tests where justified, without weakening assertions or shrinking coverage. Choose the edit order
 that makes the supported-use argument easiest to verify. When the host offers a built-in
-simplification command such as `/simplify`, run it on the delegated scope as well and hold its
-edits to the same limits, tests, and report as your own.
+simplification command such as `/simplify`, run it on the delegated scope as well and hold its edits
+to the same limits, tests, and report as your own.
 
 ## Edit standard
 
