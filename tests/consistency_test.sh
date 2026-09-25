@@ -163,6 +163,8 @@ require simplifier-supported-use agents/research-code-simplifier.md \
   'explicitly delegates' 'research-repo-standard' 'supported' 'callers.*wrappers' 'private' 'unsupported' \
   'public' 'scientific' 'behavior difference' '(unknown|uncertain).*leave|leave.*(unknown|uncertain)' \
   'tests.*behavioral contract before editing' 'without weakening' 'rerun covering tests' 'no justified edit succeeds'
+require simplifier-host-command agents/research-code-simplifier.md \
+  '/simplify' 'same (limits|rules)'
 require simplifier-current-comments agents/research-code-simplifier.md \
   'comments that.{0,60}earlier versions'
 require attributed-examples agents/research-code-simplifier.md 'requests \(Apache-2.0\)' 'PSF license'
