@@ -719,8 +719,9 @@ Real host checks ran without a model session. Claude Code 2.1.283 validated the 
 intended warning (no `version`), installed the plugin from the working tree, and listed one skill
 and one agent with the commit as version. codex-cli 0.157.1 read `.claude-plugin/marketplace.json`,
 installed the plugin, and listed `research-repo-standard:research-repo-standard` in its model input.
-The session smoke tests, Claude Code's namespaced agent name, and Codex agent resolution remain
-manual verification boundaries.
+After commit `872f117` was pushed, both CLIs also installed the plugin from GitHub at this branch;
+Claude Code reported the commit as its version. The session smoke tests, Claude Code's namespaced
+agent name, and Codex agent resolution remain manual verification boundaries.
 
 ### 2026-09-24: proactive clarification
 

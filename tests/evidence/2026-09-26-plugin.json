@@ -58,7 +58,8 @@
   ],
   "host_checks": {
     "claude_code": "Claude Code 2.1.283 in a throwaway config: claude plugin validate passed with one warning (no version, intended); marketplace add from the working tree, install, and plugin details listed one skill and one agent with the commit as version. Namespaced names come from the plugin docs; no session smoke test ran.",
-    "codex": "codex-cli 0.157.1 in a throwaway CODEX_HOME: marketplace add read .claude-plugin/marketplace.json, plugin add installed under plugins/cache/research-repo-standard/research-repo-standard/local/, and debug prompt-input listed research-repo-standard:research-repo-standard. The derived agent TOML parsed; Codex agent resolution and the session smoke test did not run."
+    "codex": "codex-cli 0.157.1 in a throwaway CODEX_HOME: marketplace add read .claude-plugin/marketplace.json, plugin add installed under plugins/cache/research-repo-standard/research-repo-standard/local/, and debug prompt-input listed research-repo-standard:research-repo-standard. The derived agent TOML parsed; Codex agent resolution and the session smoke test did not run.",
+    "github_install": "After commit 872f117 was pushed, both CLIs added the marketplace from github.com/lucascamillomd/research-repo-standard at branch claude/prompt-audit-checkup-l4dwrr and installed the plugin in throwaway configs. Claude Code reported version 872f11734cda with one skill and one agent; Codex installed under the local version, upgraded the marketplace, and listed research-repo-standard:research-repo-standard."
   },
   "limitations": "One sample per scenario and snapshot. AB passed on the baseline, so it shows no measured improvement. Scenarios C and R, which bootstrap without a selected host, were not rerun. No model-backed host smoke test ran on either host."
 }
