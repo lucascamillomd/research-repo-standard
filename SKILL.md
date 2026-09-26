@@ -22,7 +22,8 @@ in its owning configuration or contract. These conventions are separate from the
 invariants below.
 
 Ask questions to understand the task better and catch what you might otherwise assume or overlook.
-Ask proactively even if you can proceed without it.
+Ask proactively, even if you can proceed without the answer, when different readings of the task
+would lead to materially different work.
 
 ## Change classification
 
