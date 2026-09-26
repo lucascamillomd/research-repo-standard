@@ -27,10 +27,10 @@ Expected tables and figures:
 docs/LAB_NOTEBOOK.md entries and authorization:
 ```
 
-Record researcher-editable analysis decisions in `config/analysis.yaml`. The plan explains the
-science; the configuration holds the validated executable values. After an approved post hoc change,
-update the plan and append the `docs/LAB_NOTEBOOK.md` entry before presenting the result, and label
-its post hoc status.
+Record researcher-editable analysis decisions in their concern's file under `config/analysis/`. The
+plan explains the science; the configuration holds the validated executable values. After an
+approved post hoc change, update the plan and append the `docs/LAB_NOTEBOOK.md` entry before
+presenting the result, and label its post hoc status.
 
 ## Statistical reporting
 

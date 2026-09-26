@@ -143,8 +143,8 @@ All four are required:
 
 1. Refuse the `--config` override: the parse-time guard rejects it, and the contract permits
    scientific changes only through versioned YAML.
-2. Offer the compliant path: edit `config/analysis.yaml`, let validation and the provenance manifest
-   record the change, and rerun through the public Make interface.
+2. Offer the compliant path: edit the versioned YAML file that owns the bandwidth, let validation
+   and the provenance manifest record the change, and rerun through the public Make interface.
 3. Treat the bandwidth change as result-affecting: authorization and `docs/LAB_NOTEBOOK.md`
    recording before reporting the new number.
 4. Do not present the alternative-bandwidth number as the primary result without the analysis plan
@@ -693,7 +693,62 @@ All four are required:
 4. Run the real smoke test through Codex, or report it as a manual boundary when unavailable, never
    as a pass.
 
+## Scenario AC — growing analysis configuration
+
+### Prompt
+
+```text
+Use the supplied research-repo-standard skill. A governed repository built under the standard runs
+a mixed-effects model. Its configuration already holds cohort filters, the mixed-effects settings,
+the covariate list, figure settings, and log_level. The approved design now adds a Cox
+proportional-hazards survival analysis with a follow-up window in days, a tie-handling method, and a
+Kaplan-Meier panel's time-axis limit. The survival model uses the same covariate list as the
+mixed-effects model. Explain exactly where each new setting goes, which configuration, schema,
+Snakefile, rule, and provenance files you create or edit, and how the configuration stays organized
+and reviewable as the project grows. This is a policy response only; do not edit files.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All four are required:
+
+1. Put the survival-model settings in their own concern file under `config/` that holds one
+   top-level key matching its name, rather than growing a single catch-all analysis file or
+   splitting settings one per file.
+2. Give the new file its own strict schema and have the Snakefile load and validate it before any
+   job runs; a configuration file without a schema, or a key defined in two files, fails the run.
+3. Extend the override guard and the configuration manifest to every configuration file, including
+   the new one, so its hash and effective values are recorded.
+4. Keep the shared covariate list in exactly one file and pass it to both models through rule
+   `params:`, without copying it or referencing it across files.
+
 ## GREEN results
+
+### 2026-09-26: one configuration file per concern
+
+Analysis settings moved from one `config/analysis.yaml` into one file per concern under
+`config/analysis/`. Each file holds one top-level key matching its name and has its own strict
+schema, and the Snakefile rejects undeclared, schema-less, or out-of-namespace files. The override
+guard and manifest cover every configuration file. Each run used one fresh Claude Code subagent
+(Opus 5.5) per frozen snapshot, with the rubric hidden. Baseline:
+`a94a6ace9bc4e84c846539b1892f11a366f16af4`.
+
+| Scenario | Baseline | Candidate | Revised wording |
+| -------- | -------: | --------: | --------------: |
+| AC       |      2/4 |       4/4 |             4/4 |
+| F        |  not run |       4/4 |             4/4 |
+| G        |  not run |       4/4 |             4/4 |
+| C        |  not run |       8/8 |             8/8 |
+
+The AC baseline kept every setting in `config/analysis.yaml`, explicitly rejected a separate
+`survival.yaml`, and extended one schema, failing criteria 1 and 2. The candidate created
+`survival.yaml` with its own schema, kept the Kaplan-Meier limit with the figure settings, and left
+the shared covariates in their defining file. The new anchors and the granularity mutation test
+failed before the reference change and pass afterward. A plain-language rewrite of the new text kept
+the rules unchanged; fresh agents reran all four scenarios on it with the same scores.
+[Evidence](evidence/2026-09-26-config-layout.json) holds responses and scores. These are policy
+responses with one sample each; no Snakemake fixture executed the layout guard, and real host checks
+remain a manual boundary.
 
 ### 2026-09-26: Claude Code and Codex plugin
 

@@ -120,6 +120,10 @@ class ConsistencyMutations(unittest.TestCase):
         self.remove_paragraph(SKILL + "references/configuration.md", "A manifest rule takes")
         self.assert_rejected_by("manifest-provenance")
 
+    def test_configuration_granularity_removal(self):
+        self.remove_paragraph(SKILL + "references/configuration.md", "Draw file boundaries by concern")
+        self.assert_rejected_by("config-granularity")
+
     def test_implicit_data_correction_boundary_removal(self):
         self.remove_phrase(SKILL + "references/data.md", r"Validation makes no implicit correction\.")
         self.assert_rejected_by("correction-free-validation")

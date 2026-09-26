@@ -1,7 +1,7 @@
 # Reference: configuration ownership contract
 
-This contract owns setting classification, schema-validated loading, override rejection, path
-ownership, configuration provenance, migration, and the focused configuration tests.
+This contract owns setting classification, configuration layout, schema-validated loading, override
+rejection, path ownership, configuration provenance, migration, and the focused configuration tests.
 
 ## Ownership decision
 
@@ -14,16 +14,29 @@ Classify each value by the first matching bucket. The buckets are mutually exclu
    duplicate either in YAML.
 3. Dataset registry entries live in `config/datasets.yaml`; `references/data.md` defines their
    fields.
-4. All other researcher-editable scientific or operational settings live in `config/analysis.yaml`.
+4. All other researcher-editable scientific or operational settings live under `config/analysis/`.
    This includes every setting that can alter the dataset, estimate, model, figure, or scientific
    claim.
 5. An implementation choice that is not a researcher-editable setting remains a named Python
    constant.
 
-## Configuration files
+## Configuration layout
+
+`config/analysis/` holds one file per scientific or operational concern, for example `cohort.yaml`,
+one file per model or analysis, `figures.yaml`, and `run.yaml` for settings that apply to every
+rule, such as `log_level` and `random_seed`. Each file holds one top-level key matching its file
+name, so `survival.yaml` holds only `survival:` and a rule reads
+`config["survival"]["followup_days"]`. Every use of a setting then names the file that owns it, and
+the Snakefile can detect a key defined in two files.
+
+Draw file boundaries by concern, never by file length. When the approved design adds a concern that
+can change on its own, such as a new model, give it a new file instead of adding its settings to
+another concern's file. Keep each concern in one file and never create a file per setting. A setting
+that several concerns consume lives in the file of the concern that defines it and reaches each
+consumer through `params:`. Files never copy or interpolate each other's values.
 
 When the workflow uses randomness, the default convention is `random_seed: 42`. Preserve another
-seed recorded in the approved design; record the effective value in `config/analysis.yaml` and
+seed recorded in the approved design; record the effective value in `config/analysis/run.yaml` and
 propagate it to every stochastic component. Changing an existing seed is result-affecting and uses
 the applicable gate. Do not add a seed field to a fully deterministic workflow.
 
@@ -33,11 +46,16 @@ catch-all `project.yaml` or `settings.yaml`.
 
 ## Loading and validation
 
-The Snakefile declares `configfile: "config/analysis.yaml"`, loads `config/datasets.yaml`, and
-validates both at DAG-build time with `snakemake.utils.validate` against JSON Schemas in
-`workflow/schemas/` that set `additionalProperties: false`. Validation rejects unknown fields,
-missing required fields, invalid values, ranges, units, and invalid cross-field combinations before
-any job runs.
+The Snakefile declares one `configfile:` per concern file under `config/analysis/`, loads
+`config/datasets.yaml`, and validates each file at DAG-build time with `snakemake.utils.validate`
+against its own JSON Schema, `workflow/schemas/datasets.schema.yaml` or
+`workflow/schemas/analysis/<concern>.schema.yaml`. Every schema sets `additionalProperties: false`.
+Snakemake merges config files and lets a later file overwrite an earlier file's keys. Before
+validation, the Snakefile therefore fails when a concern file holds a top-level key other than its
+own name, when a file under `config/analysis/` is not declared or has no schema, or when a schema
+has no file. Validation rejects unknown fields, missing required fields, invalid values, ranges,
+units, and invalid cross-field combinations before any job runs. The Snakefile itself checks
+combinations that span two files.
 
 Package functions never receive or read the Snakemake `config` object. Every result-affecting value
 a rule consumes is declared in that rule's `params:` and passed on as explicit typed function
@@ -50,8 +68,8 @@ consumers. Never narrow `--rerun-triggers` below Snakemake's default trigger set
 
 `--config` and `--configfile` overrides are banned, and the Snakefile enforces the ban. Snakemake
 merges command-line overrides over the YAML values before schema validation, so validation alone
-cannot reject them. At parse time, before the DAG is built, the Snakefile re-reads the versioned
-YAML files and fails whenever the effective `config` object diverges from their contents. A
+cannot reject them. At parse time, before the DAG is built, the Snakefile re-reads every declared
+YAML file and fails whenever the effective `config` object diverges from their contents. A
 scientific or operational setting changes only by editing versioned YAML. Environment variables
 never override scientific settings; the Snakefile never reads `os.environ` for result-affecting
 values.
@@ -69,13 +87,14 @@ safe placeholders, never credentials.
 
 ## Configuration provenance
 
-A manifest rule takes both configuration files as inputs and writes a manifest with each file's path
-or stable identifier, SHA-256 hash, and validated effective values. It records permitted environment
-inputs by variable name and redacted presence, never by value. Snakemake orders work only through
-input/output DAG edges, so every result-producing rule declares the manifest as an `ancient()`
-input. The edge guarantees the manifest exists before any result job runs; ignoring its mtime keeps
-each run's rewritten manifest from invalidating unchanged work. The manifest must separate versioned
-values from computed values and hold enough to reproduce the effective configuration.
+A manifest rule takes every configuration file as an input and writes a manifest with each file's
+path or stable identifier, SHA-256 hash, and validated effective values. It records permitted
+environment inputs by variable name and redacted presence, never by value. Snakemake orders work
+only through input/output DAG edges, so every result-producing rule declares the manifest as an
+`ancient()` input. The edge guarantees the manifest exists before any result job runs; ignoring its
+mtime keeps each run's rewritten manifest from invalidating unchanged work. The manifest must
+separate versioned values from computed values and hold enough to reproduce the effective
+configuration.
 
 ## Established repositories
 
@@ -91,12 +110,18 @@ step of an adoption-mode migration plan:
 4. Take every intentional value change through the gate its change class requires under SKILL.md.
 5. Record the migration in `docs/LAB_NOTEBOOK.md`; gated value changes carry their own entries.
 
+Split an established single `config/analysis.yaml` on the same triggers, or when an approved change
+adds a concern. Pin the effective values first; the split moves each key into its concern's file and
+namespace, updates the consuming `params:`, and changes no effective value.
+
 ## Focused test matrix
 
 Configuration tests cover:
 
 - schema rejection of unknown, missing, invalid, and duplicate-owned values, including invalid
   cross-field combinations, units, and ranges;
+- layout rejection of an undeclared or schema-less concern file, a schema without a file, and a
+  top-level key that differs from its file's name;
 - the parse-time guard failing the run before computation when `--config` or `--configfile` diverges
   the effective configuration from versioned YAML;
 - explicit `params:` declaration and propagation of every result-affecting value a rule consumes,

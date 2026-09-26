@@ -231,10 +231,10 @@ require generated-readme references/bootstrap.md 'project README records' 'resea
 require setting-ownership references/configuration.md 'first matching bucket' 'mutually exclusive' \
   'credentials.*secrets.*absolute roots.*GPU selection.*environment' \
   'derived.*computed, never configured' 'paths.py' 'never.*duplicate|not duplicate' \
-  'registry.*config/datasets.yaml' 'researcher-editable.*config/analysis.yaml' 'named Python constant'
+  'registry.*config/datasets.yaml' 'researcher-editable.*config/analysis/' 'named Python constant'
 require declared-seed-default references/configuration.md 'random_seed' '42' 'default' \
   'approved.*seed|seed.*approved' 'propagat.*every stochastic' 'not add.*seed.*deterministic'
-require config-loading references/configuration.md 'configfile: "config/analysis.yaml"' \
+require config-loading references/configuration.md 'one .configfile:. per concern file' \
   'snakemake.utils.validate' 'additionalProperties: false' 'unknown fields.*missing required.*invalid' \
   'before any job runs' 'functions never receive or read.*config'
 require explicit-rule-params references/configuration.md 'result-affecting value.*params:.*explicit typed function arguments' \
@@ -244,10 +244,14 @@ require override-rejection references/configuration.md '--config.*--configfile.*
   'environment variables never override scientific settings' 'never reads.*os.environ.*result-affecting'
 require config-containment references/configuration.md 'containment checks.*raw-data protections' \
   'no configuration may redirect.*outside' 'never credentials' 'never.*secret values|without recording secret values'
-require manifest-provenance references/configuration.md 'manifest rule.*both configuration files as inputs' \
+require manifest-provenance references/configuration.md 'manifest rule.*every configuration file as (an )?input' \
   'SHA-256.*validated effective values' 'redacted presence, never by value' \
   'every result-producing rule.*manifest as an.*ancient\(\).*input' \
   'manifest exists before any result job' 'mtime.*invalidating unchanged' 'separate versioned.*computed'
+require config-granularity references/configuration.md 'one file per.*concern' \
+  'one top-level key matching its file name' 'by concern, never by file length' 'never.*file per setting' \
+  'concern that defines it.*params:' 'never copy or interpolate' \
+  'own JSON Schema' 'not declared or has no schema.*schema has no file' 'top-level key other than its own'
 require config-migration references/configuration.md 'not bulk-migrate' 'adoption-mode' \
   'tests before relocating' 'must not change any effective value' 'gate.*SKILL.md' 'docs/LAB_NOTEBOOK.md'
 require config-integration-tests references/configuration.md 'integration tests.*execute Snakemake' \

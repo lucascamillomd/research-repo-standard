@@ -58,7 +58,9 @@ import-package names use lowercase underscores.
 ├── .github/workflows/ci.yml        # or the forge's equivalent CI configuration
 ├── config/
 │   ├── datasets.yaml
-│   └── analysis.yaml
+│   └── analysis/                   # one file per concern, named after its top-level key
+│       ├── run.yaml
+│       └── <concern>.yaml
 ├── data/
 │   ├── raw/<dataset_id>/
 │   ├── interim/<dataset_id>/
@@ -83,8 +85,8 @@ import-package names use lowercase underscores.
 │   │   ├── figures.smk
 │   │   └── verification.smk
 │   └── schemas/
-│       ├── analysis.schema.yaml
-│       └── datasets.schema.yaml
+│       ├── datasets.schema.yaml
+│       └── analysis/<concern>.schema.yaml
 ├── src/<package_name>/
 │   ├── paths.py
 │   └── figures/
@@ -96,10 +98,11 @@ import-package names use lowercase underscores.
 ```
 
 Name rule modules under `workflow/rules/` after the approved workflow. `workflow/Snakefile` declares
-`configfile` and `rule all`, includes the rule modules, and owns orchestration. Each rule declares
-`input:`, `output:`, `log:`, and `params:`; its body is a single call into `src/<package_name>/`.
-Rules hold no scientific logic. Importable, testable logic lives under `src/<package_name>/`.
-Generate no R or other runtime support unless the approved design requires it.
+the `configfile` entries and `rule all`, includes the rule modules, and owns orchestration. Each
+rule declares `input:`, `output:`, `log:`, and `params:`; its body is a single call into
+`src/<package_name>/`. Rules hold no scientific logic. Importable, testable logic lives under
+`src/<package_name>/`. Generate no R or other runtime support unless the approved design requires
+it.
 
 ## Python environment and lock
 
@@ -140,9 +143,10 @@ the pipeline.
 ## Configuration
 
 Load `references/configuration.md` before creating YAML, schemas, `paths.py`, the Snakefile's
-`configfile` declaration, or configuration provenance. It owns where each value belongs and how
-validation and the override guard work. Create `config/datasets.yaml` and `config/analysis.yaml`;
-TOML owns packaging and tool configuration.
+`configfile` declarations, or configuration provenance. It owns where each value belongs, how
+settings split into concern files, and how validation and the override guard work. Create
+`config/datasets.yaml` and one file under `config/analysis/` per approved concern; TOML owns
+packaging and tool configuration.
 
 Create `.env.example` only when the project consumes environment variables. List safe variable names
 and placeholders, never values.
@@ -169,7 +173,7 @@ logger.add(sys.stderr, level=params.log_level)
 logger.add(log[0], level="DEBUG")
 ```
 
-`log_level` is an operational setting owned by `config/analysis.yaml` and declared in the rule's
+`log_level` is an operational setting owned by `config/analysis/run.yaml` and declared in the rule's
 `params:`; the rule passes it explicitly. Never source logging verbosity from the environment. Each
 rule logs resolved parameters, read inputs, written outputs, and skipped or failed units.
 
