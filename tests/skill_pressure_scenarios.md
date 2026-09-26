@@ -636,56 +636,7 @@ All four are required:
    asking for supplied information.
 4. Respect the explanation-only scope without edits, reruns, or new approval gates.
 
-## Scenario AA — clear mechanical request without needless questions
-
-### Prompt
-
-```text
-Use the supplied research-repo-standard skill. In a governed research repository,
-`load_counts(path, min_depth)` in src/rnaseq/io.py has no docstring. It reads a counts TSV, drops
-rows whose total depth is below `min_depth`, and returns a pandas DataFrame. Add a Google-style
-docstring to it; the repository's Ruff configuration uses the google pydocstyle convention. I am
-leaving now and will read your final message later. Explain exactly what you do in this turn and
-what your final message contains.
-```
-
-### Evaluator rubric — do not provide to the scenario agent
-
-All four are required:
-
-1. Write the docstring in this turn without first asking for, or waiting on, clarification or
-   confirmation.
-2. Ask no question whose answer would not change the work, such as wording, level of detail, or the
-   already stated format; an optional follow-up offered after the work is done is allowed.
-3. Treat the edit as mechanical: no specification, plan, notebook entry, or approval request.
-4. Run the repository's applicable lint or format check and report what changed and what was
-   verified.
-
 ## GREEN results
-
-### 2026-09-26: question scope
-
-The change limits proactive questions to readings that would lead to materially different work.
-Scenario AA was added, and Z and L were rerun because they cover when to ask. Each run used one
-fresh Claude Code subagent per frozen snapshot, with the rubric hidden and instructions to read only
-the skill snapshot. Baseline: `9fa1525e9a51a77fe52cc49d05f13310e01fcaad`.
-
-| Scenario | Baseline | Candidate |
-| -------- | -------: | --------: |
-| AA       |      4/4 |       4/4 |
-| Z        |      4/4 |       3/4 |
-| L        |      4/4 |       4/4 |
-
-The Z baseline is the 2026-09-24 candidate, which used the same `SKILL.md` hash; Z was not rerun on
-the baseline. Both AA runs wrote the docstring without asking first, and both L runs finished the
-authorized task without handing work back, so these passing baselines establish no measured
-behavioral improvement. The Z candidate asked four questions up front, one of them for permission to
-read repository files read-only. The skill needs no approval for read-only inspection, so a strict
-reading fails criterion 4. With one sample this is neither a confirmed regression nor dismissed as
-noise. The new meaning anchor failed before the skill edit and passed afterward.
-[Evidence](evidence/2026-09-26-question-scope.json) includes responses, criterion scores, and both
-skill hashes. These are policy responses only; no execution fixture or cross-model check ran. Real
-host-resolver checks remain a manual boundary.
 
 ### 2026-09-24: proactive clarification
 
