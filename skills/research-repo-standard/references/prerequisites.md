@@ -24,9 +24,11 @@ during the workflow is the functional check. A file on disk, or a repository tha
 not resolution or invocation evidence. Do not silently install, imitate, or substitute a required
 skill. A missing capability blocks only work that depends on it.
 
-Resolve `research-repo-standard` itself the same way and check that its reported provenance matches
-the provenance the project README records under the checklist in `references/bootstrap.md`. When the
-README has no entry yet, match the source the user approved.
+Resolve this skill the same way. It installs as a plugin from the `research-repo-standard`
+marketplace at `github.com/lucascamillomd/research-repo-standard`, so its exact name is
+`research-repo-standard:research-repo-standard`. Check that its reported provenance, the marketplace
+source and installed commit, matches the provenance the project README records under the checklist
+in `references/bootstrap.md`. When the README has no entry yet, match the source the user approved.
 
 Record the host, resolver, resolved source, and invocation evidence at first use. Reuse that record
 while the session and provenance are unchanged; report again if resolution fails or the source,
@@ -47,6 +49,12 @@ Superpowers installs from the host's plugin marketplace, not the Agent Skills in
 - In Codex, open Plugins in the app or `/plugins` in the CLI and install Superpowers from the
   marketplace.
 - In Claude Code, run `/plugin install superpowers@claude-plugins-official`.
+
+This skill installs the same way from its own marketplace. In Claude Code, run
+`/plugin marketplace add lucascamillomd/research-repo-standard` and
+`/plugin install research-repo-standard@research-repo-standard`. In Codex, run
+`codex plugin marketplace add lucascamillomd/research-repo-standard`, then install
+`research-repo-standard` from Plugins.
 
 For Agent Skills packages, the documented portable form is:
 
@@ -89,23 +97,24 @@ the parent's.
 
 ## Host profile installation
 
-After the approved core scaffold exists, the agent writes the simplifier profile into the target
-repository itself. Derive it from the canonical `agents/research-code-simplifier.md` in the
-provenance-verified skill source the host-native resolver reported, never from a path inferred from
-the current directory.
+After the approved core scaffold exists, complete the selected host's simplifier profile. The
+canonical profile is `agents/research-code-simplifier.md` at the root of the provenance-verified
+plugin the host-native resolver reported, never a path inferred from the current directory.
 
 Before writing the profile, detect artifacts of an earlier integration. Report each one's path, the
 path it resolves to, and whether its content was customized, then leave it unchanged. Three kinds
 count. A legacy policy is a target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md` that restates this
 standard. An alias is a symlink or wrapper file that resolves to a simplifier profile. A generic
 simplifier is a simplifier profile outside the selected host's expected path, such as a shared
-top-level `agents/` profile or a `code-simplifier` profile. Removing one follows the destruction
-procedure in `references/governance.md` after that report.
+top-level `agents/` profile or a `code-simplifier` profile. With a Claude Code host, a repository
+copy such as `.claude/agents/research-code-simplifier.md` is a generic simplifier. Removing one
+follows the destruction procedure in `references/governance.md` after that report.
 
-- For a Claude Code host, copy the canonical profile verbatim to
-  `<target-repo>/.claude/agents/research-code-simplifier.md`.
-- For a Codex host, write `<target-repo>/.codex/agents/research-code-simplifier.toml` as a Codex
-  custom-agent file with the same name, description, and body text: `name = "<frontmatter name>"`,
+- For a Claude Code host, the plugin supplies the profile as
+  `research-repo-standard:research-code-simplifier`; write no repository copy.
+- For a Codex host, whose plugins cannot supply agents, the agent writes
+  `<target-repo>/.codex/agents/research-code-simplifier.toml` itself as a Codex custom-agent file
+  with the same name, description, and body text: `name = "<frontmatter name>"`,
   `description = "<frontmatter description>"`, and
   `developer_instructions = '''<body after the frontmatter, unchanged>'''`.
 
@@ -119,8 +128,11 @@ profile without explicit authorization. Then run the selected-host smoke test be
 After the core scaffold and the selected host integration are complete, run a real smoke test
 through that host. Writing the profile does not establish any skill's resolution. The result must:
 
-1. resolve `research-repo-standard` by exact name and report its provenance;
-2. resolve `research-code-simplifier` through the host and report the installed profile path; and
+1. resolve the skill by its exact name, `research-repo-standard:research-repo-standard`, and report
+   its provenance;
+2. resolve the simplifier profile through the host,
+   `research-repo-standard:research-code-simplifier` on Claude Code or `research-code-simplifier` on
+   Codex, and report the installed profile path; and
 3. launch the profile far enough that the delegated reviewer reports it resolved and invoked
    `research-repo-standard` from the expected provenance, without requesting an implementation.
 

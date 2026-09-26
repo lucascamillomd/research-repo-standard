@@ -6,11 +6,19 @@ ROOT="${RRS_TEST_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 FAILS=0
 pass() { printf 'ok: %s\n' "$1"; }
 fail() { printf 'FAIL: %s\n' "$1"; FAILS=$((FAILS + 1)); }
-flat() { tr '\n' ' ' < "$ROOT/$1" | tr -s '[:space:]' ' '; }
+# The plugin keeps the skill in its own directory; checks name its files as the skill does.
+SKILL_DIR=skills/research-repo-standard
+src() {
+  case "$1" in
+    SKILL.md | references/*) printf '%s/%s\n' "$SKILL_DIR" "$1" ;;
+    *) printf '%s\n' "$1" ;;
+  esac
+}
+flat() { tr '\n' ' ' < "$ROOT/$(src "$1")" | tr -s '[:space:]' ' '; }
 require() {
   local id="$1" file="$2" body pattern matched=1
   shift 2
-  if [[ ! -f "$ROOT/$file" ]]; then fail "$id (missing $file)"; return; fi
+  if [[ ! -f "$ROOT/$(src "$file")" ]]; then fail "$id (missing $file)"; return; fi
   body="$(flat "$file")"
   for pattern in "$@"; do
     if ! grep -Eqi -- "$pattern" <<< "$body"; then
@@ -27,8 +35,8 @@ forbid() {
 # An owner can route to another procedure without duplicating its detailed grammar.
 owned() {
   local id="$1" owner="$2" pattern="$3" file duplicates=0
-  for file in AGENTS.md README.md SKILL.md references/*.md agents/*.md; do
-    [[ "$file" == "$owner" ]] && continue
+  for file in AGENTS.md README.md "$SKILL_DIR"/SKILL.md "$SKILL_DIR"/references/*.md agents/*.md; do
+    [[ "$file" == "$(src "$owner")" ]] && continue
     if grep -Eqi -- "$pattern" <<< "$(flat "$file")"; then duplicates=1; fi
   done
   if ((duplicates)); then fail "$id"; else pass "$id"; fi
@@ -40,19 +48,19 @@ require skill-identity SKILL.md 'name: research-repo-standard' 'description:'
 require profile-identity agents/research-code-simplifier.md 'name: research-code-simplifier' 'description:'
 links_ok=1
 while IFS= read -r path; do
-  if [[ ! -f "$ROOT/$path" ]]; then fail "missing-resource: $path"; links_ok=0; fi
+  if [[ ! -f "$ROOT/$(src "$path")" ]]; then fail "missing-resource: $path"; links_ok=0; fi
 done < <(grep -Eho 'references/[a-z-]+\.md|agents/research-code-simplifier\.md' \
-  SKILL.md references/*.md README.md | sort -u)
+  "$SKILL_DIR"/SKILL.md "$SKILL_DIR"/references/*.md README.md | sort -u)
 while IFS= read -r path; do
   if [[ ! -f "$ROOT/$path" ]]; then fail "missing-blob-target: $path"; links_ok=0; fi
 done < <(grep -Eho 'research-repo-standard/blob/main/[A-Za-z0-9/._-]+' \
-  ./*.md references/*.md | sed 's|research-repo-standard/blob/main/||' | sort -u)
+  ./*.md "$SKILL_DIR"/SKILL.md "$SKILL_DIR"/references/*.md | sed 's|research-repo-standard/blob/main/||' | sort -u)
 ((links_ok)) && pass valid-reference-targets
 for retired in vendor.sh adapters tests/vendor_test.sh tests/adapter_test.sh; do
   if [[ -e "$ROOT/$retired" ]]; then fail "retired-integration: $retired"; fi
 done
 if grep -ERqi 'post-vendor|standard_version|adapters/|profile-installer|agents/code-simplifier\.(md|toml)|source_data|results/reports' \
-  AGENTS.md README.md SKILL.md Makefile references agents; then
+  AGENTS.md README.md Makefile skills agents; then
   fail retired-production-integration
 else pass retired-production-integration; fi
 
@@ -61,7 +69,7 @@ description="$(awk '
   /^description:/ { capture = 1; sub(/^description:[[:space:]]*/, ""); print; next }
   capture && (/^---$/ || /^[a-zA-Z_]+:/) { exit }
   capture { print }
-' SKILL.md | tr '\n' ' ' | tr -s '[:space:]' ' ')"
+' "$SKILL_DIR"/SKILL.md | tr '\n' ' ' | tr -s '[:space:]' ' ')"
 if grep -Eqi 'bootstrap' <<< "$description" &&
   grep -Eqi 'adopt' <<< "$description" &&
   grep -Eqi 'repositories that (already )?follow' <<< "$description"; then
@@ -77,6 +85,7 @@ require contextual-routing SKILL.md 'relevant|applicable' 'section' \
   'references/configuration\.md' 'references/data\.md' 'references/analysis\.md' 'references/figures\.md'
 forbid no-whole-reference-reading SKILL.md 'read it completely|read every.*reference completely'
 require source-maintenance AGENTS.md 'source repository|source-repository' 'SKILL\.md.*maintained product' \
+  '\.claude-plugin/' 'omit.*version|version.*(omit|leave out|out of)' \
   'test-first' 'meaning' 'blind.*scenario' 'hidden.*rubric' 'passing baseline' 'GREEN' \
   'make format' 'make test' 'git diff --check' 'non-normative'
 require scientific-safety SKILL.md 'raw data.*immutable' 'data/raw/' \
@@ -140,13 +149,17 @@ require authorized-recovery references/prerequisites.md 'authoriz.*(installation
 require delegated-resolution references/prerequisites.md 'delegat.*resolv' \
   'parent.*(not|never).*infer|never infer.*parent' 'governance\.md'
 require canonical-installation references/prerequisites.md 'agent writes.*profile' \
-  'provenance-verified.*source' 'agents/research-code-simplifier\.md' \
-  '\.claude/agents/research-code-simplifier\.md' '\.codex/agents/research-code-simplifier\.toml' \
-  'verbatim' 'same name, description, and body' 'only the selected host' 'none when no host' \
+  'provenance-verified.*(source|plugin)' 'agents/research-code-simplifier\.md' \
+  'plugin.{0,80}research-repo-standard:research-code-simplifier.{0,120}no (repository )?copy' \
+  '\.codex/agents/research-code-simplifier\.toml' \
+  'same name, description, and body' 'only the selected host' 'none when no host' \
   'never.*(create|modify).*target.*AGENTS\.md.*CLAUDE\.md.*CODEX\.md' \
   'never overwrite.*customized.*explicit authorization'
 require legacy-detection references/prerequisites.md 'detect.*earlier integration' \
-  'resolves to.*customized' 'leave.*unchanged' 'legacy policy' 'alias' 'generic simplifier'
+  'resolves to.*customized' 'leave.*unchanged' 'legacy policy' 'alias' 'generic simplifier' \
+  'Claude Code.{0,120}repository copy.{0,80}generic simplifier'
+require plugin-resolution references/prerequisites.md 'plugin' 'marketplace' \
+  'research-repo-standard:research-repo-standard' 'lucascamillomd/research-repo-standard'
 require real-host-proof references/prerequisites.md 'real smoke test' \
   'research-repo-standard.*provenance' 'research-code-simplifier.*profile path' \
   'launch.*profile.*delegated.*resolved and invoked' \
@@ -155,7 +168,10 @@ require readonly-target-policy AGENTS.md '(never|not).*copies.*AGENTS\.md.*READM
   '(never|not).*creates or modifies.*target.*AGENTS\.md.*CLAUDE\.md.*CODEX\.md' \
   'host agent, never a shell script'
 require readme-integration README.md 'research-repo-standard' 'references/prerequisites\.md' \
-  '\.claude/agents/research-code-simplifier\.md' '\.codex/agents/research-code-simplifier\.toml' \
+  '/plugin marketplace add lucascamillomd/research-repo-standard' \
+  '/plugin install research-repo-standard@research-repo-standard' 'Enable auto-update' \
+  'codex plugin marketplace add lucascamillomd/research-repo-standard' \
+  'research-repo-standard:research-code-simplifier' '\.codex/agents/research-code-simplifier\.toml' \
   'legacy' 'explicit authorization' 'Makefile'
 forbid host-neutral-profile agents/research-code-simplifier.md \
   'model:|\.claude/agents|Claude Code|Anthropic|Codex|OpenAI'

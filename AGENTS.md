@@ -1,10 +1,13 @@
 # research-repo-standard source instructions
 
-This repository maintains the `research-repo-standard` skill. SKILL.md is the maintained product.
-`references/` owns its procedures, `agents/` owns the canonical host-neutral simplifier profile, and
-tests protect those contracts. Any source design specs or plans under `docs/superpowers/` are
-non-normative and never override SKILL.md, `references/`, or `agents/`. These instructions govern
-only this source repository and are never copied to a target.
+This repository maintains the `research-repo-standard` skill and publishes it as a Claude Code and
+Codex plugin. `skills/research-repo-standard/SKILL.md` is the maintained product. Its `references/`
+own its procedures, `agents/` owns the canonical host-neutral simplifier profile, `.claude-plugin/`
+holds the plugin and marketplace manifests that both hosts read, and tests protect those contracts.
+Leave `version` out of both manifests so installed copies update on each new commit. Any source
+design specs or plans under `docs/superpowers/` are non-normative and never override SKILL.md,
+`references/`, or `agents/`. These instructions govern only this source repository and are never
+copied to a target.
 
 Use `README.md` for source setup, `SKILL.md` for scope and shared constraints, and the affected
 reference or profile for its owned procedure. Read the consistency anchors and pressure scenarios
@@ -14,8 +17,8 @@ Keep the product concise and host-neutral; `references/prerequisites.md` owns ho
 
 Never add a script or instruction that copies this `AGENTS.md`, `README.md`, `SKILL.md`, or
 `references/` into a target repository, or that creates or modifies a target's `AGENTS.md`,
-`CLAUDE.md`, or `CODEX.md`. The host agent, never a shell script in this repository, derives each
-host profile from the canonical profile by the "Host profile installation" procedure in
+`CLAUDE.md`, or `CODEX.md`. The host agent, never a shell script in this repository, derives any
+repository host profile from the canonical profile by the "Host profile installation" procedure in
 `references/prerequisites.md`.
 
 Work test-first for changed contracts: add meaning and ownership anchors, plus a realistic blind

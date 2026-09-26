@@ -30,10 +30,10 @@ and the path needed for the specification, then write, self-review, commit, and 
 of that specification. Write the implementation plan before scaffolding. Reuse supplied approval for
 these exact artifacts; a session change alone does not reopen settled decisions.
 
-Create only the approved scaffold below. Afterward derive only the selected host profile and run the
-real selected-host smoke test through `references/prerequisites.md`. With no host selected, write no
-profile; resolve a reviewer only when a code-review step requires one. Report missing capabilities
-at that step, without claiming future reviews have happened.
+Create only the approved scaffold below. Afterward complete only the selected host's profile and run
+the real selected-host smoke test through `references/prerequisites.md`. With no host selected,
+write no profile; resolve a reviewer only when a code-review step requires one. Report missing
+capabilities at that step, without claiming future reviews have happened.
 
 Track settled decisions and open questions in the design artifacts. At completion report the
 scaffold, configuration/data/provenance checks, scientific critique and figure strategy, selected
@@ -288,7 +288,8 @@ The project README records:
 - project identity, research question, analysis status, and one-paragraph scope;
 - a compact repository map and links to `docs/`;
 - prerequisites: the pinned Python minor, uv, Make, and any approved external runtime;
-- `research-repo-standard` as an exact-name agent prerequisite, its expected source and provenance,
+- the `research-repo-standard` plugin as an agent prerequisite: its exact skill name
+  `research-repo-standard:research-repo-standard`, its expected marketplace source and provenance,
   and recovery steps when resolution fails, linked to `references/prerequisites.md` in the approved
   standard source;
 - required skills, separated from the packages `make setup` installs;

@@ -1,0 +1,14 @@
+{
+  "name": "research-repo-standard",
+  "description": "Reproducible scientific research repository standard for Claude Code and Codex.",
+  "owner": {
+    "name": "Lucas Camillo"
+  },
+  "plugins": [
+    {
+      "name": "research-repo-standard",
+      "source": "./",
+      "description": "Bootstrap, assess, and maintain reproducible scientific research repositories."
+    }
+  ]
+}

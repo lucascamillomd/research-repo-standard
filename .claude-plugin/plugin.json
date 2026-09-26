@@ -1,0 +1,7 @@
+{
+  "name": "research-repo-standard",
+  "description": "Bootstrap, assess, and maintain reproducible scientific research repositories, with an independent research-code simplifier.",
+  "author": { "name": "Lucas Camillo" },
+  "homepage": "https://github.com/lucascamillomd/research-repo-standard",
+  "repository": "https://github.com/lucascamillomd/research-repo-standard"
+}

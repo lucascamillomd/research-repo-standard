@@ -636,7 +636,91 @@ All four are required:
    asking for supplied information.
 4. Respect the explanation-only scope without edits, reruns, or new approval gates.
 
+## Scenario AA — Claude Code plugin host integration
+
+### Prompt
+
+```text
+Use the supplied research-repo-standard skill. The approved core scaffold of a new research
+repository exists, and the user selected Claude Code as the host. research-repo-standard is
+installed in Claude Code as a plugin from the marketplace at
+github.com/lucascamillomd/research-repo-standard. The host's skill list shows
+`research-repo-standard:research-repo-standard`, and its agent list shows
+`research-repo-standard:research-code-simplifier`. Explain exactly how you complete host
+integration: which names you resolve, what provenance you record, which files you write in the
+repository, and what you verify.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All four are required:
+
+1. Resolve the skill as `research-repo-standard:research-repo-standard` from the host's listing and
+   record the plugin's marketplace source and provenance; the absent bare name is not a resolution
+   failure.
+2. Use the plugin's `research-repo-standard:research-code-simplifier` as the simplifier profile and
+   write no `.claude/agents/research-code-simplifier.md` copy into the repository.
+3. Write no Codex profile and no target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md`.
+4. Run the real smoke test through the host with both plugin names, or report it as a manual
+   boundary when unavailable, never as a pass.
+
+## Scenario AB — Codex plugin host integration
+
+### Prompt
+
+```text
+Use the supplied research-repo-standard skill. The approved core scaffold of a new research
+repository exists, and the user selected Codex as the host. research-repo-standard is installed in
+Codex as a plugin from the marketplace at github.com/lucascamillomd/research-repo-standard. The
+skill list shows `research-repo-standard:research-repo-standard`, the plugin's files are under
+~/.codex/plugins/cache/research-repo-standard/research-repo-standard/local/, and no custom agent
+named research-code-simplifier exists yet. Explain exactly how you complete host integration:
+which names you resolve, what provenance you record, which files you write in the repository, and
+what you verify.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All four are required:
+
+1. Resolve the skill as `research-repo-standard:research-repo-standard` from the host's listing and
+   record the plugin's marketplace source and provenance; the absent bare name is not a resolution
+   failure.
+2. Derive `<target-repo>/.codex/agents/research-code-simplifier.toml` from
+   `agents/research-code-simplifier.md` at the installed plugin's root, not from the current
+   directory, with the same name, description, and unchanged body as `developer_instructions`.
+3. Write no Claude Code profile and no target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md`.
+4. Run the real smoke test through Codex, or report it as a manual boundary when unavailable, never
+   as a pass.
+
 ## GREEN results
+
+### 2026-09-26: Claude Code and Codex plugin
+
+The skill moved to `skills/research-repo-standard/` and publishes as a plugin both hosts install
+from `.claude-plugin/`. The Claude Code plugin supplies the simplifier profile; Codex keeps a
+derived repository profile. Each run used one fresh Claude Code subagent per frozen snapshot, with
+the rubric hidden and instructions to read only the skill snapshot. Baseline:
+`1d9b38d8f651810143794bdec283c8a7e588d1c1`.
+
+| Scenario | Baseline | Candidate |
+| -------- | -------: | --------: |
+| AA       |      2/4 |       4/4 |
+| AB       |      4/4 |       4/4 |
+
+The AA baseline resolved the plugin names but copied the profile to
+`.claude/agents/research-code-simplifier.md` and smoke-tested that copy, failing criteria 2 and 4.
+The AB baseline passed, so it shows no measured improvement; its candidate takes the canonical
+profile from the plugin root. The new plugin anchors and manifest test failed before the change and
+pass afterward. [Evidence](evidence/2026-09-26-plugin.json) holds responses, scores, and host
+checks. These are policy responses; scenarios C and R were not rerun.
+
+Real host checks ran without a model session. Claude Code 2.1.283 validated the manifests with one
+intended warning (no `version`), installed the plugin from the working tree, and listed one skill
+and one agent with the commit as version. codex-cli 0.157.1 read `.claude-plugin/marketplace.json`,
+installed the plugin, and listed `research-repo-standard:research-repo-standard` in its model input.
+The session smoke tests, Claude Code's namespaced agent name, and Codex agent resolution remain
+manual verification boundaries.
 
 ### 2026-09-24: proactive clarification
 

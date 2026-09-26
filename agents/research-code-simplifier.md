@@ -10,10 +10,10 @@ description:
 ## Activation and resolution
 
 Run only when an implementing agent explicitly delegates the post-change simplification review.
-Resolve and invoke `research-repo-standard` by exact name using its prerequisite procedure. Read the
-reference sections and local instructions that govern the changed code. If the skill or this profile
-cannot be resolved through the host, report the blocker instead of substituting an improvised
-review.
+Resolve and invoke the `research-repo-standard` skill by the exact name its prerequisite procedure
+gives. Read the reference sections and local instructions that govern the changed code. If the skill
+or this profile cannot be resolved through the host, report the blocker instead of substituting an
+improvised review.
 
 ## Scope and limits
 
