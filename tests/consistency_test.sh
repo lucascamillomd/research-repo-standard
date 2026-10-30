@@ -306,6 +306,10 @@ require figure-encoding-and-qa references/figures.md 'thin orchestration' 'same.
   'perceptually uniform' 'diverging.*scientifically meaningful midpoint' 'never use rainbow' \
   'overlap or clip' 'defensible scales' 'replicate definitions' 'scale bars' 'gamma.*stitching.*reuse'
 owned figure-grammar-owner references/figures.md 'mf[0-9]+_|edf[0-9]+_|sf[0-9]+_|short_descriptive_name|hazard_ratio_distribution'
+require figure-exemplars references/figures.md 'after invoking `nature-figure`, view all' \
+  'assets/figure-exemplars/' 'infer their visual style' 'as additional guidance' \
+  'cannot view images, mention.*continue without the exemplars'
+owned figure-exemplar-owner references/figures.md 'infer their visual style'
 
 # Evidence provenance stays inspectable; scenario names, numbering, and record layout may evolve.
 require pressure-evidence tests/skill_pressure_scenarios.md 'rubric.*hidden|hidden.*rubric' \

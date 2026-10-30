@@ -46,6 +46,15 @@ class PluginManifests(unittest.TestCase):
         self.assertFalse((SOURCE / "SKILL.md").exists())
         self.assertFalse((SOURCE / "references").exists())
 
+    def test_figure_exemplars_ship_with_the_skill(self):
+        directory = SOURCE / "skills" / NAME / "assets" / "figure-exemplars"
+        names = sorted(path.name for path in directory.glob("*.webp"))
+        self.assertEqual(names, [f"fig{number}.webp" for number in range(1, 7)])
+        for name in names:
+            # Check WebP signatures; image decoding and host rendering are verified separately.
+            header = (directory / name).read_bytes()[:12]
+            self.assertEqual((header[:4], header[8:]), (b"RIFF", b"WEBP"))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

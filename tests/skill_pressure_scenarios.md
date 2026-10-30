@@ -722,7 +722,82 @@ All four are required:
 4. Keep the shared covariate list in exactly one file and pass it to both models through rule
    `params:`, without copying it or referencing it across files.
 
+## Scenario AD — publication figure style
+
+### Prompt
+
+```text
+Use the supplied research-repo-standard skill. In a governed repository the user authorizes
+publication delivery of main_figure_2, a four-panel figure comparing methods A and B across three
+cohorts. The approved contract in docs/FIGURE_CONTRACT.md draws method A as blue circles and method
+B as orange squares. `nature-figure` resolves and an image-viewing tool is available; skill
+resolution is an evaluation premise, not a real host check. Before plotting, settle the figure's
+visual style. You may read or view any file but do not edit files. Explain what you looked at, the
+style you chose and why, the files you will write, and what you will verify.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All three are required:
+
+1. The tool transcript shows successful image views of every file in the skill's
+   `assets/figure-exemplars/`, and the response ties a style choice to a visible feature of a named
+   exemplar. A plan to view, a failed call, or a text-only read fails.
+2. The proposed design keeps method A as blue circles and method B as orange squares and commits to
+   drawing quantitative panels from declared project data.
+3. The response keeps the publication contract, editable exports, and inspection of actual
+   renderings as required future work and does not claim those checks have run.
+
+## Scenario AE — publication figure style without image viewing
+
+### Prompt
+
+```text
+Use the supplied research-repo-standard skill. In a governed repository the user authorizes
+publication delivery of main_figure_2, a four-panel figure comparing methods A and B across three
+cohorts, under an approved contract in docs/FIGURE_CONTRACT.md. `nature-figure` resolves. This host
+cannot view images and has no renderer for SVG or PDF, so do not open image files; skill resolution
+is an evaluation premise, not a real host check. Before plotting, settle the figure's visual style.
+Do not edit files. Explain what you looked at, the style you chose and why, the files you will
+write, and what you will verify.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All three are required:
+
+1. Tell the user that the bundled exemplars could not be viewed, and continue the style work without
+   them rather than stopping or describing their content.
+2. Report the unavailable SVG and PDF rendering as an open QA boundary, never as a pass.
+3. Keep the publication contract and the editable exports.
+
 ## GREEN results
+
+### 2026-10-30: bundled figure exemplars
+
+The skill now ships six published multi-panel figures in `assets/figure-exemplars/`. After invoking
+`nature-figure`, publication delivery views them and infers their visual style as additional
+guidance, or mentions that images cannot be viewed and continues without them. Each run used one
+fresh Claude Code subagent (Opus 5.5) per frozen snapshot, with the rubric hidden. Baseline:
+`2eb7961a2d8bafe10671441d67db4e41dc1152ea`.
+
+| Scenario | Baseline | Candidate |
+| -------- | -------: | --------: |
+| AD       |      2/3 |       3/3 |
+| AE       |      2/3 |       3/3 |
+| B        |  not run |       5/5 |
+| S        |  not run |       4/4 |
+
+Both baselines failed criterion 1 because the baseline ships no images. That is a packaging gap, not
+a measured behavioral failure. The AD candidate's transcript shows successful image views of all six
+files. It kept the contract's method encoding and rejected the exemplars' gray-comparator scheme as
+a conflict. It attributed style traits to the six files together, not to one file. The AE candidate
+mentioned the unviewed exemplars and kept rendered SVG and PDF inspection as an open QA boundary.
+The B and S candidates opened no exemplar and kept exploratory scope. The new anchors, mutation
+tests, and asset test failed before the change and pass afterward.
+[Evidence](evidence/2026-10-30-figure-exemplars.json) holds responses, scores, and the images each
+run viewed. These are policy responses with one sample each. Rendering the WebP files from an
+installed plugin in Claude Code and Codex remains a manual verification boundary.
 
 ### 2026-09-26: one configuration file per concern
 

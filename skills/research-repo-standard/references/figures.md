@@ -14,8 +14,11 @@ required. Do not invent a conclusion or promote the plot to confirmatory evidenc
 
 **Publication delivery** requires the pre-plot contract, editable exports and publication QA below.
 Resolve and invoke `nature-figure` for publication figure strategy or delivery, using
-`references/prerequisites.md`. Promoting an exploratory figure to publication triggers these
-requirements; calling a publication deliverable a draft does not waive them.
+`references/prerequisites.md`. After invoking `nature-figure`, view all
+[bundled exemplars](../assets/figure-exemplars/) and infer their visual style as additional
+guidance. If the host cannot view images, mention that and continue without the exemplars. Promoting
+an exploratory figure to publication triggers these requirements; calling a publication deliverable
+a draft does not waive them.
 
 Choose scope from the requested use and existing project contract. A quick exploratory PNG request
 does not require publication exports or the publication figure skill. Existing approved delivery

@@ -136,6 +136,23 @@ class ConsistencyMutations(unittest.TestCase):
         self.remove_paragraph(SKILL + "references/figures.md", "export editable SVG and PDF")
         self.assert_rejected_by("publication-figure-contract")
 
+    def test_figure_exemplar_viewing_removal(self):
+        self.remove_phrase(
+            SKILL + "references/figures.md",
+            r"After\s+invoking\s+`nature-figure`,\s+view\s+all\s+\[bundled\s+exemplars\]"
+            r"\(\.\./assets/figure-exemplars/\)\s+and\s+infer\s+their\s+visual\s+style\s+as\s+"
+            r"additional\s+guidance\.\s+",
+        )
+        self.assert_rejected_by("figure-exemplars")
+
+    def test_figure_exemplar_disclosure_removal(self):
+        self.remove_phrase(SKILL + "references/figures.md", r"mention\s+that\s+and\s+")
+        self.assert_rejected_by("figure-exemplars")
+
+    def test_figure_exemplar_guidance_status_removal(self):
+        self.remove_phrase(SKILL + "references/figures.md", r"as\s+additional\s+guidance")
+        self.assert_rejected_by("figure-exemplars")
+
     def test_unavailable_host_boundary_removal(self):
         self.remove_paragraph(SKILL + "references/prerequisites.md", "An unavailable host or resolver")
         self.assert_rejected_by("real-host-proof")
