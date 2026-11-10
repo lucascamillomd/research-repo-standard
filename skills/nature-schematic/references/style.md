@@ -39,8 +39,7 @@ muscle, yellow pancreas and olive gut, or their category hue.
   about 1.5 mm long.
 - An inhibition ends in a flat bar on the step it blocks, before any branch beyond that step.
 - A drug or treatment sits on or beside the arrow of the process it acts on.
-- Dashed lines carry a second meaning, such as movement between compartments or an uncertain link,
-  and the legend says which.
+- Dashed lines carry a second meaning, such as movement between compartments or an uncertain link.
 - Label leaders and grouping brackets have no heads.
 - Tree branches use category colours and rounded bends.
 - Timeline stems end in markers, with dashed event lines and open flags.

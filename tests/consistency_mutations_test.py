@@ -172,13 +172,13 @@ class ConsistencyMutations(unittest.TestCase):
     def test_schematic_example_viewing_removal(self):
         self.remove_phrase(
             "skills/nature-schematic/SKILL.md",
-            r"View\s+the\s+six\s+\[bundled\s+examples\]\(assets/examples/\)\s+before\s+drawing",
+            r"View\s+the\s+six\s+\[[^\]]*\]\([^)]*\)\s+before\s+drawing",
         )
-        self.assert_rejected_by("schematic-examples")
+        self.assert_rejected_by("schematic-skill")
 
     def test_schematic_example_copying_ban_removal(self):
         self.remove_phrase("skills/nature-schematic/SKILL.md", r",\s+never\s+their\s+artwork")
-        self.assert_rejected_by("schematic-examples")
+        self.assert_rejected_by("schematic-skill")
 
     def test_unavailable_host_boundary_removal(self):
         self.remove_paragraph(SKILL + "references/prerequisites.md", "An unavailable host or resolver")

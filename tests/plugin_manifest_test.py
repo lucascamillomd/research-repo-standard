@@ -53,24 +53,13 @@ class PluginManifests(unittest.TestCase):
         for reference in ("style.md", "reviewer.md"):
             self.assertTrue((directory / "references" / reference).is_file())
             self.assertIn(f"references/{reference}", skill)
-
-    def test_schematic_examples_ship_with_the_skill(self):
-        directory = SOURCE / "skills" / "nature-schematic" / "assets" / "examples"
-        names = sorted(path.name for path in directory.glob("*.png"))
-        expected = [
-            "hub-liver-organs.png",
-            "panels-digital-twin.png",
-            "process-nanogel.png",
-            "progression-liver.png",
-            "timeline-immunity.png",
-            "tree-body-diseases.png",
-        ]
-        self.assertEqual(names, expected)
-        style = (directory.parents[1] / "references" / "style.md").read_text()
-        for name in names:
-            # Check PNG signatures; image decoding and host rendering are verified separately.
-            self.assertEqual((directory / name).read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
-            self.assertIn(name, style)
+        # The style record names each example; decoding and host rendering are checked separately.
+        examples = sorted((directory / "assets" / "examples").glob("*.png"))
+        self.assertEqual(len(examples), 6)
+        style = (directory / "references" / "style.md").read_text()
+        for example in examples:
+            self.assertEqual(example.read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
+            self.assertIn(example.name, style)
 
     def test_figure_exemplars_ship_with_the_skill(self):
         directory = SOURCE / "skills" / NAME / "assets" / "figure-exemplars"

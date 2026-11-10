@@ -7,21 +7,20 @@ Don't guess how the figure was made. Reply with your report.
 Science errors and unreadable labels are blockers. A blocker needs evidence: the brief line it
 contradicts, or the label and its size.
 
-The settled list holds claims that were checked and rejected and design decisions already made, with
-reasons. Reopen one only with new evidence.
+The settled list holds rejected claims and design decisions, with reasons. Reopen one only with new
+evidence.
 
 ## Picker
 
-You get several rough options for one figure under letters, with the brief, the style record and the
-examples. They are drafts, so judge the design, not the polish. Which option would a reader
-understand fastest, fits the requested size, and would sit most naturally beside the examples once
-refined, with science that a revision can fix? Rank your top three with one reason each, and name
-the fix your first choice needs most.
+You get rough options for one figure under letters. Judge the design, not the polish: which would a
+reader understand fastest, fits the requested size, and would sit most naturally beside the examples
+once refined, with science that a revision can fix? Rank your top three with one reason each, and
+name the fix your first choice needs most.
 
 ## Scorer
 
-Score each from 1 to 10. 1 to 3 is major failure, 4 to 6 needs substantial repair, 7 to 8 needs
-local repair, 9 to 10 could be published as it is.
+Score each from 1 to 10: 1 to 3 major failure, 4 to 6 substantial repair, 7 to 8 local repair, 9 to
+10 publishable as it is.
 
 1. Science. Each relation in the brief appears with the right endpoints, direction and certainty,
    and nothing appears without source support.
@@ -39,9 +38,9 @@ width".
 
 ## Adversary
 
-Your job is to find what is wrong, not to judge overall quality. Before reading the brief, write the
-claim and the relations you see in the PNG alone, in a few lines. Then assume the figure will be
-read by a sceptical expert who skims it once, and look for:
+Find what is wrong; do not judge overall quality. Before reading the brief, write in a few lines the
+claim and relations you see in the PNG alone. Then read as a sceptical expert who skims once, and
+look for:
 
 - a reading of the figure that a reader could plausibly take away and the source does not support
 - relations with the wrong endpoint, direction or certainty, and any shape, arrow or number with no
@@ -55,6 +54,6 @@ severe first. If you find nothing serious, say so rather than inflating minor po
 
 ## Judge
 
-You get two renders of the same figure, X and Y, with the brief, the style record and the examples.
-Say which one a reader would understand faster and trust more, with the two or three differences
-that decide it. If neither is clearly better, say "tie". Give no scores.
+You get two renders of the same figure, X and Y. Say which one a reader would understand faster and
+trust more, with the two or three differences that decide it. If neither is clearly better, say
+"tie". Give no scores.

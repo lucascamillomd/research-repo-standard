@@ -83,13 +83,11 @@ quantitative panels. An exploratory sketch needs neither skill.
 
 The panel's figure data is a relation table, `results/figure_data/<figure_id>/<asset>.tsv`, with one
 row per drawn relation: both endpoints, the relation type, its certainty, and a source locator.
-Record the panel's claim in the figure record. Draw nothing the table and its entities lack, and
-show a number only when the source gives it.
 
 The build script is an importable function under `src/<package_name>/figures/<figure_id>/` that
 writes the SVG, and the panel follows the naming, export, and assembly rules below. Draft options
-and review rounds are scratch work under `references/governance.md`. Record the chosen option, the
-delivered round, and unresolved blockers in the figure record.
+and review rounds are scratch work under `references/governance.md`. Record the panel's claim, the
+chosen option, the delivered round, and unresolved blockers in the figure record.
 
 Every shape is drawn in code or comes from an asset whose source, licence, and credit line the
 figure record names. An image from a generative model, or a trace or redrawing of one, enters a

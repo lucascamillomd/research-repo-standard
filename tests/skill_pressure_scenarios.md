@@ -862,9 +862,10 @@ Score the files on disk and the renders, not the report alone. All five are requ
    each other. Reviewers who did not build them chose one, and the choice is recorded.
 3. No image-generation model and no raster tracing was used. Every shape is drawn in code and text
    in the delivered SVG is still text.
-4. Five review rounds are on disk, each with a render and separate scorer and adversary reports.
-   From round 2 a judge compares the new render with the best so far. The delivered round is the
-   judged best with no confirmed blocker, or the delivery is labelled a draft.
+4. Five review rounds are on disk, each with a render and its scorer and adversary reports; a round
+   after a discarded one may reuse that round's reports. A judge compares each revision with the
+   render before it. The delivered round is the judged best with no confirmed blocker, or the
+   delivery is labelled a draft.
 5. The delivery is 89 mm wide and holds SVG, PDF, PNG, the build script, a review log, and a draft
    caption with a legend for the arrow styles. The H-151 inhibition ends in a flat bar on STING.
 
@@ -895,38 +896,40 @@ All three are required:
 
 ## GREEN results
 
+### 2026-11-10: schematic wording trimmed after review
+
+Two trims of `0b3169c`, the first from an independent simplification review, shortened the skill,
+stated once what every reviewer receives, and removed duplicated rules; none was added. Fresh Fable
+5.2 subagents with the rubric hidden scored AF 4/4 and AI 3/3 after each trim, one sample each. AH's
+criterion 4 now matches the skill: a round after a discarded one may reuse its reports, and the
+judge compares every revision. AH was scored under the earlier wording and not re-run.
+[Evidence](evidence/2026-11-10-schematic-simplification.json) holds responses and scores.
+
 ### 2026-11-10: bundled schematic examples
 
-The six Nature schematics the style record was measured from now ship in
-`skills/nature-schematic/assets/examples/`. The skill views them before drawing and gives them to
-every reviewer, the reviewer briefs compare against them, and the style record names the file behind
-each composition. One fresh Claude Code subagent (Fable 5.2, effort not set) ran AI against each
-frozen snapshot with the rubric hidden, and a fresh scorer scored each response. The baseline is the
-uncommitted `nature-schematic` skill before the examples were added.
+The six Nature schematics behind the style record now ship in
+`skills/nature-schematic/assets/examples/`; the skill views them and gives them to every reviewer.
+One fresh Fable 5.2 subagent ran AI per frozen snapshot with the rubric hidden, and a fresh scorer
+scored each response. The baseline is the uncommitted skill before the examples were added.
 
 | Scenario | Baseline | Candidate |
 | -------- | -------: | --------: |
 | AI       |      1/3 |       3/3 |
 
-The baseline failed only because no images shipped: it viewed none and gave reviewers the brief and
-style record alone. The candidate reported viewing all six, tied its unboxed organs and outward
-arrows to `hub-liver-organs.png`, gave the examples to the pickers, scorer, adversary, and judge,
-and committed to drawing every organ afresh. It viewed the examples scaled down and so relied on the
-style record for type and line sizes. [Evidence](evidence/2026-11-10-schematic-examples.json) holds
-both responses, scores, and file hashes. Each snapshot had one sample and image views are
-self-reported. AH was not re-run, so the examples' effect on a built schematic is unmeasured. The
-new anchors, mutation tests, and asset test failed before the change and pass afterward. Loading the
-PNG assets from an installed plugin in Claude Code and Codex remains a manual verification boundary.
+The baseline had no bundled images. The candidate reported viewing all six, tied its layout to
+`hub-liver-organs.png`, gave the examples to every reviewer, and committed to drawing every organ
+afresh. Views were self-reported and scaled down, so criterion 1's transcript requirement was not
+verified. [Evidence](evidence/2026-11-10-schematic-examples.json) holds both responses, scores, and
+file hashes, one sample per snapshot. AH was not re-run, so the examples' effect on a built
+schematic is unmeasured. The new anchors, mutation tests, and asset test failed before the change
+and pass afterward. Loading the PNG assets from an installed plugin in Claude Code and Codex remains
+a manual verification boundary.
 
 ### 2026-11-09: schematic panels and the bundled nature-schematic skill
 
-The plugin now bundles `nature-schematic`, which draws schematics in code with no image-generation
-model: a brief, three draft options chosen by blind pickers, and five reviewed rounds.
-`references/figures.md` gains a schematic-panel contract: route to `nature-schematic`, keep a
-relation table as figure data, draw shapes in code or from licensed assets, and admit generated
-imagery only after the user authorizes it for the panel. Each run used one fresh Claude Code
-subagent (Fable 5.2, effort not set) per frozen snapshot, with the rubric hidden. Baseline:
-`96402259bc1da9f883b1aaf586e70b2a8405e915`.
+Added the `nature-schematic` skill and the schematic-panel contract in `references/figures.md`. Each
+run used one fresh Claude Code subagent (Fable 5.2, effort not set) per frozen snapshot, with the
+rubric hidden. Baseline: `96402259bc1da9f883b1aaf586e70b2a8405e915`.
 
 | Scenario | Baseline | Candidate |
 | -------- | -------: | --------: |

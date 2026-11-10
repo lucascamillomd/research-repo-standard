@@ -316,7 +316,7 @@ owned figure-exemplar-owner references/figures.md 'infer their visual style'
 # Schematic panels: a relation table as figure data, code-drawn shapes, and gated generated imagery.
 require schematic-contract references/figures.md 'schematic panel.*plots no data' \
   'invoke `nature-schematic`' 'relation table' \
-  'endpoints.*relation type.*certainty.*source locator' 'draw nothing' \
+  'endpoints.*relation type.*certainty.*source locator' 'draws nothing the table lacks' \
   'drawn in code.*source, licen[cs]e, and credit line' \
   'generative model.*only after the user authorizes' 'eligibility separately from'
 owned generated-image-owner references/figures.md 'generative model.*only after the user authorizes'
@@ -324,13 +324,12 @@ require schematic-capability references/prerequisites.md 'research-repo-standard
 SCHEMATIC=skills/nature-schematic
 require schematic-skill "$SCHEMATIC"/SKILL.md 'name: nature-schematic' 'description:' \
   'no image-generation model' 'drawn in code' 'brief' 'source' 'three options' 'five rounds' \
-  'scorer' 'adversary' 'judge' 'draft' 'text.*still text' 'references/figures\.md.*owns'
-require schematic-reviewers "$SCHEMATIC"/references/reviewer.md 'picker' 'scorer' 'adversary' 'judge' \
-  'blocker' 'evidence' 'settled'
-require schematic-style "$SCHEMATIC"/references/style.md 'colou?r' 'type' 'connector' 'composition'
-require schematic-examples "$SCHEMATIC"/SKILL.md 'view the six \[bundled examples\]\(assets/examples/\)' \
+  'scorer' 'adversary' 'judge' 'draft' 'text.*still text' 'references/figures\.md.*owns' \
+  'view the six .{0,60}examples.{0,60} before drawing' 'assets/examples/' \
   'give the examples to every reviewer' 'never their artwork'
-require schematic-example-reviewers "$SCHEMATIC"/references/reviewer.md 'style record and the examples'
+require schematic-reviewers "$SCHEMATIC"/references/reviewer.md 'picker' 'scorer' 'adversary' 'judge' \
+  'blocker' 'evidence' 'settled' 'style record and the examples'
+require schematic-style "$SCHEMATIC"/references/style.md 'colou?r' 'type' 'connector' 'composition'
 for file in SKILL.md references/style.md references/reviewer.md; do
   forbid "schematic-no-image-generation: $file" "$SCHEMATIC/$file" \
     'imagegen|image_gen|gpt-image|OPENAI_API_KEY|vtracer'
