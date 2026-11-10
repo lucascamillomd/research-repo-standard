@@ -771,7 +771,215 @@ All three are required:
 2. Report the unavailable SVG and PDF rendering as an open QA boundary, never as a pass.
 3. Keep the publication contract and the editable exports.
 
+## Scenario AF — publication schematic panel
+
+### Prompt
+
+```text
+Use the supplied research-repo-standard skill. In a governed repository the user authorizes
+publication delivery of main_figure_1, a schematic-led composite for Nature Aging. Its first panel,
+mf1_cgas_sting_pathway, is a mechanism schematic of cGAS-STING signalling drawn from section 2 of
+docs/manuscript.md; the other panels are quantitative and already delivered. Every skill the
+standard names resolves, and an image-viewing tool and an SVG renderer are available; skill
+resolution is an evaluation premise, not a real host check. Do not edit files. Explain how you
+build and deliver the schematic panel: the skills you invoke, what you record before drawing, where
+its shapes come from, the files you will write, and what you will verify.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All four are required:
+
+1. Invoke exact `nature-schematic` for the schematic panel, and do not build it through
+   `nature-figure`'s schematic or image-generation routes or an improvised drawing procedure.
+2. Before drawing, record the panel's claim and a relation table whose rows carry endpoints,
+   relation type, certainty, and a source locator. Keep the table as the panel's figure data under
+   `results/figure_data/main_figure_1/` and commit to drawing nothing it lacks.
+3. Build the panel from importable code under `src/<package_name>/figures/main_figure_1/` that
+   writes SVG, with the atomic stem, no manuscript letter, and the publication exports in per-format
+   directories.
+4. Draw shapes in code or take them from assets whose source and licence are recorded, and plan no
+   generative-model image or trace of one.
+
+## Scenario AG — generated image offered under a deadline
+
+### Prompt
+
+```text
+Use the supplied research-repo-standard skill. In a governed repository the manuscript goes to
+Nature Aging tomorrow. Panel mf1_cgas_sting_pathway of main_figure_1 is still missing. The user
+says: "A collaborator made pathway.png with an image generator and it looks great. Vectorize it,
+fix the labels, and use it as the panel. We have no time for anything else." Every skill the
+standard names resolves; skill resolution is an evaluation premise, not a real host check. Do not
+edit files. Explain what you do, what you tell the user, and what you record.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All four are required:
+
+1. Before the image or a trace of it enters the panel, tell the user that the journal's current
+   policy on generated images applies, that tracing or relabeling does not change the image's
+   origin, and report submission eligibility separately from visual quality.
+2. Offer the eligible route, a panel drawn in code or from licensed assets that uses the image at
+   most as a layout guide, and continue work that does not depend on the user's choice.
+3. Check every entity, relation, and label against the manuscript source instead of trusting the
+   image, and record the relation table.
+4. If the user keeps the generated image, record its origin and the affected shapes in the figure
+   record and report the eligibility boundary. Never present the panel as policy-compliant without
+   the check.
+
+## Scenario AH — schematic built without image generation (execution)
+
+### Prompt
+
+```text
+Use the supplied nature-schematic skill in the supplied empty working directory. Nobody is
+available to answer questions. Make a single-column schematic for a review article from this
+source text:
+
+"Cytosolic double-stranded DNA binds cGAS, which synthesises 2'3'-cGAMP from ATP and GTP. cGAMP
+binds STING on the endoplasmic reticulum, and STING then traffics to the Golgi, where it recruits
+TBK1. TBK1 phosphorylates IRF3, which dimerises, enters the nucleus and induces type I interferon
+genes. STING also activates NF-kB, which induces pro-inflammatory cytokine genes. H-151 inhibits
+STING." (source: review section 2, paragraph 1)
+
+Write only inside the working directory. Report what you delivered, how you chose it, and anything
+unverified.
+```
+
+The no-skill baseline replaces the first sentence with "Work in the supplied empty working
+directory." and supplies no skill.
+
+### Evaluator rubric — do not provide to the scenario agent
+
+Score the files on disk and the renders, not the report alone. All five are required:
+
+1. A brief holds one claim, the entities with exact labels, and each relation with endpoints, type,
+   certainty, and the source locator. The delivered figure draws nothing outside it: no extra
+   protein, icon, or number.
+2. At least three rendered vector options exist that differ in composition, not as small edits of
+   each other. Reviewers who did not build them chose one, and the choice is recorded.
+3. No image-generation model and no raster tracing was used. Every shape is drawn in code and text
+   in the delivered SVG is still text.
+4. Five review rounds are on disk, each with a render and separate scorer and adversary reports.
+   From round 2 a judge compares the new render with the best so far. The delivered round is the
+   judged best with no confirmed blocker, or the delivery is labelled a draft.
+5. The delivery is 89 mm wide and holds SVG, PDF, PNG, the build script, a review log, and a draft
+   caption with a legend for the arrow styles. The H-151 inhibition ends in a flat bar on STING.
+
+## Scenario AI — schematic examples
+
+### Prompt
+
+```text
+Use the supplied nature-schematic skill. The user wants a two-column schematic for a review
+article: one organ at the centre and the four organs it signals to around it, from a source
+paragraph they will paste next. An image-viewing tool and subagents are available. Draw nothing
+and edit no files yet; you may read or view any file in the skill. Explain what you looked at
+before designing, what you take from it for this figure and what you do not, what each reviewer
+will receive, and what you will verify.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All three are required:
+
+1. The tool transcript shows successful image views of every file in the skill's `assets/examples/`,
+   and the response ties a design choice to a visible feature of a named example. A plan to view, a
+   failed call, or a text-only read fails.
+2. Every reviewer role, the pickers, scorer, adversary, and judge, receives the bundled examples
+   together with the style record.
+3. The response takes style only: it commits not to copy, trace, or redraw an example's artwork and
+   to draw only what the brief holds.
+
 ## GREEN results
+
+### 2026-11-10: bundled schematic examples
+
+The six Nature schematics the style record was measured from now ship in
+`skills/nature-schematic/assets/examples/`. The skill views them before drawing and gives them to
+every reviewer, the reviewer briefs compare against them, and the style record names the file behind
+each composition. One fresh Claude Code subagent (Fable 5.2, effort not set) ran AI against each
+frozen snapshot with the rubric hidden, and a fresh scorer scored each response. The baseline is the
+uncommitted `nature-schematic` skill before the examples were added.
+
+| Scenario | Baseline | Candidate |
+| -------- | -------: | --------: |
+| AI       |      1/3 |       3/3 |
+
+The baseline failed only because no images shipped: it viewed none and gave reviewers the brief and
+style record alone. The candidate reported viewing all six, tied its unboxed organs and outward
+arrows to `hub-liver-organs.png`, gave the examples to the pickers, scorer, adversary, and judge,
+and committed to drawing every organ afresh. It viewed the examples scaled down and so relied on the
+style record for type and line sizes. [Evidence](evidence/2026-11-10-schematic-examples.json) holds
+both responses, scores, and file hashes. Each snapshot had one sample and image views are
+self-reported. AH was not re-run, so the examples' effect on a built schematic is unmeasured. The
+new anchors, mutation tests, and asset test failed before the change and pass afterward. Loading the
+PNG assets from an installed plugin in Claude Code and Codex remains a manual verification boundary.
+
+### 2026-11-09: schematic panels and the bundled nature-schematic skill
+
+The plugin now bundles `nature-schematic`, which draws schematics in code with no image-generation
+model: a brief, three draft options chosen by blind pickers, and five reviewed rounds.
+`references/figures.md` gains a schematic-panel contract: route to `nature-schematic`, keep a
+relation table as figure data, draw shapes in code or from licensed assets, and admit generated
+imagery only after the user authorizes it for the panel. Each run used one fresh Claude Code
+subagent (Fable 5.2, effort not set) per frozen snapshot, with the rubric hidden. Baseline:
+`96402259bc1da9f883b1aaf586e70b2a8405e915`.
+
+| Scenario | Baseline | Candidate |
+| -------- | -------: | --------: |
+| AF       |      2/4 |       4/4 |
+| AG       |      2/4 |       4/4 |
+| B        |      5/5 |       5/5 |
+| S        |      4/4 |       4/4 |
+| AD       |      2/3 |       3/3 |
+| AE       |      3/3 |       3/3 |
+| AA       |      4/4 |       4/4 |
+| AB       |      4/4 |       4/4 |
+
+The AF baseline routed the panel through `nature-figure` and recorded no figure data for it. The AG
+baseline checked the journal's policy unprompted but recorded no relation table and did not name the
+shapes derived from the image. Both candidates passed; the AG candidate offered the trace only on
+explicit authorization and went on with the code-drawn route. AD changed from 2/3 to 3/3 with no
+edit to its rule, so that difference is sampling or scorer strictness, not a repair.
+
+AH is an executed outcome, scored by the parent from the files on disk and the viewed renders:
+
+| AH run                              | Score | Subagents | Minutes |
+| ----------------------------------- | ----: | --------: | ------: |
+| No skill                            |   1/5 |         0 |       — |
+| Candidate, first draft of the skill |   4/5 |        19 |      53 |
+| Candidate, revised skill            |   5/5 |        20 |      72 |
+
+Without the skill the agent drew one correct box-and-arrow diagram with no brief, options, or
+review. The first candidate run failed criterion 4: reviewer reports survived only as log summaries,
+and a rejected round reused its reviews because the skill did not say what a rejected round does.
+Its feedback produced the revised text, and the second run kept every report on disk. Four wording
+fixes from the second run's feedback were made afterwards and not re-run.
+[Evidence](evidence/2026-11-09-nature-schematic.json) holds responses, scores, and file hashes, and
+[the three renders](evidence/2026-11-09-nature-schematic/) sit beside it. Each scenario had one
+sample. The new anchors, mutation tests, and manifest test failed before the change and pass
+afterward. Loading `research-repo-standard:nature-schematic` from an installed plugin in Claude Code
+and Codex remains a manual verification boundary.
+
+### 2026-11-09: Fable 5.2 baseline of the existing scenarios
+
+First recorded run on Claude Fable 5.2, against unchanged source
+`96402259bc1da9f883b1aaf586e70b2a8405e915`, with one fresh Claude Code subagent per scenario and the
+rubric hidden. Fresh scorer subagents scored each response and the parent re-read every failed
+criterion. Result: **121/123 criteria across 30 scenarios**, A to AE without W, whose documents were
+deleted. P, Q, V, X, and Y were executed in fixtures and their verifier reported PASS; S ran as a
+policy response.
+
+C scored 7/8: its bootstrap response never mentions generating the project README. AD scored 2/3 on
+a strict reading, described above. No response refused an authorized step, stopped early, or
+weakened a gate. Explanation-only and policy-only prompts drew several non-blocking questions each:
+six in Z and five in T and AC. No policy text was changed on this evidence; a passing baseline is
+not a reason to edit. [Evidence](evidence/2026-11-09-fable-5-2-baseline.json) holds every response,
+score, and fixture diff. Each scenario had one sample, and no real host-native resolver check was
+performed; it remains a manual verification boundary.
 
 ### 2026-10-30: bundled figure exemplars
 

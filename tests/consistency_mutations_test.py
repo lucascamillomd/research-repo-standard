@@ -153,6 +153,33 @@ class ConsistencyMutations(unittest.TestCase):
         self.remove_phrase(SKILL + "references/figures.md", r"as\s+additional\s+guidance")
         self.assert_rejected_by("figure-exemplars")
 
+    def test_generated_image_authorization_removal(self):
+        self.remove_phrase(
+            SKILL + "references/figures.md", r"only\s+after\s+the\s+user\s+authorizes\s+it"
+        )
+        self.assert_rejected_by("schematic-contract")
+
+    def test_schematic_relation_table_removal(self):
+        self.remove_paragraph(SKILL + "references/figures.md", "relation table")
+        self.assert_rejected_by("schematic-contract")
+
+    def test_schematic_image_generation_ban_removal(self):
+        self.remove_phrase(
+            "skills/nature-schematic/SKILL.md", r"No\s+image-generation\s+model\s+takes\s+part"
+        )
+        self.assert_rejected_by("schematic-skill")
+
+    def test_schematic_example_viewing_removal(self):
+        self.remove_phrase(
+            "skills/nature-schematic/SKILL.md",
+            r"View\s+the\s+six\s+\[bundled\s+examples\]\(assets/examples/\)\s+before\s+drawing",
+        )
+        self.assert_rejected_by("schematic-examples")
+
+    def test_schematic_example_copying_ban_removal(self):
+        self.remove_phrase("skills/nature-schematic/SKILL.md", r",\s+never\s+their\s+artwork")
+        self.assert_rejected_by("schematic-examples")
+
     def test_unavailable_host_boundary_removal(self):
         self.remove_paragraph(SKILL + "references/prerequisites.md", "An unavailable host or resolver")
         self.assert_rejected_by("real-host-proof")

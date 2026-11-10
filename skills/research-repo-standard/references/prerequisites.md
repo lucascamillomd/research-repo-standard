@@ -17,6 +17,7 @@ package's unrelated capabilities.
 | `superpowers:writing-plans`    | implementation planning after design approval | <https://github.com/obra/superpowers>                   |
 | `scientific-critical-thinking` | independent scientific critique               | <https://github.com/k-dense-ai/scientific-agent-skills> |
 | `nature-figure`                | publication figure strategy and delivery      | <https://github.com/Yuan1z0825/nature-skills>           |
+| `nature-schematic`             | publication schematic panels                  | this plugin                                             |
 
 Use the current host's native skill listing or resolver. The result must show the exact skill name
 and enough source information to verify the expected package or repository. Successful invocation
@@ -26,9 +27,11 @@ skill. A missing capability blocks only work that depends on it.
 
 Resolve this skill the same way. It installs as a plugin from the `research-repo-standard`
 marketplace at `github.com/lucascamillomd/research-repo-standard`, so its exact name is
-`research-repo-standard:research-repo-standard`. Check that its reported provenance, the marketplace
-source and installed commit, matches the provenance the project README records under the checklist
-in `references/bootstrap.md`. When the README has no entry yet, match the source the user approved.
+`research-repo-standard:research-repo-standard`. `nature-schematic` ships in the same plugin as
+`research-repo-standard:nature-schematic` and shares that provenance. Check that its reported
+provenance, the marketplace source and installed commit, matches the provenance the project README
+records under the checklist in `references/bootstrap.md`. When the README has no entry yet, match
+the source the user approved.
 
 Record the host, resolver, resolved source, and invocation evidence at first use. Reuse that record
 while the session and provenance are unchanged; report again if resolution fails or the source,
