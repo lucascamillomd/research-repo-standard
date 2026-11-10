@@ -107,7 +107,7 @@ crosses a contract boundary. Required capabilities resolve by exact name through
 | Settings, paths, loading, overrides, or provenance                                              | [configuration](references/configuration.md)                                                                 |
 | Data acquisition, registration, preprocessing, validation, or schemas                           | [data](references/data.md)                                                                                   |
 | Scientific planning, estimands, inclusion, missingness, modeling, interpretation, reporting     | [analysis](references/analysis.md)                                                                           |
-| Figures or plotting                                                                             | [figures](references/figures.md): scope and shared data/QA, then the requested delivery mode                 |
+| Figures, plotting, or schematics                                                                | [figures](references/figures.md): scope and shared data/QA, then the requested delivery mode                 |
 
 ## Completion
 

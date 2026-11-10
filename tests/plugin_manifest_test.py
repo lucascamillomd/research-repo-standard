@@ -46,6 +46,32 @@ class PluginManifests(unittest.TestCase):
         self.assertFalse((SOURCE / "SKILL.md").exists())
         self.assertFalse((SOURCE / "references").exists())
 
+    def test_schematic_skill_ships_in_the_same_plugin(self):
+        directory = SOURCE / "skills" / "nature-schematic"
+        skill = (directory / "SKILL.md").read_text()
+        self.assertTrue(skill.startswith("---\nname: nature-schematic\n"))
+        for reference in ("style.md", "reviewer.md"):
+            self.assertTrue((directory / "references" / reference).is_file())
+            self.assertIn(f"references/{reference}", skill)
+
+    def test_schematic_examples_ship_with_the_skill(self):
+        directory = SOURCE / "skills" / "nature-schematic" / "assets" / "examples"
+        names = sorted(path.name for path in directory.glob("*.png"))
+        expected = [
+            "hub-liver-organs.png",
+            "panels-digital-twin.png",
+            "process-nanogel.png",
+            "progression-liver.png",
+            "timeline-immunity.png",
+            "tree-body-diseases.png",
+        ]
+        self.assertEqual(names, expected)
+        style = (directory.parents[1] / "references" / "style.md").read_text()
+        for name in names:
+            # Check PNG signatures; image decoding and host rendering are verified separately.
+            self.assertEqual((directory / name).read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
+            self.assertIn(name, style)
+
     def test_figure_exemplars_ship_with_the_skill(self):
         directory = SOURCE / "skills" / NAME / "assets" / "figure-exemplars"
         names = sorted(path.name for path in directory.glob("*.webp"))

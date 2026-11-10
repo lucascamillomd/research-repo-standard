@@ -21,7 +21,14 @@ and visual QA; publication delivery adds its contract and editable exports. Scie
 remain mandatory while approved seed, compatible Python version, and plotting backend choices are
 recorded project conventions.
 
-Both hosts list the skill as `research-repo-standard:research-repo-standard`.
+The plugin also bundles `nature-schematic`, which draws scientific schematics as editable vector art
+in code, without an image-generation model: a brief from the source, three draft options, and five
+reviewed rounds. It works on its own for a paper, review, or grant; in a governed repository the
+standard's figure contract owns its paths, exports, and records. Its six example figures are
+published Nature schematics, bundled as style references; they remain their publishers' copyright.
+
+Both hosts list the skill as `research-repo-standard:research-repo-standard` and the schematic skill
+as `research-repo-standard:nature-schematic`.
 `skills/research-repo-standard/references/prerequisites.md` owns provenance, authorized recovery,
 host profile installation, and the real host-native smoke test. The skill never creates or modifies
 target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md` files. `references/bootstrap.md` in the same
@@ -100,6 +107,7 @@ The TOML is a copy, so plugin updates do not change it. When an update changes
 ```text
 .claude-plugin/                        plugin and marketplace manifests both hosts read
 skills/research-repo-standard/         SKILL.md entry point and references/ procedures
+skills/nature-schematic/               schematic skill, style record, reviewer briefs, and examples
 agents/research-code-simplifier.md     canonical host-neutral simplifier profile
 AGENTS.md                              source-repository maintenance instructions
 Makefile                               source help, format, and test interface

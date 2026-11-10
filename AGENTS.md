@@ -2,7 +2,8 @@
 
 This repository maintains the `research-repo-standard` skill and publishes it as a Claude Code and
 Codex plugin. `skills/research-repo-standard/SKILL.md` is the maintained product. Its `references/`
-own its procedures, `agents/` owns the canonical host-neutral simplifier profile, `.claude-plugin/`
+own its procedures, the bundled `skills/nature-schematic/` skill owns how a schematic is designed,
+drawn, and reviewed, `agents/` owns the canonical host-neutral simplifier profile, `.claude-plugin/`
 holds the plugin and marketplace manifests that both hosts read, and tests protect those contracts.
 Leave `version` out of both manifests so installed copies update on each new commit. Any source
 design specs or plans under `docs/superpowers/` are non-normative and never override SKILL.md,

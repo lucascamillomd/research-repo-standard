@@ -1,7 +1,8 @@
 # Reference: plot and figure contract
 
-This contract owns figure delivery scope, plotting, traceable figure data, asset naming, assembly,
-and rendered-output QA. Read the shared sections and those for the requested delivery scope.
+This contract owns figure delivery scope, plotting, traceable figure data, schematic panels, asset
+naming, assembly, and rendered-output QA. Read the shared sections and those for the requested
+delivery scope.
 
 ## Scope
 
@@ -72,6 +73,30 @@ model-estimate mark carries the estimate, its uncertainty, and `n`. When a data-
 forbids releasing observations, record the restriction in the figure record and export the finest
 permitted aggregate. Add a `README.md` when columns, units, or derivation need explanation. Build
 the journal's "Source Data" submission from these files in whatever container it requires.
+
+## Schematic panels
+
+A schematic panel explains a relation and plots no data. For publication delivery, resolve and
+invoke `nature-schematic` for it, using `references/prerequisites.md`, in place of `nature-figure`'s
+schematic and image-generation routes. `nature-figure` still serves the figure's strategy and its
+quantitative panels. An exploratory sketch needs neither skill.
+
+The panel's figure data is a relation table, `results/figure_data/<figure_id>/<asset>.tsv`, with one
+row per drawn relation: both endpoints, the relation type, its certainty, and a source locator.
+Record the panel's claim in the figure record. Draw nothing the table and its entities lack, and
+show a number only when the source gives it.
+
+The build script is an importable function under `src/<package_name>/figures/<figure_id>/` that
+writes the SVG, and the panel follows the naming, export, and assembly rules below. Draft options
+and review rounds are scratch work under `references/governance.md`. Record the chosen option, the
+delivered round, and unresolved blockers in the figure record.
+
+Every shape is drawn in code or comes from an asset whose source, licence, and credit line the
+figure record names. An image from a generative model, or a trace or redrawing of one, enters a
+publication schematic only after the user authorizes it for that panel knowing the target journal's
+current policy on generated images. Check that policy, record the image's origin and the shapes
+derived from it under image-integrity notes, and report submission eligibility separately from
+visual quality. Record its use as a layout guide as well.
 
 ## Atomic panels and naming
 
@@ -156,6 +181,8 @@ renderer remains an explicit QA boundary, never an inferred pass.
 - red/green is never the only distinction and the figure still reads in grayscale where needed;
 - `n`, replicate definitions, center, spread, tests, corrections, and comparisons are documented;
 - figure-data files reproduce every quantitative mark;
+- a schematic draws each relation in its table with the right endpoints, direction, and certainty,
+  gives each line style one meaning, and draws nothing the table lacks;
 - raster resolution is sufficient and TIFF output is 600 dpi;
 - image panels have calibrated scale bars where applicable;
 - crop, contrast, gamma, pseudo-color, stitching, and image reuse are documented; and

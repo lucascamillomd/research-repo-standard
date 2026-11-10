@@ -35,7 +35,9 @@ forbid() {
 # An owner can route to another procedure without duplicating its detailed grammar.
 owned() {
   local id="$1" owner="$2" pattern="$3" file duplicates=0
-  for file in AGENTS.md README.md "$SKILL_DIR"/SKILL.md "$SKILL_DIR"/references/*.md agents/*.md; do
+  for file in AGENTS.md README.md "$SKILL_DIR"/SKILL.md "$SKILL_DIR"/references/*.md agents/*.md \
+    skills/nature-schematic/SKILL.md skills/nature-schematic/references/*.md; do
+    [[ -f "$file" ]] || continue
     [[ "$file" == "$(src "$owner")" ]] && continue
     if grep -Eqi -- "$pattern" <<< "$(flat "$file")"; then duplicates=1; fi
   done
@@ -310,6 +312,29 @@ require figure-exemplars references/figures.md 'after invoking `nature-figure`, 
   'assets/figure-exemplars/' 'infer their visual style' 'as additional guidance' \
   'cannot view images, mention.*continue without the exemplars'
 owned figure-exemplar-owner references/figures.md 'infer their visual style'
+
+# Schematic panels: a relation table as figure data, code-drawn shapes, and gated generated imagery.
+require schematic-contract references/figures.md 'schematic panel.*plots no data' \
+  'invoke `nature-schematic`' 'relation table' \
+  'endpoints.*relation type.*certainty.*source locator' 'draw nothing' \
+  'drawn in code.*source, licen[cs]e, and credit line' \
+  'generative model.*only after the user authorizes' 'eligibility separately from'
+owned generated-image-owner references/figures.md 'generative model.*only after the user authorizes'
+require schematic-capability references/prerequisites.md 'research-repo-standard:nature-schematic'
+SCHEMATIC=skills/nature-schematic
+require schematic-skill "$SCHEMATIC"/SKILL.md 'name: nature-schematic' 'description:' \
+  'no image-generation model' 'drawn in code' 'brief' 'source' 'three options' 'five rounds' \
+  'scorer' 'adversary' 'judge' 'draft' 'text.*still text' 'references/figures\.md.*owns'
+require schematic-reviewers "$SCHEMATIC"/references/reviewer.md 'picker' 'scorer' 'adversary' 'judge' \
+  'blocker' 'evidence' 'settled'
+require schematic-style "$SCHEMATIC"/references/style.md 'colou?r' 'type' 'connector' 'composition'
+require schematic-examples "$SCHEMATIC"/SKILL.md 'view the six \[bundled examples\]\(assets/examples/\)' \
+  'give the examples to every reviewer' 'never their artwork'
+require schematic-example-reviewers "$SCHEMATIC"/references/reviewer.md 'style record and the examples'
+for file in SKILL.md references/style.md references/reviewer.md; do
+  forbid "schematic-no-image-generation: $file" "$SCHEMATIC/$file" \
+    'imagegen|image_gen|gpt-image|OPENAI_API_KEY|vtracer'
+done
 
 # Evidence provenance stays inspectable; scenario names, numbering, and record layout may evolve.
 require pressure-evidence tests/skill_pressure_scenarios.md 'rubric.*hidden|hidden.*rubric' \
