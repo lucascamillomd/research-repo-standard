@@ -9,8 +9,8 @@ description:
 # Nature-style schematics
 
 A schematic explains a relation. Build it as editable vector art in the style recorded in
-[references/style.md](references/style.md). No image-generation model takes part: every shape is
-drawn in code, or comes from an asset whose source, licence and credit line you record.
+[references/style.md](references/style.md). No image-generation model takes part. Every shape is
+drawn in code or comes from an asset whose source, licence and credit line you record.
 
 In a repository that follows `research-repo-standard`, its `references/figures.md` owns paths,
 names, export formats and records.
@@ -25,24 +25,23 @@ Before drawing, write `brief.md` from the source:
   cGAMP (section 2, paragraph 1)"
 - what the source leaves open and the drawing must not decide, such as where on a route a step
   happens
-- the width, 89 mm for one column or 183 mm for two; the height follows the chosen option, up to 247
-  mm
+- the width, 89 mm for one column or 183 mm for two. The height follows the chosen option, up to 247
+  mm.
 
-Everything drawn is an entity or relation in the brief. A number appears only when the source gives
-it. If nothing relates to anything, say so and suggest a table.
+Everything drawn is an entity or relation in the brief. If nothing relates to anything, say so and
+suggest a table.
 
-When a choice is the user's and nobody is there, choose yourself and record why in `notes.md`.
+If the user is unavailable, make their choices and record why in `notes.md`.
 
 ## Build
 
-Write Python that outputs SVG, with text as text. Render with what the environment has, such as
-CairoSVG, rsvg-convert, Inkscape or a headless browser, and record which in `notes.md`; if nothing
-can render, say so and stop. Review renders are PNGs at final size and 300 dpi, each with a label
-list from the script: one row per text with its size in points.
+Write Python that outputs SVG, with text as text. Record the renderer you use in `notes.md`. If
+nothing can render the SVG, say so and stop. Review renders are PNGs at final size and 300 dpi, each
+with a label list from the script that gives every text and its size in points.
 
-Draw organs, cells and molecules as paths, in the style record's rendering. A simple shape drawn
-well beats a detailed one drawn badly. View the six [bundled examples](assets/examples/) before
-drawing, with any examples or assets the user supplies; their examples lead where the two differ.
+Draw organs, cells and molecules as paths. Prefer a simple shape drawn well to a detailed one drawn
+badly. View the six [bundled examples](assets/examples/) before drawing, with any examples or assets
+the user supplies. Where the two differ, follow the user's.
 
 Reviewers are fresh subagents. Give the examples to every reviewer, with the brief, the style
 record, each render's size, dpi and label list, and the opening and its own section of
@@ -51,41 +50,39 @@ cannot start subagents, say so, review from the PNG alone yourself, and label th
 self-reviewed.
 
 1. **Options.** Draw three options as rough drafts in `options/`: placed, labelled and connected,
-   without polish. They share the science and differ broadly in composition type, orientation,
-   centre, amount of context and rendering, fuller illustration or sparer diagram, so that no two
-   read as small edits of each other. Remove from each whatever the brief lacks.
+   without polish. They share the science. They differ broadly in composition type, orientation,
+   centre, amount of context and rendering, from full illustration to spare diagram. No two read as
+   small edits of each other.
 
-   Three pickers each rank the options, lettered in a different random order for each. Score ranks
-   as 1, 2 and 3 and take the lowest sum, breaking a tie by first places. If the user is there, show
-   them the options and the ranking; they may overrule it. Apply the pickers' fixes for the winner
-   before round one.
+   Three pickers rank the options independently, lettered in a different random order for each. The
+   lowest rank sum wins, and first places break a tie. If the user is there, show them the options
+   and the ranking. They may overrule it. Apply the pickers' fixes for the winner before round one.
 
-2. **Review loop.** Run five rounds on the chosen option, one after another. Each reviews the
-   current render, revises it, then compares.
-   - Review. A scorer and an adversary work in parallel on the PNG, with `settled.md`. Neither sees
-     the other's report, earlier renders or your reasoning.
-   - Revise. Check each adversary claim against the PNG and the brief before acting, since its job
-     is to over-report. Fix confirmed blockers first, then the scorer's repairs. Record each
-     rejected claim and each design decision in `settled.md`, with its reason. Save the script and
-     render as `rounds/N.py` and `rounds/N.png`.
+2. **Review loop.** Run five rounds on the chosen option, one after another.
+   - Review. A scorer and an adversary work in parallel on the current PNG, and each gets
+     `settled.md`. Neither sees the other's report, earlier renders or your reasoning.
+   - Revise. Check each adversary claim against the PNG and the brief before acting. Fix confirmed
+     blockers first, then the scorer's repairs. Record each rejected claim and each design decision
+     in `settled.md`, with its reason. Save the script and render as `rounds/N.py` and
+     `rounds/N.png`.
    - Compare. A judge gets the renders from before and after the round as X and Y in random order.
-     Keep the revision if the judge prefers it, or calls a tie and it fixed a confirmed blocker;
-     otherwise discard it. A discarded round still counts: the next round skips review and tries a
+     Keep the revision if the judge prefers it, or calls a tie and it fixed a confirmed blocker.
+     Otherwise discard it. A discarded round still counts. The next round skips review and tries a
      different repair from the same reports.
 
    After round five, one more adversary checks the render. Fix confirmed defects that a small edit
-   can fix, and have a judge confirm the figure is no worse. A confirmed blocker that remains makes
-   the delivery a draft, and the report says so.
+   can fix, and have a judge confirm the figure is no worse. If a confirmed blocker remains, label
+   the delivery a draft in your report.
 
 3. **Deliver** the SVG, PDF and a PNG at 300 dpi or more, with the build script, brief, options,
-   rounds, reviewer reports, a log of each round's scores, blockers and judge verdict, and a draft
-   caption that repeats the key. Reopen the exports and check size, appearance and that text is
-   still text. Report what you could not verify.
+   rounds and reviewer reports. Add a log of each round's scores, blockers and judge verdict, and a
+   draft caption that repeats the key. Reopen the exports and check size, appearance and that text
+   is still text. Report what you could not verify.
 
 ## Rules
 
 - Give the main relationship visual priority. Comparable objects keep comparable sizes.
 - A box marks a group or boundary the source defines, never every step.
-- Each line style, tint and mark has one meaning, such as process, inhibition or movement. A key in
-  the figure names each one that is not labelled in place.
+- Each line style, tint and mark has one meaning. A key in the figure names each one that is not
+  labelled in place.
 - Take style from the style record and the examples, never their artwork.

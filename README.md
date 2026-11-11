@@ -21,10 +21,9 @@ and visual QA; publication delivery adds its contract and editable exports. Scie
 remain mandatory while approved seed, compatible Python version, and plotting backend choices are
 recorded project conventions.
 
-The plugin also bundles `nature-schematic`, which draws scientific schematics as editable vector art
-in code, without an image-generation model. It works on its own or under the standard's figure
-contract. Its six example figures are published Nature schematics, bundled as style references; they
-remain their publishers' copyright.
+The plugin also bundles `nature-schematic`, which draws schematics as editable vector art in code,
+without an image-generation model. It works on its own or under the standard's figure contract. Its
+six style examples are published Nature schematics and remain their publishers' copyright.
 
 Both hosts list the skill as `research-repo-standard:research-repo-standard` and the schematic skill
 as `research-repo-standard:nature-schematic`.

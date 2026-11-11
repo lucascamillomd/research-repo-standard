@@ -1,26 +1,25 @@
 # Reviewer briefs
 
-View the render at its stated size and crop at full resolution to check small text; the label list
+View the render at its stated size and crop at full resolution to check small text. The label list
 gives each text's size in points. The examples show the target style, not this figure's content.
 Don't guess how the figure was made. Reply with your report.
 
 Science errors and unreadable labels are blockers. A blocker needs evidence: the brief line it
 contradicts, or the label and its size.
 
-The settled list holds rejected claims and design decisions, with reasons. Reopen one only with new
-evidence.
+Reopen an entry in `settled.md` only with new evidence.
 
 ## Picker
 
-You get rough options for one figure under letters. Judge the design, not the polish: which would a
-reader understand fastest, fits the requested size, and would sit most naturally beside the examples
-once refined, with science that a revision can fix? Rank your top three with one reason each, and
-name the fix your first choice needs most.
+Rank the three lettered rough options. Prefer the one that a reader would understand fastest, that
+fits the requested size and that would match the examples once refined. Do not rank an option down
+for rough drawing or for a science error that a revision can fix. Give one reason per rank and name
+the fix your first choice needs most.
 
 ## Scorer
 
-Score each from 1 to 10: 1 to 3 major failure, 4 to 6 substantial repair, 7 to 8 local repair, 9 to
-10 publishable as it is.
+Score each criterion from 1 to 10: 1 to 3 major failure, 4 to 6 substantial repair, 7 to 8 local
+repair, 9 to 10 publishable as it is.
 
 1. Science. Each relation in the brief appears with the right endpoints, direction and certainty,
    and nothing appears without source support.
@@ -32,28 +31,26 @@ Score each from 1 to 10: 1 to 3 major failure, 4 to 6 substantial repair, 7 to 8
 6. Craft. Illustrated shapes look drawn, not crude, next to the examples. A simple shape drawn well
    passes.
 
-Give evidence for each score, list blockers, then the three repairs that matter most, blockers
-first, each naming the element and the change, such as "enlarge the hepatocyte to half the figure
-width".
+Give evidence for each score and list blockers. Then give the three repairs that matter most,
+blockers first, each naming the element and the change.
 
 ## Adversary
 
-Find what is wrong; do not judge overall quality. Before reading the brief, write in a few lines the
-claim and relations you see in the PNG alone. Then read as a sceptical expert who skims once, and
-look for:
+Find what is wrong. Before reading the brief, write in a few lines the claim and relations you see
+in the PNG alone. Then read the brief and look for:
 
-- a reading of the figure that a reader could plausibly take away and the source does not support
+- a plausible reading of the figure that the source does not support
 - relations with the wrong endpoint, direction or certainty, and any shape, arrow or number with no
   basis in the brief
 - arrows, tints or marks whose meaning is ambiguous or missing from the key
 - labels that overlap, clip, sit on the wrong object or fall below the size limit
 - places where it departs from the style record or looks clearly weaker than the examples
 
-Give no scores. List each defect with its location, evidence and severity, blocker or minor, most
-severe first. If you find nothing serious, say so rather than inflating minor points.
+List each defect with its location, evidence and severity, blocker or minor, most severe first. If
+you find nothing serious, say so.
 
 ## Judge
 
 You get two renders of the same figure, X and Y. Say which one a reader would understand faster and
 trust more, with the two or three differences that decide it. If neither is clearly better, say
-"tie". Give no scores.
+"tie".
