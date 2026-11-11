@@ -896,14 +896,44 @@ All three are required:
 
 ## GREEN results
 
+### 2026-11-11: schematic skill simplified over three review rounds
+
+Three review rounds, each by one fresh Fable 5.2 subagent and one GPT-6 Astra agent at medium
+effort, cut the three `nature-schematic` files from 1,877 to 1,627 words and shortened the schematic
+text in `references/figures.md`, `references/prerequisites.md`, and `README.md`. No rule was added.
+The third round found gaps that the cuts had opened, and those were repaired before testing. One
+fresh Fable 5.2 subagent ran each scenario on the frozen text with the rubric hidden. A fresh scorer
+scored AF, AG, and AI, and the parent scored AH from the files on disk and the viewed render.
+
+| Scenario      | Previous record | Simplified |
+| ------------- | --------------: | ---------: |
+| AF            |             4/4 |        4/4 |
+| AG            |             4/4 |        4/4 |
+| AI            |             3/3 |        3/3 |
+| AH (executed) |             5/5 |        5/5 |
+
+This AH run is the first executed build with the bundled examples and the first since the trims of
+2026-11-10. It used 21 subagents and about 85 minutes. The judge discarded round five, and the
+delivery is round four plus the final edit, with no confirmed blocker. The machine had no SVG
+renderer on its path, and the agent found headless Chrome without the renderer list that this change
+removed. The agent started each round's reviewers before the previous judge had reported, so "one
+after another" went back into the review loop afterwards and was not re-run. Its eleven other notes
+on unclear sentences are in the evidence and changed nothing.
+[Evidence](evidence/2026-11-11-schematic-simplification.json) holds responses, scores, the
+reviewers' proposals, and file hashes, and
+[the AH render](evidence/2026-11-11-schematic-simplification/ah-run-3.png) sits beside it. Each
+scenario had one sample, and the image views in AI are self-reported. Loading the skill and its PNG
+assets from an installed plugin in Claude Code and Codex remains a manual verification boundary.
+
 ### 2026-11-10: schematic wording trimmed after review
 
-Two trims of `0b3169c`, the first from an independent simplification review, shortened the skill,
-stated once what every reviewer receives, and removed duplicated rules; none was added. Fresh Fable
-5.2 subagents with the rubric hidden scored AF 4/4 and AI 3/3 after each trim, one sample each. AH's
-criterion 4 now matches the skill: a round after a discarded one may reuse its reports, and the
-judge compares every revision. AH was scored under the earlier wording and not re-run.
-[Evidence](evidence/2026-11-10-schematic-simplification.json) holds responses and scores.
+Two trims of `47fa433`, which the evidence names by its pre-merge hash `0b3169c`, shortened the
+skill and removed duplicated rules. The first followed an independent simplification review. No rule
+was added. Fresh Fable 5.2 subagents with the rubric hidden scored AF 4/4 and AI 3/3 after each
+trim, one sample each. AH's criterion 4 now matches the skill. A round after a discarded one may
+reuse its reports, and the judge compares every revision. AH was scored under the earlier wording
+and not re-run. [Evidence](evidence/2026-11-10-schematic-simplification.json) holds responses and
+scores.
 
 ### 2026-11-10: bundled schematic examples
 
@@ -950,11 +980,11 @@ edit to its rule, so that difference is sampling or scorer strictness, not a rep
 
 AH is an executed outcome, scored by the parent from the files on disk and the viewed renders:
 
-| AH run                              | Score | Subagents | Minutes |
-| ----------------------------------- | ----: | --------: | ------: |
-| No skill                            |   1/5 |         0 |       — |
-| Candidate, first draft of the skill |   4/5 |        19 |      53 |
-| Candidate, revised skill            |   5/5 |        20 |      72 |
+| AH run                              | Score | Subagents |      Minutes |
+| ----------------------------------- | ----: | --------: | -----------: |
+| No skill                            |   1/5 |         0 | not recorded |
+| Candidate, first draft of the skill |   4/5 |        19 |           53 |
+| Candidate, revised skill            |   5/5 |        20 |           72 |
 
 Without the skill the agent drew one correct box-and-arrow diagram with no brief, options, or
 review. The first candidate run failed criterion 4: reviewer reports survived only as log summaries,
@@ -979,10 +1009,10 @@ policy response.
 C scored 7/8: its bootstrap response never mentions generating the project README. AD scored 2/3 on
 a strict reading, described above. No response refused an authorized step, stopped early, or
 weakened a gate. Explanation-only and policy-only prompts drew several non-blocking questions each:
-six in Z and five in T and AC. No policy text was changed on this evidence; a passing baseline is
-not a reason to edit. [Evidence](evidence/2026-11-09-fable-5-2-baseline.json) holds every response,
-score, and fixture diff. Each scenario had one sample, and no real host-native resolver check was
-performed; it remains a manual verification boundary.
+six in Z and five in T and AC. No policy text was changed on this evidence.
+[Evidence](evidence/2026-11-09-fable-5-2-baseline.json) holds every response, score, and fixture
+diff. Each scenario had one sample, and no real host-native resolver check was performed; it remains
+a manual verification boundary.
 
 ### 2026-10-30: bundled figure exemplars
 

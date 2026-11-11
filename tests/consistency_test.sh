@@ -8,6 +8,7 @@ pass() { printf 'ok: %s\n' "$1"; }
 fail() { printf 'FAIL: %s\n' "$1"; FAILS=$((FAILS + 1)); }
 # The plugin keeps the skill in its own directory; checks name its files as the skill does.
 SKILL_DIR=skills/research-repo-standard
+SCHEMATIC=skills/nature-schematic
 src() {
   case "$1" in
     SKILL.md | references/*) printf '%s/%s\n' "$SKILL_DIR" "$1" ;;
@@ -36,8 +37,7 @@ forbid() {
 owned() {
   local id="$1" owner="$2" pattern="$3" file duplicates=0
   for file in AGENTS.md README.md "$SKILL_DIR"/SKILL.md "$SKILL_DIR"/references/*.md agents/*.md \
-    skills/nature-schematic/SKILL.md skills/nature-schematic/references/*.md; do
-    [[ -f "$file" ]] || continue
+    "$SCHEMATIC"/SKILL.md "$SCHEMATIC"/references/*.md; do
     [[ "$file" == "$(src "$owner")" ]] && continue
     if grep -Eqi -- "$pattern" <<< "$(flat "$file")"; then duplicates=1; fi
   done
@@ -321,15 +321,15 @@ require schematic-contract references/figures.md 'schematic panel.*plots no data
   'generative model.*only after the user authorizes' 'eligibility separately from'
 owned generated-image-owner references/figures.md 'generative model.*only after the user authorizes'
 require schematic-capability references/prerequisites.md 'research-repo-standard:nature-schematic'
-SCHEMATIC=skills/nature-schematic
 require schematic-skill "$SCHEMATIC"/SKILL.md 'name: nature-schematic' 'description:' \
-  'no image-generation model' 'drawn in code' 'brief' 'source' 'three options' 'five rounds' \
-  'scorer' 'adversary' 'judge' 'draft' 'text.*still text' 'references/figures\.md.*owns' \
+  'no image-generation model' 'drawn in code' 'before drawing, write `brief\.md`' \
+  'place in the source' 'three options' 'five rounds' 'scorer' 'adversary' 'judge' \
+  'blocker.{0,40}delivery a draft' 'text.*still text' 'references/figures\.md.*owns' \
   'view the six .{0,60}examples.{0,60} before drawing' 'assets/examples/' \
   'give the examples to every reviewer' 'never their artwork'
 require schematic-reviewers "$SCHEMATIC"/references/reviewer.md 'picker' 'scorer' 'adversary' 'judge' \
-  'blocker' 'evidence' 'settled' 'style record and the examples'
-require schematic-style "$SCHEMATIC"/references/style.md 'colou?r' 'type' 'connector' 'composition'
+  'blocker needs evidence' 'settled' 'style record and the examples'
+require schematic-style "$SCHEMATIC"/references/style.md 'no smaller than 5 pt' 'flat bar'
 for file in SKILL.md references/style.md references/reviewer.md; do
   forbid "schematic-no-image-generation: $file" "$SCHEMATIC/$file" \
     'imagegen|image_gen|gpt-image|OPENAI_API_KEY|vtracer'
