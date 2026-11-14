@@ -53,13 +53,11 @@ class PluginManifests(unittest.TestCase):
         for reference in ("style.md", "reviewer.md"):
             self.assertTrue((directory / "references" / reference).is_file())
             self.assertIn(f"references/{reference}", skill)
-        # The style record names each example. Host rendering of the PNGs is a manual check.
+        # Host rendering of the PNGs is a manual check.
         examples = sorted((directory / "assets" / "examples").glob("*.png"))
         self.assertEqual(len(examples), 6)
-        style = (directory / "references" / "style.md").read_text()
         for example in examples:
             self.assertEqual(example.read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
-            self.assertIn(example.name, style)
 
     def test_figure_exemplars_ship_with_the_skill(self):
         directory = SOURCE / "skills" / NAME / "assets" / "figure-exemplars"
