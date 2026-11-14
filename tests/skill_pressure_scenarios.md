@@ -862,10 +862,10 @@ Score the files on disk and the renders, not the report alone. All five are requ
    each other. Reviewers who did not build them chose one, and the choice is recorded.
 3. No image-generation model and no raster tracing was used. Every shape is drawn in code and text
    in the delivered SVG is still text.
-4. Five review rounds are on disk, each with a render and its scorer and adversary reports; a round
-   after a discarded one may reuse that round's reports. A judge compares each revision with the
-   render before it. The delivered round is the judged best with no confirmed blocker, or the
-   delivery is labelled a draft.
+4. Five review rounds are on disk, each with a render and its critic report; a round after a
+   discarded one may reuse that round's report. A judge compares each revision with the render
+   before it. The delivered round is the judged best with no confirmed blocker, or the delivery is
+   labelled a draft.
 5. The delivery is 89 mm wide and holds SVG, PDF, PNG, the build script, a review log, and a draft
    caption with a legend for the arrow styles. The H-151 inhibition ends in a flat bar on STING.
 
@@ -889,12 +889,47 @@ All three are required:
 1. The tool transcript shows successful image views of every file in the skill's `assets/examples/`,
    and the response ties a design choice to a visible feature of a named example. A plan to view, a
    failed call, or a text-only read fails.
-2. Every reviewer role, the pickers, scorer, adversary, and judge, receives the bundled examples
-   together with the style record.
+2. Every reviewer role, the pickers, critic, and judge, receives the bundled examples together with
+   the style record.
 3. The response takes style only: it commits not to copy, trace, or redraw an example's artwork and
    to draw only what the brief holds.
 
 ## GREEN results
+
+### 2026-11-13: one critic per round
+
+Each review round now has one critic and one judge. The critic brief merges the scorer and the
+adversary, and numeric scores are gone. `notes.md` and the renderer record are gone, and choices
+made for an absent user go in the brief. The skill's rules moved into its drawing step, and the
+style record lost its list of example compositions. The three skill files went from 1,627 to 1,449
+words, and a build starts 15 reviewer subagents where it started 20. AH's criterion 4 and AI's
+criterion 2 now name the critic. One fresh Fable 5.2 subagent checked the draft for breakage, and
+its repairs were applied before testing. One fresh Fable 5.2 subagent ran each scenario on the
+frozen text with the rubric hidden. A fresh scorer scored AF and AI, and the parent scored AH from
+the files on disk and the viewed render.
+
+| Scenario      | Previous record | One critic |
+| ------------- | --------------: | ---------: |
+| AF            |             4/4 |        4/4 |
+| AI            |             3/3 |        3/3 |
+| AH (executed) |             5/5 |        5/5 |
+
+The AH build used 15 subagents and about 110 minutes, against 21 and 85 before, and the cause of the
+longer time was not measured. No critic found a blocker in any round, where the previous run's
+adversary found one in round one. One build cannot show whether one critic finds as much as a scorer
+and an adversary. After the run, "have a judge confirm the figure is no worse" became "keep the edit
+unless a judge prefers the render before it", which both AH agents had found unclear, and that was
+not re-run. AG was not re-run because `references/figures.md` did not change. After the run, GPT-6
+Astra at medium effort reviewed the text from a pasted copy, because its tool host was missing. Four
+of its findings were applied and not re-run, bringing the files to 1,462 words. Design decisions now
+enter `settled.md` only from a kept revision, a round after a discarded one gets a fresh review when
+no repair is left, the final edit is checked against the brief, and the critic names up to three
+repairs. Declined: restoring the rule on visual priority, a second tie-break for pickers, and
+showing the critic the PNG before the brief in a separate message.
+[Evidence](evidence/2026-11-13-schematic-critic.json) holds responses, scores, and file hashes, and
+[the AH render](evidence/2026-11-13-schematic-critic/ah-run-4.png) sits beside it. Each scenario had
+one sample, and the image views in AI are self-reported. Loading the skill and its PNG assets from
+an installed plugin in Claude Code and Codex remains a manual verification boundary.
 
 ### 2026-11-11: schematic skill simplified over three review rounds
 

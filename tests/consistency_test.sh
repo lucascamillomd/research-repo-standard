@@ -323,12 +323,12 @@ owned generated-image-owner references/figures.md 'generative model.*only after 
 require schematic-capability references/prerequisites.md 'research-repo-standard:nature-schematic'
 require schematic-skill "$SCHEMATIC"/SKILL.md 'name: nature-schematic' 'description:' \
   'no image-generation model' 'drawn in code' 'before drawing, write `brief\.md`' \
-  'place in the source' 'three options' 'five rounds' 'scorer' 'adversary' 'judge' \
+  'place in the source' 'three options' 'three pickers' 'five rounds' 'a critic gets' 'a judge gets' \
   'blocker.{0,40}delivery a draft' 'text.*still text' 'references/figures\.md.*owns' \
   'view the six .{0,60}examples.{0,60} before drawing' 'assets/examples/' \
   'give the examples to every reviewer' 'never their artwork'
-require schematic-reviewers "$SCHEMATIC"/references/reviewer.md 'picker' 'scorer' 'adversary' 'judge' \
-  'blocker needs evidence' 'settled' 'style record and the examples'
+require schematic-reviewers "$SCHEMATIC"/references/reviewer.md 'picker' 'critic' 'judge' \
+  'before reading the brief' 'blocker needs evidence' 'settled' 'style record.{0,60}examples'
 require schematic-style "$SCHEMATIC"/references/style.md 'no smaller than 5 pt' 'flat bar'
 for file in SKILL.md references/style.md references/reviewer.md; do
   forbid "schematic-no-image-generation: $file" "$SCHEMATIC/$file" \
