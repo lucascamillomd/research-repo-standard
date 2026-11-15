@@ -9,6 +9,7 @@ fail() { printf 'FAIL: %s\n' "$1"; FAILS=$((FAILS + 1)); }
 # The plugin keeps the skill in its own directory; checks name its files as the skill does.
 SKILL_DIR=skills/research-repo
 SCHEMATIC=skills/nature-schematic
+COWRITE=skills/cowrite-manuscript
 src() {
   case "$1" in
     SKILL.md | references/*) printf '%s/%s\n' "$SKILL_DIR" "$1" ;;
@@ -37,7 +38,7 @@ forbid() {
 owned() {
   local id="$1" owner="$2" pattern="$3" file duplicates=0
   for file in AGENTS.md README.md "$SKILL_DIR"/SKILL.md "$SKILL_DIR"/references/*.md agents/*.md \
-    "$SCHEMATIC"/SKILL.md "$SCHEMATIC"/references/*.md; do
+    "$SCHEMATIC"/SKILL.md "$SCHEMATIC"/references/*.md "$COWRITE"/SKILL.md; do
     [[ "$file" == "$(src "$owner")" ]] && continue
     if grep -Eqi -- "$pattern" <<< "$(flat "$file")"; then duplicates=1; fi
   done
@@ -322,7 +323,19 @@ require schematic-contract references/figures.md 'schematic panel.*plots no data
 owned generated-image-owner references/figures.md 'generative model.*only after the user authorizes'
 require schematic-capability references/prerequisites.md 'research-repo-standard:nature-schematic'
 require figure-companion references/prerequisites.md '`nature-shared`' 'nature-figure nature-shared' \
-  'nature-figure.{0,60} loads|loads.{0,60}nature-shared' 'never invoke'
+  'nature-figure.{0,80} loads?|loads?.{0,60}nature-shared' 'never invoke'
+require cowrite-skill "$COWRITE"/SKILL.md 'name: cowrite-manuscript' 'description:' \
+  'which journal and which article type' 'unverified' 'docs/manuscript/' 'main\.tex' 'methods\.tex' \
+  'declarations\.tex' 'supplementary\.tex' 'preamble\.tex' 'references\.bib' 'figures/' 'tables/' \
+  'bundle/.{0,80}ignored|ignored.{0,80}bundle/' 'TODO\.md' 'one line per paragraph' 'one paragraph (per|at a) t' \
+  'never draft ahead' 'legends.{0,80}last|last.{0,80}legends' 'results file' 'leave (their|the user.s) wording' \
+  'nature-writing' 'nature-polishing' 'nature-statistics' 'nature-citation' 'nature-ref-verifier' \
+  'nature-data' 'nature-reviewer' 'references/prerequisites\.md'
+require cowrite-capability references/prerequisites.md 'research-repo-standard:cowrite-manuscript' \
+  'nature-writing' 'nature-polishing' 'nature-statistics' 'nature-citation' 'nature-ref-verifier' \
+  'nature-data' 'nature-reviewer'
+require cowrite-routing SKILL.md 'manuscript.{0,80}cowrite-manuscript'
+require cowrite-scaffold references/bootstrap.md 'manuscript/.{0,80}cowrite-manuscript'
 require schematic-skill "$SCHEMATIC"/SKILL.md 'name: nature-schematic' 'description:' \
   'no image-generation model' 'drawn in code' 'before drawing, write `brief\.md`' \
   'place in the source' 'three options' 'three pickers' 'five rounds' 'a critic gets' 'a judge gets' \

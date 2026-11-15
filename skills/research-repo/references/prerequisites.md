@@ -11,14 +11,16 @@ preflight. A no-figure project does not need `nature-figure`; a mechanical edit 
 planning or scientific-review skills. Resolve the exact skills used, rather than verifying an entire
 package's unrelated capabilities.
 
-| Capability                                | Needed for                                    | Authoritative source                                    |
-| ----------------------------------------- | --------------------------------------------- | ------------------------------------------------------- |
-| `superpowers:brainstorming`               | full-gate design                              | <https://github.com/obra/superpowers>                   |
-| `superpowers:writing-plans`               | implementation planning after design approval | <https://github.com/obra/superpowers>                   |
-| `scientific-critical-thinking`            | independent scientific critique               | <https://github.com/k-dense-ai/scientific-agent-skills> |
-| `nature-figure`                           | publication figure strategy and delivery      | <https://github.com/Yuan1z0825/nature-skills>           |
-| `nature-shared`                           | reference files `nature-figure` loads         | <https://github.com/Yuan1z0825/nature-skills>           |
-| `research-repo-standard:nature-schematic` | publication schematic panels                  | this plugin                                             |
+| Capability                                  | Needed for                                      | Authoritative source                                    |
+| ------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------- |
+| `superpowers:brainstorming`                 | full-gate design                                | <https://github.com/obra/superpowers>                   |
+| `superpowers:writing-plans`                 | implementation planning after design approval   | <https://github.com/obra/superpowers>                   |
+| `scientific-critical-thinking`              | independent scientific critique                 | <https://github.com/k-dense-ai/scientific-agent-skills> |
+| `nature-figure`                             | publication figure strategy and delivery        | <https://github.com/Yuan1z0825/nature-skills>           |
+| `nature-shared`                             | reference files `nature-figure` loads           | <https://github.com/Yuan1z0825/nature-skills>           |
+| `research-repo-standard:nature-schematic`   | publication schematic panels                    | this plugin                                             |
+| `research-repo-standard:cowrite-manuscript` | manuscript writing                              | this plugin                                             |
+| the manuscript skills below                 | the manuscript steps `cowrite-manuscript` names | <https://github.com/Yuan1z0825/nature-skills>           |
 
 Use the current host's native skill listing or resolver. The result must show the exact skill name
 and enough source information to verify the expected package or repository. Successful invocation
@@ -27,8 +29,12 @@ not resolution or invocation evidence. Do not silently install, imitate, or subs
 skill. A missing capability blocks only work that depends on it.
 
 `nature-figure` loads reference files from `nature-shared`, a support package in the same
-repository. Resolve `nature-shared` together with `nature-figure`, by exact name and provenance, and
-never invoke it on its own. Its listing with the expected source is its resolution evidence.
+repository, and so do the manuscript skills. Resolve `nature-shared` together with the first of them
+you use, by exact name and provenance, and never invoke it on its own. Its listing with the expected
+source is its resolution evidence.
+
+The manuscript skills are `nature-writing`, `nature-polishing`, `nature-statistics`,
+`nature-citation`, `nature-ref-verifier`, `nature-data` and `nature-reviewer`.
 
 Resolve this skill the same way. It installs as a plugin from the `research-repo-standard`
 marketplace at `github.com/lucascamillomd/research-repo-standard`, so its exact name is
@@ -75,6 +81,9 @@ and the current host. For the two scientific packages, an authorized installatio
 npx skills add K-Dense-AI/scientific-agent-skills --global --agent codex --skill scientific-critical-thinking --yes --copy
 npx skills add Yuan1z0825/nature-skills --global --agent codex --skill nature-figure nature-shared --yes --copy
 ```
+
+For manuscript writing, add the skills the coming steps use to the second command, such as
+`--skill nature-writing nature-statistics nature-shared`.
 
 Replace `codex` with `claude-code` on that host. Only this recovery route needs `npx`; Node.js is
 not a general research-repository prerequisite. On other hosts, follow their authoritative

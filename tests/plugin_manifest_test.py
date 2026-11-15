@@ -60,6 +60,14 @@ class PluginManifests(unittest.TestCase):
         for example in examples:
             self.assertEqual(example.read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
 
+    def test_manuscript_skill_ships_in_the_same_plugin(self):
+        directory = SOURCE / "skills" / "cowrite-manuscript"
+        skill = (directory / "SKILL.md").read_text()
+        self.assertTrue(skill.startswith("---\nname: cowrite-manuscript\n"))
+        build = directory / "assets" / "build.sh"
+        self.assertTrue(build.read_text().startswith("#!/bin/sh\n"))
+        self.assertIn("assets/build.sh", skill)
+
     def test_figure_exemplars_ship_with_the_skill(self):
         directory = SOURCE / "skills" / SKILL / "assets" / "figure-exemplars"
         names = sorted(path.name for path in directory.glob("*.webp"))

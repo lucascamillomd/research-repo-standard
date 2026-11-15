@@ -1,0 +1,374 @@
+{
+  "date": "2026-11-15",
+  "change": "The main skill is renamed research-repo; the plugin and marketplace keep the name research-repo-standard. A new bundled skill, cowrite-manuscript, co-writes a LaTeX manuscript in docs/manuscript/ one paragraph at a time. prerequisites.md lists it and seven nature-skills manuscript skills, and the main skill routes manuscript writing to it.",
+  "evaluation_type": "policy responses for AK, AL, AM, AA and AB; one executed fixture run for AN",
+  "method": "Fresh Claude Code subagents (Fable 5.2, claude-fable-5-2, effort not set), one per run, rubric hidden. Baselines for AK, AL and AM ran before the skill existed, with no skill supplied and the prompt's first sentence removed. With-skill runs read only skills/cowrite-manuscript and the prompt. AA and AB read skills/research-repo after the rename. Fresh scorers scored saved responses; the parent scored AN from the fixture on disk and the agent's report.",
+  "baseline": "AK 1/2, AL 1/4, AM 3/5 with no skill. AN has no baseline. AA and AB compare with their 2026-09-26 records.",
+  "review": {
+    "skill_creator": "Its writing guidance and with-skill and no-skill runs were used. Its evals/ folder, benchmark viewer and description-optimization loop were not: this repository records evaluations in tests/.",
+    "prompt_audit": "The claude-api prompt-audit patterns were applied by the parent to cowrite-manuscript/SKILL.md, with Claude Fable 5.2 as the target. No finding.",
+    "astra": {
+      "model": "gpt-6-astra, reasoningEffort medium, via T3 delegate_task",
+      "method": "Read the four files in the working tree; static inspection, build script not run.",
+      "applied": [
+        "main.tex inputs methods.tex and declarations.tex only, so supplementary.tex compiles alone",
+        "in a research-repo repository a missing skill follows prerequisites.md instead of being skipped",
+        "stay on a paragraph until the user accepts it or says to move on",
+        "bundle/ is added to an existing .gitignore",
+        "the main skill routes writing, continuing or restructuring a manuscript, not anything under docs/manuscript/",
+        "suggestions are in plain, direct prose"
+      ],
+      "declined": []
+    },
+    "after_first_runs": "The six Astra fixes and 'Read the results, then' in the outline step were applied after the first with-skill runs. AL and AM were re-run on the final text; AK and AN were not."
+  },
+  "final_sha256": {
+    "skills/cowrite-manuscript/SKILL.md": "df8bc94159d02031f347f041b4c078b94470b8921bc0be4d96dfce560e22efbd",
+    "skills/cowrite-manuscript/assets/build.sh": "27f94fc520dab2da80f79f0cd4549f010dbbe0f06b5b86961d798b756de607ba",
+    "skills/research-repo/SKILL.md": "48fe9479cdbd50ef5f2fb3c02a8ec6217e8da1f07092b33ca9cfae38e87c66a1",
+    "skills/research-repo/references/prerequisites.md": "85d6a37549d6c178a623f399c85af281205ebf9d64b76430aeecb189a07caee8",
+    "skills/research-repo/references/bootstrap.md": "1bc49dca216321d7f4d4c18e40da264e79cf739f56ba9edd3187b1613b50dc66"
+  },
+  "boundaries": [
+    "One sample per condition.",
+    "AL criterion 4 failed in both with-skill runs: the first message promised the outline instead of proposing it. The run instructions let the agent read only the skill and the prompt, so it had no results to outline from. AN, which could read the fixture, proposed the outline.",
+    "AN ran before the Astra fixes; its main.tex inputs supplementary.tex behind a guard, which the final text no longer asks for.",
+    "In AN the build downloaded LaTeX support files through Tectonic, against the scenario's no-network premise. The journal's instructions were not read.",
+    "No real manuscript was co-written with a person; turn-taking was tested over two scripted turns.",
+    "The scorer could tell baseline from with-skill responses by their content.",
+    "Loading cowrite-manuscript and the renamed skill from an installed plugin in Claude Code and Codex remains a manual verification boundary.",
+    "Scenarios other than AA, AB and AK to AN were not re-run after the rename."
+  ],
+  "policy_runs": {
+    "AK_baseline": {
+      "response": "Happy to. The analysis outputs in `results/tables/` and `results/figures/` are complete, and there is no manuscript folder under `docs/` yet, so we are starting the write-up from scratch. I have not changed any files.\n\nBefore I draft anything, I need four decisions from you:\n\n1. **Target journal or venue.** This sets the length, section order, figure limits and reference style. If you have not decided, I will write a generic Introduction / Results / Discussion / Methods draft that can be adapted later.\n2. **Central claim.** What is the one-sentence finding the paper argues for? If you prefer, I can read the tables and figures and propose two or three candidate framings for you to choose from.\n3. **Main versus supplementary results.** Which figures and tables carry the main story, and which go to the supplement?\n4. **Format and location.** I suggest `docs/manuscript/` with Markdown or LaTeX sources. Do you have a preference, or a journal template I should use?\n\nOnce you answer, I plan to work in this order:\n\n1. **Inventory the results.** I will map each figure and table to the script that produced it and to the claim it supports, and flag any claim that lacks a result.\n2. **Agree an outline.** You will get the title, the claims in order, and the figure sequence before I write prose.\n3. **Draft Results and Methods first.** Every number will be taken from the files in `results/`, and Methods will be written from the code and configuration.\n4. **Draft Introduction, Discussion and Abstract.** These follow once the results text is stable. I will mark each place that needs a citation and will not invent references.\n5. **Check consistency.** I will confirm that every number in the text matches the tables, every figure is cited, and the limitations are stated.\n\nIf you want me to start right away, tell me the target journal and I will begin with the inventory and a proposed outline.\n",
+      "score": {
+        "scenario": "AK",
+        "criteria": [
+          {
+            "n": 1,
+            "pass": false,
+            "evidence": "Asks for \"Target journal or venue\" but never asks for the article type; its other three questions are central claim, main vs supplementary results, and format."
+          },
+          {
+            "n": 2,
+            "pass": true,
+            "evidence": "\"I have not changed any files\"; gives only a work plan, with no title, outline, paragraph or section text."
+          }
+        ],
+        "score": "1/2",
+        "notes": "Asks the journal but not the article type, and offers to write a generic draft if the journal is undecided. Nothing is drafted or created."
+      }
+    },
+    "AK": {
+      "response": "Before I write anything, I need two things from you:\n\n1. Which journal are we writing for?\n2. Which article type (for example article, brief communication, letter)?\n\nOnce I have both, I will read the journal's current instructions for that type and note its limits. Then I will set up `docs/manuscript/` and propose an outline of the introduction and results, one line per paragraph, for you to change or approve. We then write one paragraph at a time.\n\nI have not created any files or drafted any text yet.\n",
+      "score": {
+        "scenario": "AK",
+        "criteria": [
+          {
+            "n": 1,
+            "pass": true,
+            "evidence": "\"1. Which journal are we writing for? 2. Which article type (for example article, brief communication, letter)?\""
+          },
+          {
+            "n": 2,
+            "pass": true,
+            "evidence": "\"I have not created any files or drafted any text yet.\" Only describes the next steps."
+          }
+        ],
+        "score": "2/2",
+        "notes": "Asks exactly the two questions and offers no content before the answers."
+      }
+    },
+    "AL_baseline": {
+      "response": "# Plan: Brief Communication for Nature Aging\n\nNothing below has been created or edited; this is what I would do.\n\n## Files and folders I would create\n\nAll new material goes under one new folder, `docs/manuscript/`. Nothing in `results/` is modified, moved or copied; the manuscript refers to those files by path.\n\n| Path | Purpose |\n| --- | --- |\n| `docs/manuscript/` | New folder for everything manuscript-related |\n| `docs/manuscript/TODO.md` | The to-do list below |\n| `docs/manuscript/manuscript.md` | The paper: title, abstract, main text, Methods, references, figure legends, end statements |\n| `docs/manuscript/claims.md` | Each quantitative claim mapped to the file in `results/tables/` or `results/figures/` that supports it |\n| `docs/manuscript/references.bib` | Bibliography; every entry marked unverified until checked online |\n| `docs/manuscript/cover_letter.md` | Cover letter to the editor |\n\nI would not create a figures folder inside `docs/manuscript/`. Display items are assembled later from `results/figures/` by the analysis code, so they stay reproducible.\n\n## Full text of `docs/manuscript/TODO.md`\n\n```markdown\n# Brief Communication for Nature Aging: to-do\n\nStatus: no network access on this host. Format limits and all references below are\nfrom memory and are UNVERIFIED until someone checks them online.\n\n## 0. Decisions needed from the author (blocking)\n- [ ] State the single main finding in one sentence.\n- [ ] Choose the display items (at most 2) from results/figures/ and results/tables/.\n- [ ] Supply the author list, affiliations, corresponding author, contributions.\n- [ ] Supply funding, competing interests, ethics approvals and consent statements.\n- [ ] Supply data and code availability details (repositories, accession numbers, licence).\n- [ ] Supply the key references, or a reference-manager export, for the background.\n- [ ] Confirm the manuscript file format (Markdown, Word or LaTeX).\n\n## 1. Format (verify against the current Nature Aging guide for authors)\n- [ ] Confirm the Brief Communication limits. From memory, unverified: abstract of\n      about 70 words, unreferenced; main text of about 1,000-1,500 words with no\n      section headings; at most 2 display items; about 20 references; Methods as a\n      separate section outside the word limit.\n- [ ] Confirm the required end sections and the reporting summary requirement.\n\n## 2. Evidence inventory\n- [ ] List every file in results/tables/ and results/figures/ with what it shows.\n- [ ] Fill claims.md: each claim, its number, its source file, its statistic\n      (effect size, uncertainty, n, test).\n- [ ] Flag any claim the results do not support, and any result that weakens the\n      main finding; these go in the text as limitations, not out of it.\n\n## 3. Drafting\n- [ ] Title (short, no claim the data cannot carry).\n- [ ] Abstract.\n- [ ] Main text: gap, what was done, main result, supporting result, limitation,\n      implication.\n- [ ] Methods: cohort or samples, measurements, statistics, software and versions,\n      taken from the analysis code rather than from memory.\n- [ ] Figure legends with n, statistical test, and definition of error bars.\n- [ ] Data availability, code availability, acknowledgements, author contributions,\n      competing interests.\n- [ ] Supplementary information, only if a claim in the text needs it.\n\n## 4. Display items\n- [ ] Assemble the 2 chosen items from results/figures/ through the analysis code.\n- [ ] Check panel labels, units, fonts and sizes against the journal's figure guide.\n\n## 5. Checks\n- [ ] Every number in the text matches claims.md and the source file.\n- [ ] Word, reference and display-item counts are within the verified limits.\n- [ ] Every reference verified online (authors, year, journal, DOI) and shown to\n      support the sentence citing it. None is verified yet.\n- [ ] Statistical reporting is complete for every comparison.\n- [ ] Author reads and approves the full draft.\n\n## 6. Submission\n- [ ] Cover letter.\n- [ ] Reporting summary and any editorial checklists.\n- [ ] Final files in the format the submission system requires.\n```\n\n## First message to the user once the list exists\n\n> I've set up `docs/manuscript/` with a to-do list at `docs/manuscript/TODO.md`; nothing is drafted yet and `results/` is untouched.\n>\n> Two things you should know first:\n>\n> - **The format limits are unverified.** This machine has no network access, so I could not check the current Nature Aging guide for authors. I'm working from memory: an abstract of about 70 words, about 1,000-1,500 words of main text without headings, at most 2 display items and about 20 references. Please confirm these against the live guide, or paste the relevant section here.\n> - **I can't verify references either.** I will only cite papers you give me, or mark any I add from memory as unverified until they are checked online.\n>\n> To start drafting I need from you:\n>\n> 1. The main finding in one sentence, as you would say it to an editor.\n> 2. Which two figures or tables from `results/` should be the display items. If you prefer, I can read through `results/tables/` and `results/figures/` and propose two.\n> 3. The key references for the background, or a reference-manager export.\n> 4. Author list, affiliations, funding, competing interests, ethics statements, and where the data and code will be deposited.\n> 5. Whether you want the manuscript in Markdown, Word or LaTeX. I'll use Markdown unless you say otherwise.\n>\n> While I wait, my next step is the evidence inventory: reading everything in `results/` and mapping each candidate claim to the file that supports it. Shall I go ahead?\n",
+      "score": {
+        "scenario": "AL",
+        "criteria": [
+          {
+            "n": 1,
+            "pass": false,
+            "evidence": "Layout is `docs/manuscript/TODO.md`, `manuscript.md`, `claims.md`, `references.bib`, `cover_letter.md`; no .tex files, no `figures/`, `tables/` or `bundle/`, and it says \"I would not create a figures folder\"."
+          },
+          {
+            "n": 2,
+            "pass": false,
+            "evidence": "List opens with author decisions, format and evidence inventory; drafting order is Title, Abstract, Main text, Methods, Figure legends, declarations, Supplementary. Abstract precedes the main text and legends are not last."
+          },
+          {
+            "n": 3,
+            "pass": true,
+            "evidence": "\"The format limits are unverified. This machine has no network access, so I could not check the current Nature Aging guide for authors. I'm working from memory\"."
+          },
+          {
+            "n": 4,
+            "pass": false,
+            "evidence": "First message proposes no outline; it asks for the main finding, display items, references, author details and file format, then offers an evidence inventory."
+          }
+        ],
+        "score": "1/4",
+        "notes": "Only the unverified-limits criterion is met. Two to-do lines state \"at most 2\" display items without a qualifier on the line, but the list header marks all limits unverified, so criterion 3 passes."
+      }
+    },
+    "AL_first": {
+      "response": "# Starting the Nature Aging Brief Communication\n\nNothing was edited, as instructed. The journal and article type are given, so I ask neither. This host has no network access, so I could not read Nature Aging's current instructions for a Brief Communication. Every limit below is from memory and therefore unverified.\n\n## What I would create\n\nEverything goes under `docs/manuscript/`, which does not exist yet. Nothing under `results/` is touched.\n\n| Path | Contents at creation |\n| --- | --- |\n| `docs/manuscript/` | the manuscript folder |\n| `docs/manuscript/main.tex` | title, authors, abstract, main text and main display items; inputs the other `.tex` files; structure only, no prose |\n| `docs/manuscript/methods.tex` | structure only, no prose |\n| `docs/manuscript/declarations.tex` | availability, acknowledgements, contributions and competing interests, each as a visible to-do |\n| `docs/manuscript/supplementary.tex` | structure only; also compiles on its own |\n| `docs/manuscript/preamble.tex` | packages and formatting |\n| `docs/manuscript/references.bib` | empty |\n| `docs/manuscript/build.sh` | copy of the skill's `assets/build.sh`; compiles `main.tex` and `supplementary.tex` in `bundle/` and puts the PDFs beside `main.tex` |\n| `docs/manuscript/.gitignore` | ignores `bundle/` |\n| `docs/manuscript/figures/` | empty; later holds a copy of the PDF of each figure the manuscript includes, taken from `results/figures/` |\n| `docs/manuscript/tables/` | empty; later holds a copy of each table the manuscript includes, taken from `results/tables/` |\n| `docs/manuscript/bundle/` | ignored by git; LaTeX build files and `TODO.md` |\n| `docs/manuscript/bundle/TODO.md` | the to-do list below |\n\n## Full text of `docs/manuscript/bundle/TODO.md`\n\n```markdown\n# To-do: Brief Communication, Nature Aging\n\n## Limits\n\nStatus: UNVERIFIED. The journal's instructions for this article type could not be read\non 2026-11-15, because this host has no network access. No page was read. The values\nbelow are from memory. Confirm each one against the current Nature Aging instructions\nfor a Brief Communication before relying on it.\n\n| Limit | Value (unverified) |\n| --- | --- |\n| Main text words | about 1,500, excluding abstract, methods, references and legends |\n| Abstract | about 70 words, unreferenced |\n| Display items | up to 2 figures or tables |\n| References | about 20 |\n| Sections | main text without headings; methods as a separate section |\n| Legend length | unknown |\n| Source page | not read |\n| Date read | not read |\n\n## Steps\n\n- [ ] 1. Main text: introduction and results\n- [ ] 2. Discussion (closing paragraphs of the main text; no separate section if the\n      unverified \"no headings\" limit holds)\n- [ ] 3. Abstract and title\n- [ ] 4. Methods\n- [ ] 5. Declarations, supplement and references\n- [ ] 6. Figure and table legends, last\n- [ ] 7. Checks: verify references, audit statistics, mock review, count words,\n      display items and references against the limits, list every to-do left in the text\n```\n\n## First message to the user once the list exists\n\n> I set up `docs/manuscript/` for a Nature Aging Brief Communication and wrote the to-do list at `docs/manuscript/bundle/TODO.md`. The `.tex` files hold structure only. No prose is written yet.\n>\n> **The limits are unverified.** This host has no network access, so I could not read Nature Aging's current instructions for a Brief Communication. The list carries values from memory: about 1,500 words of main text, an unreferenced abstract of about 70 words, up to 2 display items, about 20 references, and a main text without headings. I do not know the legend limit. Can you paste the current instructions or confirm the numbers? Until then I will count against these and mark them unverified.\n>\n> Two skills this workflow uses are not installed here: `nature-data` (data and code availability) and `nature-reviewer` (mock review). I will continue without them and say so again at those steps.\n>\n> Next is step 1, the main text. Before any paragraph, I will propose an outline with one line per paragraph, each naming the file in `results/tables/` or `results/figures/` it rests on, for you to change or approve. With at most 2 display items, two questions decide that outline:\n>\n> 1. What is the one finding the paper leads with?\n> 2. Which two figures or tables from `results/` should be the main display items? The rest would go to the supplement.\n>\n> If you would rather I propose both from what is in `results/`, say so and I will send the outline next.\n\n## Notes on this answer\n\n- I draft nothing ahead: no outline lines and no paragraphs exist until the user answers.\n- In a live run I would read `results/tables/` and `results/figures/` before the outline. Here I was told to read nothing but the skill and the task file, so the message names no result or number.\n- If the repository follows `research-repo`, any new claim, result or figure goes through that skill first. I did not check whether it does.\n- I did not read `assets/build.sh`, so the `build.sh` row describes it from SKILL.md only.\n",
+      "score": {
+        "scenario": "AL",
+        "criteria": [
+          {
+            "n": 1,
+            "pass": true,
+            "evidence": "Table lists `main.tex`, `methods.tex`, `declarations.tex`, `supplementary.tex`, `preamble.tex`, `references.bib`, `figures/`, `tables/`, and `bundle/` \"ignored by git\" holding `bundle/TODO.md`."
+          },
+          {
+            "n": 2,
+            "pass": true,
+            "evidence": "Steps: 1 Main text, 2 Discussion, 3 Abstract and title, 4 Methods, 5 Declarations, supplement and references, 6 \"Figure and table legends, last\", 7 Checks."
+          },
+          {
+            "n": 3,
+            "pass": true,
+            "evidence": "\"Status: UNVERIFIED. The journal's instructions for this article type could not be read ... No page was read.\" Every limit is in a column headed \"Value (unverified)\"."
+          },
+          {
+            "n": 4,
+            "pass": false,
+            "evidence": "The message only promises an outline: \"Before any paragraph, I will propose an outline with one line per paragraph\", then asks two questions. Its own notes say \"no outline lines ... exist until the user answers\"."
+          }
+        ],
+        "score": "3/4",
+        "notes": "Criterion 4 fails literally: the first message defers the outline and asks for the lead finding and display items instead of proposing one. It drafts no paragraph and does not ask again for journal or type; the responder says it withheld the outline because it was told not to read the results."
+      }
+    },
+    "AL": {
+      "response": "# Starting the Nature Aging Brief Communication\n\nYou gave the journal and the article type, so I ask neither. I edited nothing, as instructed. Below is what I would create, the to-do list, and my first message.\n\n## Journal limits\n\nThis host has no network access, so I could not read Nature Aging's current instructions for a Brief Communication. Every limit below comes from memory and is unverified. No page was read on 2026-11-15.\n\n## What I would create\n\nNothing exists under `docs/manuscript/`, so I would create all of it. I would touch nothing else in the repository, including `results/`.\n\n| Path | Content at creation |\n| --- | --- |\n| `docs/manuscript/` | The folder |\n| `docs/manuscript/main.tex` | Structure only: loads `preamble.tex`; empty title, authors and abstract; empty main text; inputs `methods.tex` and `declarations.tex`; bibliography from `references.bib` |\n| `docs/manuscript/methods.tex` | Methods heading, no prose |\n| `docs/manuscript/declarations.tex` | Headings for data availability, code availability, acknowledgements, author contributions and competing interests, no prose |\n| `docs/manuscript/supplementary.tex` | A document that compiles on its own and loads `preamble.tex`, no prose |\n| `docs/manuscript/preamble.tex` | Packages and formatting |\n| `docs/manuscript/references.bib` | Empty |\n| `docs/manuscript/build.sh` | A copy of the skill's `assets/build.sh` |\n| `docs/manuscript/.gitignore` | One line: `bundle/` |\n| `docs/manuscript/figures/` | Empty until the outline settles which figures the manuscript includes; then PDF copies from `results/figures/` |\n| `docs/manuscript/tables/` | Empty until the outline settles which tables it includes; then copies from `results/tables/` |\n| `docs/manuscript/bundle/` | Ignored by git; holds the LaTeX build files |\n| `docs/manuscript/bundle/TODO.md` | The to-do list below |\n\nThe `.tex` files hold no prose at this point, and I draft none before you approve an outline.\n\n## Full text of `docs/manuscript/bundle/TODO.md`\n\n```markdown\n# To-do: Brief Communication, Nature Aging\n\n## Limits\n\nUNVERIFIED. The journal's instructions could not be read (no network access, 2026-11-15).\nEvery value below is from memory. Check each against the current Nature Aging instructions\nfor a Brief Communication, then record the page and the date here.\n\n- Main text: about 1,500 words (unverified)\n- Abstract: about 70 words, no references (unverified)\n- Display items: 2 figures or tables (unverified)\n- References: about 20 (unverified)\n- Sections: main text without headings; Methods separate (unverified)\n- Legend length: not known (unverified)\n\n## Steps\n\n- [ ] 1. Main text: introduction and results\n- [ ] 2. Discussion\n- [ ] 3. Abstract and title\n- [ ] 4. Methods\n- [ ] 5. Declarations, supplement and references\n- [ ] 6. Figure and table legends, last\n- [ ] 7. Checks\n\nIf the verified instructions confirm that the main text has no headings, steps 1 and 2 are\nthe opening, results and closing paragraphs of one continuous text.\n```\n\n## First message to you once the list exists\n\n> I set up `docs/manuscript/` for a Nature Aging Brief Communication. It holds empty `main.tex`, `methods.tex`, `declarations.tex`, `supplementary.tex`, `preamble.tex` and `references.bib`, plus `build.sh`, `figures/`, `tables/` and the to-do list in `bundle/TODO.md`. None of the files has any prose yet.\n>\n> **I could not check the journal's limits.** This machine has no network access, so the limits in the to-do list are from memory and unverified: about 1,500 words of main text, an abstract of about 70 words, 2 display items, about 20 references and no headings in the main text. Please paste the current Brief Communication instructions from the Nature Aging site, or confirm the numbers, and I will record them with the page and date.\n>\n> The 2-item limit matters first, because it decides which of your figures and tables go in the main text and which go in the supplement.\n>\n> Next I will read `results/tables/` and `results/figures/` and propose an outline of the main text, one line per paragraph, each naming the result, figure or table it rests on. I will draft nothing until you have changed or approved that outline. After that we write one paragraph per turn.\n\nIn a real run, that outline would follow in the same message. I did not write it here because the task told me to read nothing but the skill and the task file, and I will not invent paragraphs for results I have not read.\n",
+      "score": {
+        "scenario": "AL",
+        "criteria": [
+          {
+            "n": 1,
+            "pass": true,
+            "evidence": "Table lists main.tex, methods.tex, declarations.tex, supplementary.tex, preamble.tex, references.bib, figures/, tables/, and bundle/ ('Ignored by git') holding bundle/TODO.md, with .gitignore 'One line: `bundle/`'."
+          },
+          {
+            "n": 2,
+            "pass": true,
+            "evidence": "Steps: '1. Main text: introduction and results', '2. Discussion', '3. Abstract and title', '4. Methods', '5. Declarations, supplement and references', '6. Figure and table legends, last'. A non-writing '7. Checks' step follows the legends."
+          },
+          {
+            "n": 3,
+            "pass": true,
+            "evidence": "'I could not read Nature Aging's current instructions ... Every limit below comes from memory and is unverified'; every limit in TODO.md is tagged '(unverified)'."
+          },
+          {
+            "n": 4,
+            "pass": false,
+            "evidence": "The first message contains no outline; it only promises one: 'Next I will read results/tables/ and results/figures/ and propose an outline of the main text, one line per paragraph'. The response admits 'I did not write it here'. It drafts no paragraph and does not re-ask journal or type."
+          }
+        ],
+        "score": "3/4",
+        "notes": "Fails criterion 4 because the first message defers the outline instead of proposing it. Criterion 2 passes on the reading that legends are the last writing step; a strictly positional reading would fail it because '7. Checks' comes after."
+      }
+    },
+    "AM_baseline": {
+      "response": "## Turn 1\n\nI can draft P1 now, and P0 only with citation placeholders; P2 and P3 are blocked until more results exist. I have not edited any files.\n\n**P1 (draft, GrimAge only):**\n\n> In cohort A (n = 4,018; 612 deaths), each standard deviation of GrimAge was associated with a hazard ratio for death of 1.42 (95% CI 1.31-1.54).\n\nThree things limit this paragraph:\n\n- **One clock only:** the outline says \"per clock\", but `results/tables/hazard_ratios.csv` has a single row, for GrimAge. The other clocks need to be run before P1 can make any comparison.\n- **Adjustment unknown:** the table does not say whether 1.42 is unadjusted or already adjusted for age or other covariates. I need that to word P1 correctly and to set up P2.\n- **Outcome assumed:** I wrote \"death\" because the column is `deaths`; confirm it is all-cause mortality.\n\n**P0 (hazard ratios as the usual score):** `references.bib` is empty, and every sentence in this paragraph needs a source. I can write it with `[CITE]` markers for you to fill, or you can give me the references first. I will not supply citations from memory.\n\n**P2 (after adjusting for age):** no age-adjusted result exists, so there is nothing to write yet.\n\n**P3 (what readers should report):** the recommendation follows from P2, so it waits too.\n\nWhich do you want first: P0 with placeholders, or the age-adjusted and remaining-clock results so I can do P1 and P2 properly?\n\n## Turn 2\n\nP1 is not ready: the hazard ratio in the paragraph does not match the table. I have not edited `main.tex`.\n\n- **Hazard ratio:** the paragraph says 1.52; `results/tables/hazard_ratios.csv` says 1.42. The interval (1.31-1.54), n and deaths all match the table, so 1.52 looks like a typo. It also sits almost at the upper bound, which a correct estimate would not.\n- **\"In line with earlier reports\":** there is no citation and `references.bib` is empty. Either add the sources or cut the clause.\n\nCorrected sentence:\n\n> In cohort A (n = 4,018; 612 deaths), each standard deviation of GrimAge was associated with a hazard ratio of 1.42 (95% CI 1.31-1.54).\n\nTwo points from before are still open: P1 covers one clock where the outline promises several, and the paragraph does not say whether the estimate is adjusted for age.\n\nI cannot write P2 yet. It reports what changes after age adjustment, and no age-adjusted result exists. Once that row is in the table, and I know whether 1.42 is the unadjusted estimate, I can draft it. In the meantime I can draft P0 with `[CITE]` placeholders if that is useful.\n",
+      "score": {
+        "scenario": "AM",
+        "criteria": [
+          {
+            "n": 1,
+            "pass": false,
+            "evidence": "Turn 1 drafts P1, not P0: \"P1 (draft, GrimAge only): In cohort A (n = 4,018; 612 deaths) ...\". P0 is offered only as an option."
+          },
+          {
+            "n": 2,
+            "pass": false,
+            "evidence": "Turn 2 supplies an unrequested rewrite: \"Corrected sentence: In cohort A (n = 4,018; 612 deaths), each standard deviation of GrimAge was associated with a hazard ratio of 1.42 (95% CI 1.31-1.54).\""
+          },
+          {
+            "n": 3,
+            "pass": true,
+            "evidence": "\"the paragraph says 1.52; `results/tables/hazard_ratios.csv` says 1.42\"."
+          },
+          {
+            "n": 4,
+            "pass": true,
+            "evidence": "\"there is no citation and `references.bib` is empty. Either add the sources or cut the clause.\" No reference is invented."
+          },
+          {
+            "n": 5,
+            "pass": true,
+            "evidence": "\"I cannot write P2 yet. It reports what changes after age adjustment, and no age-adjusted result exists.\""
+          }
+        ],
+        "score": "3/5",
+        "notes": "Catches the number mismatch and the unsourced claim and invents nothing for P2. It fails on turn order (P1 text in turn 1) and on rewriting the user's paragraph."
+      }
+    },
+    "AM_first": {
+      "response": "## Turn 1\n\nHere is a suggestion for P0 only. I was told not to edit files in this session, so it is not in `main.tex` yet and I have not re-read the file; paste it in or tell me what to change.\n\n```latex\nAging clocks are most often judged by how strongly they predict death\n\\textbf{[TODO: cite]}. The usual score is the hazard ratio per standard\ndeviation of the clock, estimated with a Cox model: it uses time to death\nunder censoring, and it puts clocks measured in different units on one\nscale \\textbf{[TODO: cite]}. Clocks are therefore commonly ranked by this\nsingle number \\textbf{[TODO: cite]}.\n```\n\nNotes on it:\n\n- **Sources.** `references.bib` is empty and I have not checked any reference, so each of the three claims carries a visible to-do instead of a citation. If you name the papers you have in mind, I will check that each one exists and supports its sentence before it goes in.\n- **Numbers.** There are none, on purpose. P0 rests on no results file.\n- **Length.** About 60 words. I do not have the journal's limits for a Brief Communication in front of me, so I cannot say how much of the word budget this uses. Tell me the journal, or point me to the limits in `bundle/TODO.md`, and I will count against them from here on.\n- **A reviewer may ask** whether \"most often\" and \"commonly ranked\" are documented or only an impression. A source that surveys how clocks are evaluated would settle both.\n\nOne thing to decide before P1: P1 is outlined as the hazard ratio \"per clock\", but `results/tables/hazard_ratios.csv` holds one row, GrimAge in cohort A. Either the other clocks' results are still to come, or P1 becomes a GrimAge paragraph.\n\nYour turn: edit P0, or tell me what to change.\n\n## Turn 2\n\nI have left your P1 as you wrote it. Here is what I found against `results/tables/hazard_ratios.csv`:\n\n- **The hazard ratio differs from the file.** The paragraph says 1.52; the file says `hr_per_sd` = 1.42. The interval (1.31 to 1.54), n = 4,018 and 612 deaths all match the file, so 1.52 looks like a typo for 1.42. Please confirm which is right; if 1.52 is correct, the results file is the thing to fix.\n- **\"In line with earlier reports\" needs a source.** `references.bib` is empty and I have not checked any reference for it. It needs either a citation I can verify or a visible to-do, for example `\\textbf{[TODO: cite]}`. It is also a comparison: a reviewer will ask which reports and what estimates they gave.\n- **The outline says \"per clock\"; the paragraph and the file cover GrimAge only.** That is consistent with the one result that exists. If other clocks are planned, their results do not exist yet; if not, the P1 line in the outline should change to GrimAge.\n- **Adjustment is not stated.** The file does not record what the model adjusts for, and neither does the sentence. Since P2 is about what changes after adjusting for age, P1 should say what this estimate is adjusted for. That detail has to come from you or from the analysis.\n- **Length.** About 30 words. I still do not have the journal's limits, so I cannot give the words left.\n\nI have changed nothing; say the word if you want me to make any of these edits.\n\nOn \"next\": I cannot suggest P2 yet. P2 reports what changes after adjusting for age, and no age-adjusted result exists; the only results file holds the single GrimAge row above. I will not write a number or a direction of change without that result. Once the age-adjusted hazard ratio is in a results file, tell me its path and I will suggest P2. P3 follows P2, so I am holding that too.\n",
+      "score": {
+        "scenario": "AM",
+        "criteria": [
+          {
+            "n": 1,
+            "pass": true,
+            "evidence": "\"Here is a suggestion for P0 only\", one paragraph, ending \"Your turn: edit P0, or tell me what to change.\" No P1 to P3 text."
+          },
+          {
+            "n": 2,
+            "pass": true,
+            "evidence": "\"I have left your P1 as you wrote it\" and \"I have changed nothing; say the word if you want me to make any of these edits.\" Feedback only, no rewritten paragraph."
+          },
+          {
+            "n": 3,
+            "pass": true,
+            "evidence": "\"The paragraph says 1.52; the file says `hr_per_sd` = 1.42.\""
+          },
+          {
+            "n": 4,
+            "pass": true,
+            "evidence": "\"'In line with earlier reports' needs a source ... either a citation I can verify or a visible to-do\". No reference is invented."
+          },
+          {
+            "n": 5,
+            "pass": true,
+            "evidence": "\"I cannot suggest P2 yet ... no age-adjusted result exists ... I will not write a number or a direction of change without that result.\""
+          }
+        ],
+        "score": "5/5",
+        "notes": "All five criteria met. The P0 suggestion carries three `[TODO: cite]` markers and no numbers."
+      }
+    },
+    "AM": {
+      "response": "## Turn 1\n\nHere is a suggestion for P0 only. I have not put it in `main.tex`, because I am not editing files in this session, so paste it in or tell me to write it.\n\n```latex\nAging clocks are built to estimate biological age, but they are usually judged by how well\nthey predict death \\textbf{[TODO: source]}. The common test is a Cox model of all-cause\nmortality in which the clock is standardized, and the result is reported as the hazard ratio\nper standard deviation \\textbf{[TODO: source]}. This score needs only follow-up data, has no\nunits, and lets clocks measured on different scales be compared directly. It has therefore\nbecome the number by which a new clock is set against earlier ones.\n```\n\nThree things to settle on this paragraph:\n\n- **Sources.** `references.bib` is empty and I have not checked any reference, so the two claims about common practice carry visible to-dos instead of citations. If you have papers in mind, name them and I will check them. Otherwise I can search for sources.\n- **Last sentence.** It is a claim about the field that also needs a source or softer wording. Cut it if you would prefer P0 to end on the comparison point.\n- **Length.** The paragraph is 81 words. I do not have the journal on record, only the article type, so I cannot check it against a word limit. Which journal is this for? Until I have read its current instructions, every limit is unverified.\n\nEdit the paragraph or tell me what to change. I will stay on P0 until you accept it.\n\n## Turn 2\n\nI read P1 in `main.tex` and left your wording as it is. Before we move on, four findings:\n\n- **The hazard ratio does not match the results file.** The paragraph says 1.52, but `results/tables/hazard_ratios.csv` has `hr_per_sd` = 1.42. The interval (1.31 to 1.54), n = 4,018 and 612 deaths all match the file.\n- **\"In line with earlier reports\" needs a source.** `references.bib` is empty and I have checked no reference, so it needs a visible to-do or a paper for me to check, or it should be cut. It also needs the earlier estimates themselves, because \"in line with\" is a comparison.\n- **The outline promised more than one clock.** P1 was \"the standardized hazard ratio per clock\", but the file holds one row, for GrimAge. Either P1 is about GrimAge alone and the outline line changes, or the other clocks' results are still to come and P1 stays open.\n- **The `%` will break the build.** In LaTeX, `95% CI` comments out the rest of the line. It should be `95\\% CI`, and the interval would normally be `1.31--1.54`.\n\nI can make any of these changes if you ask.\n\nI cannot suggest P2 yet. It reports what changes after adjusting for age, and no age-adjusted result exists: the file has the one GrimAge row and no column saying what that model adjusted for. So I also cannot tell you whether 1.42 is the unadjusted estimate, which P2 needs as its baseline. A reviewer will ask the same thing of P1, so the covariates are worth stating there.\n\nOnce the age-adjusted hazard ratio for cohort A is in a results file, tell me which file and I will suggest P2. How do you want to handle the 1.52 in P1 in the meantime?\n",
+      "score": {
+        "scenario": "AM",
+        "criteria": [
+          {
+            "n": 1,
+            "pass": true,
+            "evidence": "'Here is a suggestion for P0 only' followed by one paragraph; 'Edit the paragraph or tell me what to change. I will stay on P0 until you accept it.' No P1 to P3 text."
+          },
+          {
+            "n": 2,
+            "pass": true,
+            "evidence": "'I read P1 in main.tex and left your wording as it is. Before we move on, four findings' and 'I can make any of these changes if you ask.' No rewritten paragraph is given."
+          },
+          {
+            "n": 3,
+            "pass": true,
+            "evidence": "'The paragraph says 1.52, but results/tables/hazard_ratios.csv has hr_per_sd = 1.42.'"
+          },
+          {
+            "n": 4,
+            "pass": true,
+            "evidence": "'\"In line with earlier reports\" needs a source. references.bib is empty and I have checked no reference'; no reference is named or invented."
+          },
+          {
+            "n": 5,
+            "pass": true,
+            "evidence": "'I cannot suggest P2 yet ... no age-adjusted result exists'; 'Once the age-adjusted hazard ratio for cohort A is in a results file, tell me which file and I will suggest P2.'"
+          }
+        ],
+        "score": "5/5",
+        "notes": "All five criteria met. Outside the rubric, Turn 1 asks which journal the paper is for and Turn 2 adds two extra findings (single clock versus 'per clock', unescaped % in LaTeX)."
+      }
+    },
+    "AA": {
+      "response": "# Completing host integration on Claude Code\n\nThis is the procedure I would follow, from `references/prerequisites.md` (\"Host profile installation\" and \"Selected-host smoke test\"). I have not run any of it here, so nothing below is a reported result.\n\n## Names I resolve\n\nI resolve both through Claude Code's native skill and agent listings, by exact name:\n\n- **Skill:** `research-repo-standard:research-repo`.\n- **Simplifier profile:** `research-repo-standard:research-code-simplifier`, which the plugin supplies.\n\nA file on disk, or a repository that names the skill, does not count as resolution. I resolve nothing else at this step: `superpowers:*`, `scientific-critical-thinking`, `nature-figure` and the other capabilities are resolved only immediately before the work that needs them.\n\n## Provenance I record\n\nAt first use I record four things:\n\n- **Host:** Claude Code.\n- **Resolver:** the native plugin, skill and agent listing.\n- **Resolved source:** the `research-repo-standard` marketplace at `github.com/lucascamillomd/research-repo-standard`, plus the installed commit the host reports.\n- **Invocation evidence:** the skill was actually invoked in this workflow.\n\nI check that the reported marketplace source and installed commit match what the project README records. If the README has no entry yet, I match the source the user approved.\n\nI reuse this record while the session and provenance are unchanged. If the name or provenance does not resolve or does not match, I report the exact name, host, resolver tried and result, and get authorization before any installation or recovery. I never change global agent configuration without authorization.\n\n## Files I write in the repository\n\n**For the profile: none.** On a Claude Code host the plugin supplies the profile, so I write no repository copy:\n\n- no `.claude/agents/research-code-simplifier.md`;\n- no `.codex/agents/research-code-simplifier.toml`, which is for a Codex host only;\n- no top-level `agents/` profile;\n- no created or modified `AGENTS.md`, `CLAUDE.md` or `CODEX.md`;\n- no policy file that restates the canonical profile.\n\nThe canonical profile remains `agents/research-code-simplifier.md` at the root of the provenance-verified plugin the resolver reported, never a path inferred from the current directory.\n\n**Before that, I check for artifacts of an earlier integration.** For each one I report its path, the path it resolves to, and whether its content was customized, then leave it unchanged:\n\n- **Legacy policy:** a target `AGENTS.md`, `CLAUDE.md` or `CODEX.md` that restates the standard.\n- **Alias:** a symlink or wrapper file that resolves to a simplifier profile.\n- **Generic simplifier:** a simplifier profile outside the expected path, such as a top-level `agents/` profile, a `code-simplifier` profile, or a repository copy at `.claude/agents/research-code-simplifier.md`.\n\nRemoving any of these needs the destruction procedure in `references/governance.md` after that report, and I never overwrite a customized profile without explicit authorization.\n\n**The only repository content tied to this step is the README agent-prerequisite entry**, which belongs to the scaffold's generated README checklist. It records:\n\n- the exact skill name `research-repo-standard:research-repo`;\n- the expected marketplace source and provenance;\n- recovery steps when resolution fails, linked to `references/prerequisites.md` in the approved standard source.\n\nRequired skills are listed separately from the packages `make setup` installs.\n\n## What I verify\n\nI run a real smoke test through Claude Code. It must:\n\n1. resolve `research-repo-standard:research-repo` by exact name and report its provenance;\n2. resolve `research-repo-standard:research-code-simplifier` through the host and report the installed profile path, which is inside the installed plugin and not in the repository;\n3. launch that profile far enough that the delegated reviewer itself reports it resolved and invoked `research-repo` from the expected provenance, without requesting an implementation.\n\nFor step 3 I pass the repository instructions and task scope through the delegation mechanism. The delegate reports its own skill provenance, profile path and invocation evidence; I do not infer its resolution from my own environment.\n\nI also confirm with `git status` and the diff that the step added no profile copy or host policy file and left unrelated work untouched.\n\n## If a check cannot run\n\nAn unavailable host or resolver is a manual verification boundary, not a simulated success. I report the unavailable check with the exact name, host, resolver tried and result, and run the authorized recovery before claiming host integration is complete:\n\n- `/plugin marketplace add lucascamillomd/research-repo-standard`\n- `/plugin install research-repo-standard@research-repo-standard`\n- restart the session if the host requires it, rerun native discovery, and verify the exact name and provenance again.\n\nIf the delegate cannot resolve or invoke the skill, I report that failure and apply the review-waiver procedure in `references/governance.md`.\n\nMy completion report states the selected-host verification or its boundary, and never claims an unavailable host check passed.\n",
+      "score": {
+        "scenario": "AA",
+        "criteria": [
+          {
+            "n": 1,
+            "pass": true,
+            "evidence": "Resolves \"`research-repo-standard:research-repo`\" through the native listing and records \"the `research-repo-standard` marketplace at `github.com/lucascamillomd/research-repo-standard`, plus the installed commit\". The bare name is never treated as a failure."
+          },
+          {
+            "n": 2,
+            "pass": true,
+            "evidence": "\"Simplifier profile: `research-repo-standard:research-code-simplifier`, which the plugin supplies\" and \"no `.claude/agents/research-code-simplifier.md`\"."
+          },
+          {
+            "n": 3,
+            "pass": true,
+            "evidence": "\"no `.codex/agents/research-code-simplifier.toml`\" and \"no created or modified `AGENTS.md`, `CLAUDE.md` or `CODEX.md`\"."
+          },
+          {
+            "n": 4,
+            "pass": true,
+            "evidence": "\"I run a real smoke test through Claude Code\" with both plugin names; \"An unavailable host or resolver is a manual verification boundary, not a simulated success.\""
+          }
+        ],
+        "score": "4/4",
+        "notes": "All four met. It does not state in words that the absent bare name is not a failure; it resolves by the plugin-qualified name and raises no failure, which I counted as a pass."
+      }
+    },
+    "AB": {
+      "response": "# Completing Codex host integration\n\nThis is the procedure I follow, from `references/prerequisites.md` (\"Required capabilities\", \"Host profile installation\", \"Selected-host smoke test\") and the README checklist in `references/bootstrap.md`. Nothing here has been run; it is the plan for the scenario described.\n\n## 1. Names I resolve\n\nI resolve through Codex's native skill listing or resolver, not from files on disk.\n\n- **The skill:** `research-repo-standard:research-repo`, by that exact name. The skill list already shows it; I also need the resolver to report its source.\n- **The simplifier profile:** `research-code-simplifier` (the bare name on Codex, because Codex plugins cannot supply agents). It does not resolve yet, which is expected before I write the profile.\n- **Nothing else.** Capabilities such as `superpowers:brainstorming` or `nature-figure` are resolved only immediately before work that depends on them, not as part of host integration.\n\nThe cache directory under `~/.codex/plugins/cache/...` is not resolution evidence on its own. I use it only as the plugin root once the resolver has reported it with matching provenance.\n\n## 2. Provenance I check and record\n\n- **What I check:** the resolver's reported marketplace source must be the `research-repo-standard` marketplace at `github.com/lucascamillomd/research-repo-standard`, together with the installed commit.\n- **What I match it against:** the provenance entry in the project README. If the README has no entry yet, I match the source the user approved.\n- **What I record at first use:** host (Codex), resolver used, resolved source (marketplace and installed commit), and invocation evidence (the skill was actually invoked in this session). I reuse that record while session and provenance are unchanged.\n- **Where it lands in the repository:** the README's agent-prerequisite entry, which holds the exact skill name `research-repo-standard:research-repo`, the expected marketplace source and provenance, and recovery steps linked to `references/prerequisites.md` in the approved standard source.\n\nOne point to settle from the resolver: the cache path ends in `local/`, which does not itself name a commit. If Codex reports no installed commit, I report that as a gap and do not invent one.\n\nIf the name or provenance fails to resolve or match, I report the exact name, host, resolver tried, and result, and get authorization before any installation or recovery. I do not change global Codex configuration without it.\n\n## 3. Detecting earlier integrations before writing\n\nBefore writing, I look in the target repository for three kinds of artifact. For each I report its path, the path it resolves to, and whether its content was customized, then leave it unchanged.\n\n- **Legacy policy:** a target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md` that restates this standard.\n- **Alias:** a symlink or wrapper file that resolves to a simplifier profile.\n- **Generic simplifier:** a simplifier profile outside Codex's expected path, such as a top-level `agents/` profile, a `code-simplifier` profile, or `.claude/agents/research-code-simplifier.md`.\n\nRemoving any of them is a separate step under the destruction procedure in `references/governance.md`, after that report.\n\nThe scenario says no custom agent named `research-code-simplifier` exists. I still check that `.codex/agents/research-code-simplifier.toml` is absent; if a customized one were there, I would not overwrite it without explicit authorization.\n\n## 4. Files I write in the repository\n\nExactly one file for host integration:\n\n`<target-repo>/.codex/agents/research-code-simplifier.toml`\n\nI write it myself as a Codex custom-agent file; no script copies it. Its source is the canonical profile at the root of the provenance-verified plugin the resolver reported, which here is `~/.codex/plugins/cache/research-repo-standard/research-repo-standard/local/agents/research-code-simplifier.md`. I never take it from a path inferred from the current directory.\n\nContents, same name, description, and body text as the canonical profile:\n\n```toml\nname = \"research-code-simplifier\"\ndescription = \"Independently simplify a completed research-code change while preserving supported use and scientific results. Use when delegated under research-repo.\"\ndeveloper_instructions = '''\n<body after the frontmatter, unchanged>\n'''\n```\n\n- `name` and `description` are the frontmatter values; the description is the folded YAML value as a single line.\n- `developer_instructions` is everything after the frontmatter, unchanged, from `# Research code simplifier` through the final `quote` example. I add no host names and do not paraphrase.\n- The body contains runs of two single quotes but no `'''`, so the literal string is not terminated early; I confirm that against the installed copy before writing.\n\nWhat I do not write:\n\n- no `.claude/agents/` copy, and no profile for any host other than Codex;\n- no target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md`, created or modified;\n- no restatement of the profile in another policy file;\n- no copy of the plugin's `SKILL.md`, `references/`, or `README.md`.\n\nThe only other repository edit is the README provenance entry from section 2, if the scaffold did not already record it.\n\n## 5. What I verify\n\nFirst the file itself: the TOML parses, and name, description, and body match the canonical profile.\n\nThen the real selected-host smoke test through Codex. Writing the profile does not establish resolution, so the test must show all three:\n\n1. Codex resolves `research-repo-standard:research-repo` by exact name and reports its provenance, matching the README record.\n2. Codex resolves the custom agent `research-code-simplifier` and reports the installed profile path, `<target-repo>/.codex/agents/research-code-simplifier.toml`.\n3. The profile is launched far enough that the delegated reviewer itself reports it resolved and invoked `research-repo` from the expected provenance, with no implementation requested. The delegate reports its own skill provenance, profile path, and invocation evidence; I do not infer them from my own session.\n\nIf Codex needs a session restart to pick up the new agent, I restart, rerun native discovery, and resume from this step.\n\nFinally I check the diff and git status to confirm only the intended files changed.\n\n## 6. If a check cannot run\n\nAn unavailable host or resolver is a manual verification boundary, not a simulated success. I report which check could not run, run the authorized recovery procedure, and do not claim host integration is complete until the real smoke test passes. If the delegate cannot resolve the skill or profile, I report the failure and apply the review-waivers procedure in `references/governance.md`.\n\nThe final report states what was written, the recorded provenance, each smoke-test result with its evidence, any earlier-integration artifacts found and left in place, and any manual boundaries.\n",
+      "score": {
+        "scenario": "AB",
+        "criteria": [
+          {
+            "n": 1,
+            "pass": true,
+            "evidence": "Resolves \"`research-repo-standard:research-repo`, by that exact name\" and records \"resolved source (marketplace and installed commit)\" for github.com/lucascamillomd/research-repo-standard. The bare name is never treated as a failure."
+          },
+          {
+            "n": 2,
+            "pass": true,
+            "evidence": "Writes `<target-repo>/.codex/agents/research-code-simplifier.toml` from `~/.codex/plugins/cache/.../local/agents/research-code-simplifier.md`, \"never ... from a path inferred from the current directory\", with the same name and description and the body \"unchanged\" as `developer_instructions`."
+          },
+          {
+            "n": 3,
+            "pass": true,
+            "evidence": "\"no `.claude/agents/` copy, and no profile for any host other than Codex; no target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md`, created or modified\"."
+          },
+          {
+            "n": 4,
+            "pass": true,
+            "evidence": "\"Then the real selected-host smoke test through Codex\"; \"An unavailable host or resolver is a manual verification boundary, not a simulated success.\""
+          }
+        ],
+        "score": "4/4",
+        "notes": "All four met. As in AA, the bare-name point is satisfied by behaviour, not by an explicit sentence; it also flags that the `local/` cache path names no commit and says it would not invent one."
+      }
+    }
+  },
+  "an_run": {
+    "score": "5/5",
+    "scored_by": "parent, from the fixture and the report",
+    "criteria": [
+      {
+        "n": 1,
+        "pass": true,
+        "evidence": "docs/manuscript/ holds main.tex, methods.tex, declarations.tex, supplementary.tex, preamble.tex, references.bib, figures/ and tables/."
+      },
+      {
+        "n": 2,
+        "pass": true,
+        "evidence": "git check-ignore -v reports docs/manuscript/.gitignore:1:bundle/ for bundle/TODO.md; the list runs main text, discussion, abstract and title, methods, declarations, legends 'last', then checks."
+      },
+      {
+        "n": 3,
+        "pass": true,
+        "evidence": "The .tex files hold section commands and \\todo markers only."
+      },
+      {
+        "n": 4,
+        "pass": true,
+        "evidence": "git status --short shows only '?? docs/manuscript/'."
+      },
+      {
+        "n": 5,
+        "pass": true,
+        "evidence": "The first message proposes P0 to P2, one line each with the file it rests on, and asks 'Does this outline work, or would you change it?'"
+      }
+    ],
+    "report": "# Report: cowrite-manuscript, Nature Aging Brief Communication\n\n## One thing to know first\n\nThe build step reached the network, against the no-network premise. Running `build.sh` made Tectonic download LaTeX support files (the log shows `downloading lmbx12.pfb` and similar). I did not expect a download and did not use the network for anything else. In particular, I did not read the journal's instructions, so every limit below is unverified.\n\n## What I did\n\nFixture: `/private/tmp/claude-501/-Users-lucascamillo--t3-worktrees-research-repo-standard-t3-76126020-37ebdad4ea6f499e/cebf41bd-d054-4bc1-9e7e-7c5b07acc5cc/scratchpad/fixture`\n\n- **Journal and type:** the user gave both, so I did not ask.\n- **Limits:** recorded from memory and marked unverified, with no page consulted, dated 2026-11-15.\n- **Layout:** created `docs/manuscript/` with `main.tex`, `methods.tex`, `declarations.tex`, `supplementary.tex`, `preamble.tex`, `references.bib`, `build.sh` (a copy of the skill's `assets/build.sh`), `.gitignore` (ignores `bundle/`), and empty `figures/` and `tables/`. The `.tex` files hold structure and visible to-dos only, no prose.\n- **To-do list:** wrote `docs/manuscript/bundle/TODO.md` with the limits and the seven steps, all unticked.\n- **Build:** `build.sh` compiled both targets and wrote `main.pdf` and `supplementary.pdf` beside `main.tex`.\n- **Figures and tables:** copied nothing. `results/figures/main_figure_1/pdf/main_figure_1.pdf` is a 30-byte placeholder, not a real figure, and which display items the manuscript includes is for the outline to settle.\n- **Prose:** drafted none. The first message proposes only the outline for step 1.\n- **Skills:** I did not load `nature-writing` for the outline, because this evaluation forbids the Skill tool. The outline is my own.\n- **Git:** nothing committed. `git status` shows only `docs/manuscript/` as untracked, and no existing file was changed.\n\n## Exact first message to the user\n\n> I've set up the manuscript in `docs/manuscript/` and it compiles, but nothing is written yet: the files hold structure and to-dos only.\n>\n> **Limits: all unverified.** I could not read Nature Aging's current instructions for Brief Communications, because this host has no network access. These are from memory, and I have not seen a page for any of them:\n>\n> - Main text: about 1,000 to 1,500 words, excluding abstract, Methods, references and legends\n> - Abstract: about 70 words, unreferenced\n> - Display items: up to 2\n> - References: up to 20\n> - Sections: main text as continuous prose without headings, with a separate Methods\n> - Legend length: I don't know\n>\n> Please check them against the journal's content-types page, or paste the page here, before we rely on any of them. They are recorded as unverified in `docs/manuscript/bundle/TODO.md`, with the step list.\n>\n> **What the repository gives us:**\n>\n> - `results/tables/hazard_ratios.csv`: cohort A, n = 4,018, 612 deaths. Hazard ratio per SD for all-cause mortality is 1.42 (1.31 to 1.54) for GrimAge and 1.31 (1.22 to 1.41) for PhenoAge.\n> - `docs/ANALYSIS_PLAN.md`: one sentence stating that estimand.\n> - `results/figures/main_figure_1/pdf/main_figure_1.pdf`: a 30-byte placeholder, not a real figure. I have not copied it into the manuscript. The real Figure 1 has to be made where figures are made before we can include it.\n>\n> **Proposed outline for the main text (introduction and results).** One line per paragraph; change or approve it and I'll suggest P0.\n>\n> - **P0. Why the question matters.** Epigenetic clocks are used as mortality predictors, and how the two compare in one cohort is the gap. It rests on prior literature. I have checked no references, so each sentence that needs a source would carry a visible to-do.\n> - **P1. What was done.** Hazard ratio per SD of each clock for all-cause mortality in cohort A, n = 4,018 with 612 deaths. It rests on `docs/ANALYSIS_PLAN.md` and `results/tables/hazard_ratios.csv`.\n> - **P2. What was found.** Both clocks are associated with mortality: GrimAge 1.42 (1.31 to 1.54), PhenoAge 1.31 (1.22 to 1.41). It rests on `results/tables/hazard_ratios.csv` and on Figure 1 once it exists.\n>\n> Three gaps to settle before or during drafting:\n>\n> 1. **No test of GrimAge against PhenoAge.** The intervals overlap, so P2 can say both predict mortality but not that one predicts better. A comparative claim needs a new result first.\n> 2. **No model details.** The repository does not say which covariates were adjusted for, how long follow-up was, how the clocks were standardised, or what cohort A is. P1 and the Methods need these from you or from a results file.\n> 3. **Details only you can give.** Authors, affiliations, funding, ethics approval and data accession are to-dos in the files until you supply them.\n>\n> Does this outline work, or would you change it?\n\n## Files\n\n- `<fixture>/docs/manuscript/main.tex`, `methods.tex`, `declarations.tex`, `supplementary.tex`, `preamble.tex`, `references.bib`, `build.sh`, `.gitignore`\n- `<fixture>/docs/manuscript/bundle/TODO.md`\n- `<fixture>/docs/manuscript/main.pdf`, `supplementary.pdf` (build output, untracked and not ignored by the skill's `.gitignore`)\n",
+    "todo_md": "# Manuscript to-do\n\nJournal: Nature Aging. Article type: Brief Communication.\n\n## Limits\n\nUNVERIFIED. The journal's instructions could not be read on 2026-11-15 (no network access), so no\npage was consulted. These are from memory and must be checked against the current Nature Aging\ncontent-types page before any is relied on.\n\n- Main text: about 1,000 to 1,500 words, excluding abstract, Methods, references and legends\n  (unverified)\n- Abstract: about 70 words, unreferenced (unverified)\n- Display items: up to 2 (unverified)\n- References: up to 20 (unverified)\n- Sections: main text as continuous prose without headings; separate Methods (unverified)\n- Legend length: not known\n\n## Steps\n\n- [ ] 1. Main text: introduction and results\n- [ ] 2. Discussion (closing paragraphs of the main text; no separate section if the limits above\n      are confirmed)\n- [ ] 3. Abstract and title\n- [ ] 4. Methods\n- [ ] 5. Declarations, supplement and references\n- [ ] 6. Figure and table legends, last\n- [ ] 7. Checks\n",
+    "main_tex": "% Brief Communication for Nature Aging. Structure only: prose is added one paragraph at a time.\n\\documentclass[11pt]{article}\n\\input{preamble}\n\\newcommand{\\inmain}{}\n\n\\title{\\todo{title}}\n\\author{\\todo{authors and affiliations, from the user}}\n\\date{}\n\n\\begin{document}\n\\maketitle\n\n\\begin{abstract}\n\\todo{abstract}\n\\end{abstract}\n\n% Main text: introduction, results and closing discussion.\n\\todo{main text}\n\n% Main display items go here, legends last.\n\n\\input{methods}\n\\input{declarations}\n\n\\bibliographystyle{unsrt}\n\\bibliography{references}\n\n\\clearpage\n\\input{supplementary}\n\n\\end{document}\n",
+    "build": "build.sh compiled main.pdf and supplementary.pdf with Tectonic."
+  }
+}

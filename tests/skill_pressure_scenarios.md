@@ -1022,6 +1022,38 @@ All five are required, checked in the fixture:
 
 ## GREEN results
 
+### 2026-11-15: research-repo rename and the cowrite-manuscript skill
+
+The main skill is now `research-repo`; the plugin keeps the name `research-repo-standard`. The new
+bundled skill `cowrite-manuscript` co-writes a LaTeX manuscript in `docs/manuscript/` one paragraph
+at a time, and `references/prerequisites.md` lists it with seven manuscript skills from
+nature-skills. Scenarios AK to AN are new. Baselines ran before the skill existed, with no skill
+supplied. Fresh Fable 5.2 subagents ran each scenario with the rubric hidden, fresh scorers scored
+the policy responses, and the parent scored AN from the fixture on disk.
+
+| Scenario      | Baseline or previous | Now |
+| ------------- | -------------------: | --: |
+| AK            |                  1/2 | 2/2 |
+| AL            |                  1/4 | 3/4 |
+| AM            |                  3/5 | 5/5 |
+| AN (executed) |                    — | 5/5 |
+| AA            |                  4/4 | 4/4 |
+| AB            |                  4/4 | 4/4 |
+
+Without the skill, the agent asked for the journal but not the article type, planned a Markdown
+manuscript with the abstract first, drafted P1 when asked to start, and rewrote the user's
+paragraph. AL fails criterion 4: in both with-skill runs the first message promised the outline
+instead of proposing it. Those runs could read only the skill and the prompt, so there were no
+results to outline from; AN, which could read its fixture, proposed the outline. GPT-6 Astra at
+medium effort reviewed the skill and its six findings were applied, with one more edit to the
+outline step. AL and AM were re-run on the final text; AK and AN were not, and AN's `main.tex`
+inputs the supplement, which the final text no longer asks for. In AN the build downloaded LaTeX
+files against the no-network premise. The prompt-audit patterns found nothing in the new skill.
+[Evidence](evidence/2026-11-15-cowrite-manuscript.json) holds responses, scores, the review record
+and file hashes. Each condition had one sample, no manuscript was written with a person, and
+scenarios outside this table were not re-run after the rename. Loading both skills from an installed
+plugin in Claude Code and Codex remains a manual verification boundary.
+
 ### 2026-11-15: nature-shared installs with nature-figure
 
 `nature-figure` loads reference files from `nature-shared`, and the recovery command installed
