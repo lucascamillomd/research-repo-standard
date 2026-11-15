@@ -17,6 +17,7 @@ package's unrelated capabilities.
 | `superpowers:writing-plans`               | implementation planning after design approval | <https://github.com/obra/superpowers>                   |
 | `scientific-critical-thinking`            | independent scientific critique               | <https://github.com/k-dense-ai/scientific-agent-skills> |
 | `nature-figure`                           | publication figure strategy and delivery      | <https://github.com/Yuan1z0825/nature-skills>           |
+| `nature-shared`                           | reference files `nature-figure` loads         | <https://github.com/Yuan1z0825/nature-skills>           |
 | `research-repo-standard:nature-schematic` | publication schematic panels                  | this plugin                                             |
 
 Use the current host's native skill listing or resolver. The result must show the exact skill name
@@ -24,6 +25,10 @@ and enough source information to verify the expected package or repository. Succ
 during the workflow is the functional check. A file on disk, or a repository that names a skill, is
 not resolution or invocation evidence. Do not silently install, imitate, or substitute a required
 skill. A missing capability blocks only work that depends on it.
+
+`nature-figure` loads reference files from `nature-shared`, a support package in the same
+repository. Resolve `nature-shared` together with `nature-figure`, by exact name and provenance, and
+never invoke it on its own. Its listing with the expected source is its resolution evidence.
 
 Resolve this skill the same way. It installs as a plugin from the `research-repo-standard`
 marketplace at `github.com/lucascamillomd/research-repo-standard`, so its exact name is
@@ -68,7 +73,7 @@ and the current host. For the two scientific packages, an authorized installatio
 
 ```bash
 npx skills add K-Dense-AI/scientific-agent-skills --global --agent codex --skill scientific-critical-thinking --yes --copy
-npx skills add Yuan1z0825/nature-skills --global --agent codex --skill nature-figure --yes --copy
+npx skills add Yuan1z0825/nature-skills --global --agent codex --skill nature-figure nature-shared --yes --copy
 ```
 
 Replace `codex` with `claude-code` on that host. Only this recovery route needs `npx`; Node.js is
