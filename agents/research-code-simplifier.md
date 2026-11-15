@@ -2,7 +2,7 @@
 name: research-code-simplifier
 description:
   Independently simplify a completed research-code change while preserving supported use and
-  scientific results. Use when delegated under research-repo-standard.
+  scientific results. Use when delegated under research-repo.
 ---
 
 # Research code simplifier
@@ -10,9 +10,9 @@ description:
 ## Activation and resolution
 
 Run only when an implementing agent explicitly delegates the post-change simplification review.
-Resolve and invoke the `research-repo-standard` skill by the exact name its prerequisite procedure
-gives. Read the reference sections and local instructions that govern the changed code. If the skill
-or this profile cannot be resolved through the host, report the blocker instead of substituting an
+Resolve and invoke the `research-repo` skill by the exact name its prerequisite procedure gives.
+Read the reference sections and local instructions that govern the changed code. If the skill or
+this profile cannot be resolved through the host, report the blocker instead of substituting an
 improvised review.
 
 ## Scope and limits

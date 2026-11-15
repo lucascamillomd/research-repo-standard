@@ -7,7 +7,7 @@ FAILS=0
 pass() { printf 'ok: %s\n' "$1"; }
 fail() { printf 'FAIL: %s\n' "$1"; FAILS=$((FAILS + 1)); }
 # The plugin keeps the skill in its own directory; checks name its files as the skill does.
-SKILL_DIR=skills/research-repo-standard
+SKILL_DIR=skills/research-repo
 SCHEMATIC=skills/nature-schematic
 src() {
   case "$1" in
@@ -46,7 +46,7 @@ owned() {
 cd "$ROOT" || exit 1
 
 # Structural checks pin identities and valid resources, never prose headings or line counts.
-require skill-identity SKILL.md 'name: research-repo-standard' 'description:'
+require skill-identity SKILL.md 'name: research-repo' 'description:'
 require profile-identity agents/research-code-simplifier.md 'name: research-code-simplifier' 'description:'
 links_ok=1
 while IFS= read -r path; do
@@ -161,9 +161,9 @@ require legacy-detection references/prerequisites.md 'detect.*earlier integratio
   'resolves to.*customized' 'leave.*unchanged' 'legacy policy' 'alias' 'generic simplifier' \
   'Claude Code.{0,120}repository copy.{0,80}generic simplifier'
 require plugin-resolution references/prerequisites.md 'plugin' 'marketplace' \
-  'research-repo-standard:research-repo-standard' 'lucascamillomd/research-repo-standard'
+  'research-repo-standard:research-repo' 'lucascamillomd/research-repo-standard'
 require real-host-proof references/prerequisites.md 'real smoke test' \
-  'research-repo-standard.*provenance' 'research-code-simplifier.*profile path' \
+  '`research-repo` from the expected provenance' 'research-code-simplifier.*profile path' \
   'launch.*profile.*delegated.*resolved and invoked' \
   'unavailable.*manual.*boundar.*not.*simulat' 'unavailable.*recovery'
 require readonly-target-policy AGENTS.md '(never|not).*copies.*AGENTS\.md.*README\.md.*SKILL\.md' \
@@ -178,7 +178,7 @@ require readme-integration README.md 'research-repo-standard' 'references/prereq
 forbid host-neutral-profile agents/research-code-simplifier.md \
   'model:|\.claude/agents|Claude Code|Anthropic|Codex|OpenAI'
 require simplifier-supported-use agents/research-code-simplifier.md \
-  'explicitly delegates' 'research-repo-standard' 'supported' 'callers.*wrappers' 'private' 'unsupported' \
+  'explicitly delegates' '`research-repo` skill' 'supported' 'callers.*wrappers' 'private' 'unsupported' \
   'public' 'scientific' 'behavior difference' '(unknown|uncertain).*leave|leave.*(unknown|uncertain)' \
   'tests.*behavioral contract before editing' 'without weakening' 'rerun covering tests' 'no justified edit succeeds'
 require simplifier-host-command agents/research-code-simplifier.md \

@@ -6,7 +6,7 @@ repository is a plugin marketplace for Claude Code and Codex that publishes one 
 
 ## Use the standard
 
-The `research-repo-standard` skill has three modes:
+The `research-repo` skill has three modes:
 
 - **Bootstrapping.** Guide the approved design and creation of a new research repository.
 - **Adoption.** Assess an existing repository against the standard read-only, item by item with
@@ -25,13 +25,12 @@ The plugin also bundles `nature-schematic`, which draws schematics as editable v
 without an image-generation model. It works on its own or under the standard's figure contract. Its
 six style examples are published Nature schematics and remain their publishers' copyright.
 
-Both hosts list the skill as `research-repo-standard:research-repo-standard` and the schematic skill
-as `research-repo-standard:nature-schematic`.
-`skills/research-repo-standard/references/prerequisites.md` owns provenance, authorized recovery,
-host profile installation, and the real host-native smoke test. The skill never creates or modifies
-target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md` files. `references/bootstrap.md` in the same
-directory owns the target README checklist, including prerequisites, source provenance, recovery,
-reproduction commands, outputs, and external boundaries.
+Both hosts list the skill as `research-repo-standard:research-repo` and the schematic skill as
+`research-repo-standard:nature-schematic`. `skills/research-repo/references/prerequisites.md` owns
+provenance, authorized recovery, host profile installation, and the real host-native smoke test. The
+skill never creates or modifies target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md` files.
+`references/bootstrap.md` in the same directory owns the target README checklist, including
+prerequisites, source provenance, recovery, reproduction commands, outputs, and external boundaries.
 
 Before migration, detect legacy policy, alias, and generic simplifier artifacts using
 `references/prerequisites.md`. Leave them unchanged; removal requires explicit authorization.
@@ -55,7 +54,7 @@ Before migration, detect legacy policy, alias, and generic simplifier artifacts 
    `marketplace add` command created that entry.
 
 3. Run `/reload-plugins` or start a new session. The skill list shows
-   `research-repo-standard:research-repo-standard`, and the agent list shows
+   `research-repo-standard:research-repo`, and the agent list shows
    `research-repo-standard:research-code-simplifier`.
 
 The plugin supplies the simplifier profile, so governed repositories need no profile file. With
@@ -79,7 +78,7 @@ the next launch or `/reload-plugins`. To update by hand, run
    plugin when this repository has a new commit. To update immediately, run
    `codex plugin marketplace upgrade research-repo-standard`.
 
-3. Start a new session. The skill list shows `research-repo-standard:research-repo-standard`.
+3. Start a new session. The skill list shows `research-repo-standard:research-repo`.
 
 ### Codex simplifier profile
 
@@ -104,7 +103,7 @@ The TOML is a copy, so plugin updates do not change it. When an update changes
 
 ```text
 .claude-plugin/                        plugin and marketplace manifests both hosts read
-skills/research-repo-standard/         SKILL.md entry point and references/ procedures
+skills/research-repo/                  SKILL.md entry point and references/ procedures
 skills/nature-schematic/               schematic skill, style record, reviewer briefs, and examples
 agents/research-code-simplifier.md     canonical host-neutral simplifier profile
 AGENTS.md                              source-repository maintenance instructions
@@ -134,7 +133,7 @@ For skill-creator's optional frontmatter/scaffold validator, use its host-resolv
 separate environment with `PyYAML==6.0.2`; this dependency is not needed by `make test`. For
 example, create a temporary virtual environment with `python3 -m venv`, install that pinned
 dependency into it, and run its Python with
-`<resolved-skill-creator>/scripts/quick_validate.py skills/research-repo-standard`.
+`<resolved-skill-creator>/scripts/quick_validate.py skills/research-repo`.
 
 Blind behavioral evaluations are separate from deterministic source checks. Follow
 `tests/skill_pressure_scenarios.md`; provide a fresh agent the prompt, skill snapshot, and permitted

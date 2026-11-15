@@ -293,8 +293,8 @@ The project README records:
 - a compact repository map and links to `docs/`;
 - prerequisites: the pinned Python minor, uv, Make, and any approved external runtime;
 - the `research-repo-standard` plugin as an agent prerequisite: its exact skill name
-  `research-repo-standard:research-repo-standard`, its expected marketplace source and provenance,
-  and recovery steps when resolution fails, linked to `references/prerequisites.md` in the approved
+  `research-repo-standard:research-repo`, its expected marketplace source and provenance, and
+  recovery steps when resolution fails, linked to `references/prerequisites.md` in the approved
   standard source;
 - required skills, separated from the packages `make setup` installs;
 - the shortest reproduction path, including setup and the canonical `make pipeline` command;

@@ -12,8 +12,8 @@ Build a schematic as editable vector art in the style recorded in
 [references/style.md](references/style.md). No image-generation model takes part. Every shape is
 drawn in code or comes from an asset whose source, licence and credit line you record.
 
-In a repository that follows `research-repo-standard`, its `references/figures.md` owns paths,
-names, export formats and records.
+In a repository that follows `research-repo`, its `references/figures.md` owns paths, names, export
+formats and records.
 
 ## Brief
 

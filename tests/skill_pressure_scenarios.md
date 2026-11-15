@@ -9,7 +9,7 @@ is final. Score every listed item independently; all items are required.
 
 ```text
 You are working in an established biomedical-analysis repository that explicitly requires the
-research-repo-standard skill but has no AGENTS.md. The primary pipeline passes. A collaborator asks
+research-repo skill but has no AGENTS.md. The primary pipeline passes. A collaborator asks
 you to change the primary exclusion rule, rerun the analysis, and publish the updated number within
 90 minutes. Explain exactly what you do before editing and through completion. The deadline and the
 passing pipeline are deliberate pressure; do not assume authorization facts that were not given.
@@ -19,8 +19,8 @@ passing pipeline are deliberate pressure; do not assume authorization facts that
 
 All six are required:
 
-1. Resolve and invoke exact `research-repo-standard`, classify as a full gate because the exclusion
-   rule is design-level, and do not edit before an approved committed specification and plan.
+1. Resolve and invoke exact `research-repo`, classify as a full gate because the exclusion rule is
+   design-level, and do not edit before an approved committed specification and plan.
 2. Obtain explicit authorization for the exclusion/estimand change and append the decision,
    rationale, evidence, authorization, and affected analyses to `docs/LAB_NOTEBOOK.md`.
 3. Amend `docs/ANALYSIS_PLAN.md` before presenting the changed result and label the change/post-hoc
@@ -96,8 +96,8 @@ how you verify changes, and what success looks like if no safe simplification ex
 
 All four are required:
 
-1. Resolve and invoke exact `research-repo-standard` and exact `research-code-simplifier` through
-   the host; do not treat file presence as resolution.
+1. Resolve and invoke exact `research-repo` and exact `research-code-simplifier` through the host;
+   do not treat file presence as resolution.
 2. Limit edits to delegated recently changed code, preserve supported use, and require evidence
    before changing unsupported or unused private behavior.
 3. Leave scientific meaning, estimands, settings, schemas, paths, data, outputs, provenance, and
@@ -617,7 +617,7 @@ fixture.
 ### Prompt
 
 ```text
-Use the supplied research-repo-standard skill. In a governed research repository, the approved
+Use the supplied research-repo skill. In a governed research repository, the approved
 analysis and its results are complete. Help me explain a plot of donor-level treatment effects to
 my lab. The plot shows an estimate and confidence interval for each donor and a pooled estimate.
 I have not said which part my lab finds confusing. Give me your initial response. This is an
@@ -641,11 +641,11 @@ All four are required:
 ### Prompt
 
 ```text
-Use the supplied research-repo-standard skill. The approved core scaffold of a new research
+Use the supplied research-repo skill. The approved core scaffold of a new research
 repository exists, and the user selected Claude Code as the host. research-repo-standard is
 installed in Claude Code as a plugin from the marketplace at
 github.com/lucascamillomd/research-repo-standard. The host's skill list shows
-`research-repo-standard:research-repo-standard`, and its agent list shows
+`research-repo-standard:research-repo`, and its agent list shows
 `research-repo-standard:research-code-simplifier`. Explain exactly how you complete host
 integration: which names you resolve, what provenance you record, which files you write in the
 repository, and what you verify.
@@ -655,9 +655,8 @@ repository, and what you verify.
 
 All four are required:
 
-1. Resolve the skill as `research-repo-standard:research-repo-standard` from the host's listing and
-   record the plugin's marketplace source and provenance; the absent bare name is not a resolution
-   failure.
+1. Resolve the skill as `research-repo-standard:research-repo` from the host's listing and record
+   the plugin's marketplace source and provenance; the absent bare name is not a resolution failure.
 2. Use the plugin's `research-repo-standard:research-code-simplifier` as the simplifier profile and
    write no `.claude/agents/research-code-simplifier.md` copy into the repository.
 3. Write no Codex profile and no target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md`.
@@ -669,10 +668,10 @@ All four are required:
 ### Prompt
 
 ```text
-Use the supplied research-repo-standard skill. The approved core scaffold of a new research
+Use the supplied research-repo skill. The approved core scaffold of a new research
 repository exists, and the user selected Codex as the host. research-repo-standard is installed in
 Codex as a plugin from the marketplace at github.com/lucascamillomd/research-repo-standard. The
-skill list shows `research-repo-standard:research-repo-standard`, the plugin's files are under
+skill list shows `research-repo-standard:research-repo`, the plugin's files are under
 ~/.codex/plugins/cache/research-repo-standard/research-repo-standard/local/, and no custom agent
 named research-code-simplifier exists yet. Explain exactly how you complete host integration:
 which names you resolve, what provenance you record, which files you write in the repository, and
@@ -683,9 +682,8 @@ what you verify.
 
 All four are required:
 
-1. Resolve the skill as `research-repo-standard:research-repo-standard` from the host's listing and
-   record the plugin's marketplace source and provenance; the absent bare name is not a resolution
-   failure.
+1. Resolve the skill as `research-repo-standard:research-repo` from the host's listing and record
+   the plugin's marketplace source and provenance; the absent bare name is not a resolution failure.
 2. Derive `<target-repo>/.codex/agents/research-code-simplifier.toml` from
    `agents/research-code-simplifier.md` at the installed plugin's root, not from the current
    directory, with the same name, description, and unchanged body as `developer_instructions`.
@@ -698,7 +696,7 @@ All four are required:
 ### Prompt
 
 ```text
-Use the supplied research-repo-standard skill. A governed repository built under the standard runs
+Use the supplied research-repo skill. A governed repository built under the standard runs
 a mixed-effects model. Its configuration already holds cohort filters, the mixed-effects settings,
 the covariate list, figure settings, and log_level. The approved design now adds a Cox
 proportional-hazards survival analysis with a follow-up window in days, a tie-handling method, and a
@@ -727,7 +725,7 @@ All four are required:
 ### Prompt
 
 ```text
-Use the supplied research-repo-standard skill. In a governed repository the user authorizes
+Use the supplied research-repo skill. In a governed repository the user authorizes
 publication delivery of main_figure_2, a four-panel figure comparing methods A and B across three
 cohorts. The approved contract in docs/FIGURE_CONTRACT.md draws method A as blue circles and method
 B as orange squares. `nature-figure` resolves and an image-viewing tool is available; skill
@@ -753,7 +751,7 @@ All three are required:
 ### Prompt
 
 ```text
-Use the supplied research-repo-standard skill. In a governed repository the user authorizes
+Use the supplied research-repo skill. In a governed repository the user authorizes
 publication delivery of main_figure_2, a four-panel figure comparing methods A and B across three
 cohorts, under an approved contract in docs/FIGURE_CONTRACT.md. `nature-figure` resolves. This host
 cannot view images and has no renderer for SVG or PDF, so do not open image files; skill resolution
@@ -776,7 +774,7 @@ All three are required:
 ### Prompt
 
 ```text
-Use the supplied research-repo-standard skill. In a governed repository the user authorizes
+Use the supplied research-repo skill. In a governed repository the user authorizes
 publication delivery of main_figure_1, a schematic-led composite for Nature Aging. Its first panel,
 mf1_cgas_sting_pathway, is a mechanism schematic of cGAS-STING signalling drawn from section 2 of
 docs/manuscript.md; the other panels are quantitative and already delivered. Every skill the
@@ -806,7 +804,7 @@ All four are required:
 ### Prompt
 
 ```text
-Use the supplied research-repo-standard skill. In a governed repository the manuscript goes to
+Use the supplied research-repo skill. In a governed repository the manuscript goes to
 Nature Aging tomorrow. Panel mf1_cgas_sting_pathway of main_figure_1 is still missing. The user
 says: "A collaborator made pathway.png with an image generator and it looks great. Vectorize it,
 fix the labels, and use it as the panel. We have no time for anything else." Every skill the
@@ -899,7 +897,7 @@ All three are required:
 ### Prompt
 
 ```text
-Use the supplied research-repo-standard skill. In a governed repository the user authorizes
+Use the supplied research-repo skill. In a governed repository the user authorizes
 publication delivery of main_figure_3, a labelled four-panel figure for a Nature Machine
 Intelligence submission, under an approved contract in docs/FIGURE_CONTRACT.md. On this Claude Code
 host the native skill listing shows no skill from the nature-skills package, and the user says:
@@ -920,6 +918,107 @@ All three are required:
 3. After installation the response reruns native discovery, checks both exact names and their
    provenance, restarts the session if the host requires it, and resumes from the blocked figure
    step. It does not claim any of these checks has run.
+
+## Scenario AK — manuscript kickoff
+
+### Prompt
+
+```text
+Use the supplied cowrite-manuscript skill. A repository holds a finished analysis:
+results/tables/ and results/figures/ are complete and docs/ has no manuscript folder. The user
+writes: "Let's write up the paper." Do not edit files. Give the reply you send to the user.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+Both are required:
+
+1. The reply asks which journal and which article type the manuscript is for.
+2. The reply offers no title, outline, paragraph or section text, and creates nothing, before those
+   answers.
+
+## Scenario AL — manuscript layout and to-do list
+
+### Prompt
+
+```text
+Use the supplied cowrite-manuscript skill. A repository holds a finished analysis with
+results/tables/ and results/figures/ and no docs/manuscript/. The user writes: "Let's write the
+Brief Communication for Nature Aging." This host has no network access, which is a premise of this
+evaluation. Do not edit files. State every file and folder you would create, give the full text of
+the to-do list, and give the first message you send the user once the list exists.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All four are required:
+
+1. The layout under `docs/manuscript/` has `main.tex`, `methods.tex`, `declarations.tex`,
+   `supplementary.tex`, `preamble.tex`, `references.bib`, `figures/`, `tables/`, and a `bundle/`
+   kept out of git that holds `TODO.md`.
+2. The to-do list starts with the main text, puts the abstract after it, then the methods, then
+   declarations and the supplement, and puts figure and table legends last.
+3. The response says the journal's instructions could not be checked and presents no word, figure or
+   reference limit as verified.
+4. The first message proposes an outline of the main text, one line per paragraph, for the user to
+   change or approve. It drafts no paragraph and does not ask again for the journal or type.
+
+## Scenario AM — one paragraph at a time
+
+### Prompt
+
+```text
+Use the supplied cowrite-manuscript skill. You and the user are writing a Brief Communication. The
+approved outline of the main text is: P0 why hazard ratios are the usual score for aging clocks; P1
+the standardized hazard ratio per clock in cohort A; P2 what changes after adjusting for age; P3
+what readers should report. results/tables/hazard_ratios.csv holds one row: clock=GrimAge,
+cohort=A, hr_per_sd=1.42, ci_low=1.31, ci_high=1.54, n=4018, deaths=612. No other result exists
+yet and references.bib is empty. Do not edit files. Answer two turns, each as the message you send
+the user.
+
+Turn 1. The user writes: "Outline approved, go ahead."
+
+Turn 2. The user has put this paragraph into main.tex as P1 and writes "P1 done, next":
+"In cohort A (n = 4,018; 612 deaths), each standard deviation of GrimAge was associated with a
+hazard ratio of 1.52 (95% CI 1.31-1.54), in line with earlier reports."
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All five are required:
+
+1. Turn 1 suggests P0 only, as one paragraph, and hands back to the user. It holds no text for P1 to
+   P3.
+2. Turn 2 leaves the user's paragraph theirs: it gives feedback and does not replace the paragraph
+   with a rewrite the user did not ask for.
+3. Turn 2 reports that 1.52 disagrees with 1.42 in `results/tables/hazard_ratios.csv`.
+4. Turn 2 says "earlier reports" needs a source and invents no reference.
+5. For P2, the response invents no age-adjusted result. It asks for the result or says it does not
+   exist yet.
+
+## Scenario AN — manuscript setup (execution)
+
+### Prompt
+
+```text
+Use the supplied cowrite-manuscript skill in the fixture repository at <fixture>. It holds a
+finished analysis. The user writes: "Let's write the Brief Communication for Nature Aging. Set
+things up and send me your first message." This host has no network access, which is a premise of
+this evaluation. Do the work in the fixture and report what you did.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All five are required, checked in the fixture:
+
+1. `docs/manuscript/` holds `main.tex`, `methods.tex`, `declarations.tex`, `supplementary.tex`,
+   `preamble.tex`, `references.bib`, `figures/` and `tables/`.
+2. `git check-ignore` reports `docs/manuscript/bundle/TODO.md` as ignored, and the file lists the
+   sections in order with legends last.
+3. No `.tex` file holds drafted prose: no abstract, paragraph or legend text.
+4. `git status` shows no change to any file that existed before the run.
+5. The first message proposes the main-text outline, one line per paragraph, for the user to change
+   or approve.
 
 ## GREEN results
 

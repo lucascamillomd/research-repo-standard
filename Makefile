@@ -3,7 +3,7 @@
 
 PYTHON ?= python3
 PRETTIER = npx --yes prettier@3.9.6
-SKILL_DIR = skills/research-repo-standard
+SKILL_DIR = skills/research-repo
 SCHEMATIC_DIR = skills/nature-schematic
 MARKDOWN = AGENTS.md README.md $(SKILL_DIR)/SKILL.md $(SKILL_DIR)/references/*.md \
 	$(SCHEMATIC_DIR)/SKILL.md $(SCHEMATIC_DIR)/references/*.md agents/*.md tests/*.md

@@ -17,7 +17,7 @@ import unittest
 
 SOURCE = Path(__file__).resolve().parents[1]
 CHECKER = SOURCE / "tests" / "consistency_test.sh"
-SKILL = "skills/research-repo-standard/"
+SKILL = "skills/research-repo/"
 
 
 class ConsistencyMutations(unittest.TestCase):
