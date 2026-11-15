@@ -12,6 +12,7 @@ import unittest
 
 SOURCE = Path(__file__).resolve().parents[1]
 NAME = "research-repo-standard"
+SKILL = "research-repo"
 
 
 def load(relative_path):
@@ -38,9 +39,9 @@ class PluginManifests(unittest.TestCase):
             self.assertNotIn("version", entry)
 
     def test_skill_and_profile_sit_where_both_hosts_load_them(self):
-        skill = SOURCE / "skills" / NAME / "SKILL.md"
-        self.assertTrue(skill.read_text().startswith(f"---\nname: {NAME}\n"))
-        self.assertTrue((SOURCE / "skills" / NAME / "references" / "prerequisites.md").is_file())
+        skill = SOURCE / "skills" / SKILL / "SKILL.md"
+        self.assertTrue(skill.read_text().startswith(f"---\nname: {SKILL}\n"))
+        self.assertTrue((SOURCE / "skills" / SKILL / "references" / "prerequisites.md").is_file())
         self.assertTrue((SOURCE / "agents" / "research-code-simplifier.md").is_file())
         # Codex loads plugin skills only from skills/; a root copy would be a second, stale source.
         self.assertFalse((SOURCE / "SKILL.md").exists())
@@ -60,7 +61,7 @@ class PluginManifests(unittest.TestCase):
             self.assertEqual(example.read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
 
     def test_figure_exemplars_ship_with_the_skill(self):
-        directory = SOURCE / "skills" / NAME / "assets" / "figure-exemplars"
+        directory = SOURCE / "skills" / SKILL / "assets" / "figure-exemplars"
         names = sorted(path.name for path in directory.glob("*.webp"))
         self.assertEqual(names, [f"fig{number}.webp" for number in range(1, 7)])
         for name in names:

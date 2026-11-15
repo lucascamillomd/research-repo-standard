@@ -1,5 +1,5 @@
 ---
-name: research-repo-standard
+name: research-repo
 description:
   Bootstrap reproducible research repositories, assess adoption of this standard, and maintain
   scientific and reproducibility contracts in repositories that already follow it.

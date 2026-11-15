@@ -32,9 +32,9 @@ never invoke it on its own. Its listing with the expected source is its resoluti
 
 Resolve this skill the same way. It installs as a plugin from the `research-repo-standard`
 marketplace at `github.com/lucascamillomd/research-repo-standard`, so its exact name is
-`research-repo-standard:research-repo-standard`. Check that its reported provenance, the marketplace
-source and installed commit, matches the provenance the project README records under the checklist
-in `references/bootstrap.md`. When the README has no entry yet, match the source the user approved.
+`research-repo-standard:research-repo`. Check that its reported provenance, the marketplace source
+and installed commit, matches the provenance the project README records under the checklist in
+`references/bootstrap.md`. When the README has no entry yet, match the source the user approved.
 
 Record the host, resolver, resolved source, and invocation evidence at first use. Reuse that record
 while the session and provenance are unchanged; report again if resolution fails or the source,
@@ -134,13 +134,13 @@ profile without explicit authorization. Then run the selected-host smoke test be
 After the core scaffold and the selected host integration are complete, run a real smoke test
 through that host. Writing the profile does not establish any skill's resolution. The result must:
 
-1. resolve the skill by its exact name, `research-repo-standard:research-repo-standard`, and report
-   its provenance;
+1. resolve the skill by its exact name, `research-repo-standard:research-repo`, and report its
+   provenance;
 2. resolve the simplifier profile through the host,
    `research-repo-standard:research-code-simplifier` on Claude Code or `research-code-simplifier` on
    Codex, and report the installed profile path; and
 3. launch the profile far enough that the delegated reviewer reports it resolved and invoked
-   `research-repo-standard` from the expected provenance, without requesting an implementation.
+   `research-repo` from the expected provenance, without requesting an implementation.
 
 An unavailable host or resolver is a manual verification boundary, not a simulated success. Report
 the unavailable check and run the authorized recovery procedure before claiming the host integration
