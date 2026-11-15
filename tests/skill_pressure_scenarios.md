@@ -1050,9 +1050,11 @@ outline step. AL and AM were re-run on the final text; AK and AN were not, and A
 inputs the supplement, which the final text no longer asks for. In AN the build downloaded LaTeX
 files against the no-network premise. The prompt-audit patterns found nothing in the new skill.
 [Evidence](evidence/2026-11-15-cowrite-manuscript.json) holds responses, scores, the review record
-and file hashes. Each condition had one sample, no manuscript was written with a person, and
-scenarios outside this table were not re-run after the rename. Loading both skills from an installed
-plugin in Claude Code and Codex remains a manual verification boundary.
+and file hashes. The skill text was then tightened from 812 to 740 words with no rule changed; AK
+and AM were re-run on it and scored 2/2 and 5/5 by the parent, and AL and AN were not re-run. Each
+condition had one sample, no manuscript was written with a person, and scenarios outside this table
+were not re-run after the rename. Loading both skills from an installed plugin in Claude Code and
+Codex remains a manual verification boundary.
 
 ### 2026-11-15: nature-shared installs with nature-figure
 
