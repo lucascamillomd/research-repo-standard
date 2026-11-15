@@ -1,0 +1,73 @@
+{
+  "date": "2026-11-15",
+  "change": "references/prerequisites.md lists nature-shared as a required capability beside nature-figure, says nature-figure loads its reference files and that it is resolved with nature-figure and never invoked alone, and the documented recovery command installs both skills.",
+  "evaluation_type": "policy responses for the new scenario AJ; no installation or host check ran inside the scenario",
+  "method": "One fresh Claude Code subagent (Fable 5.2, claude-fable-5-2, effort not set) per run, reading only skills/research-repo-standard in the working tree, with the rubric hidden. The baseline ran before prerequisites.md changed and the rerun after. One fresh Fable 5.2 scorer scored both responses from saved copies, labelled R1 and R2, without being told which was the baseline.",
+  "baseline": "Scenario AJ on the text at HEAD 83879f7: 1/3.",
+  "motivation": "nature-figure at Yuan1z0825/nature-skills commit 7bff1d0 loads ../nature-shared/core/nature-results-discussion.md and ../nature-shared/journal-formats/nature-machine-intelligence.md from SKILL.md, and ../nature-shared/core/research-compliance.md from references/nature-article-requirements.md. The previous recovery command installed nature-figure alone.",
+  "baseline_sha256": {
+    "skills/research-repo-standard/references/prerequisites.md": "766196013ae5cdb983c35c0a9941f77591df42f2ec1388d6acabd777812cbd5e"
+  },
+  "tested_sha256": {
+    "skills/research-repo-standard/references/prerequisites.md": "06a853da6421a531076c04726f61916e2c96441276704e13d1e4700f064faed3"
+  },
+  "boundaries": [
+    "One sample per condition.",
+    "The scenario's capability facts are premises; no skill was installed or resolved inside it.",
+    "The scorer saw both responses together and could infer which was the baseline from their content.",
+    "Resolution of nature-shared through the Claude Code and Codex native skill listings after a real installation by the documented command remains a manual verification boundary.",
+    "Existing scenarios were not re-run; the change adds one capability row, one paragraph and one skill name to a command."
+  ],
+  "policy_runs": {
+    "AJ_baseline": {
+      "response": "## Policy answer: installing the capability for main_figure_3\n\nThis is a policy response only. I installed nothing, did not inspect the host's installed skills, and ran no real host check. The capability facts below are the premises you gave me.\n\n### What is missing, and what \"the figure work needs\"\n\n- **Blocker:** on the Claude Code host, the native skill listing shows no skill from the nature-skills package, so the exact name `nature-figure` does not resolve.\n- **Why it blocks:** publication delivery must resolve and invoke `nature-figure` (`references/figures.md`, Scope), and the standard forbids imitating or substituting it.\n- **The only install needed:** the single skill `nature-figure` from its authoritative source, <https://github.com/Yuan1z0825/nature-skills>.\n- **Not installed:**\n  - the rest of the nature-skills package;\n  - `scientific-critical-thinking` or `superpowers`, because the contract is already approved and no new design or scientific judgment is being made;\n  - Node.js or any repository package.\n- **Schematic panels:** if any of the four panels is a schematic, it uses `research-repo-standard:nature-schematic`. That ships with this plugin, so it needs no install; I resolve it only when I reach that panel.\n\nYour instruction already authorizes a global install of exactly this, so I will not ask again. I show the commands first, as you asked, then run them.\n\n### Exact commands\n\n1. **Review the third-party source before installing** (read-only; the standard requires this first). `<scratch>` is a new, empty temporary directory outside the repository, and it is the only placeholder.\n\n```bash\ngit ls-remote https://github.com/Yuan1z0825/nature-skills HEAD\ngit clone --depth 1 https://github.com/Yuan1z0825/nature-skills <scratch>/nature-skills-review\ngit -C <scratch>/nature-skills-review rev-parse HEAD\n```\n\nI read the `nature-figure` skill directory in that clone and note the commit. Nothing in it is executed.\n\n2. **Install the one skill, globally, for this host:**\n\n```bash\nnpx skills add Yuan1z0825/nature-skills --global --agent claude-code --skill nature-figure --yes --copy\n```\n\nThe flags map to your scope as follows:\n\n| Flag | Reason |\n| --- | --- |\n| `--global` | you asked for a global install |\n| `--agent claude-code` | the current host |\n| `--skill nature-figure` | this skill and nothing else |\n| `--yes --copy` | non-interactive, copied install, as in the standard's documented recovery form |\n\nI would stop and report instead of improvising if:\n- `npx` is not present (installing Node is outside \"nothing else\");\n- the source review turns up something unexpected;\n- the installer wants to add anything beyond `nature-figure`.\n\n### What I verify afterwards\n\n1. Restart the Claude Code session if the host needs that to pick up the new skill.\n2. Rerun the host's native skill listing. A file on disk is not resolution evidence.\n3. Confirm the exact name `nature-figure` appears and that its reported source is `Yuan1z0825/nature-skills`, matching the commit I reviewed.\n4. Confirm nothing else was added: no other nature-skills skill and no other change to global configuration.\n5. Record the host, resolver, resolved source and invocation evidence at first use. The functional check is the successful invocation of `nature-figure` itself.\n6. If the name or provenance still does not resolve, report the exact name, host, resolver and result as an open blocker. I would not claim a pass or work around it.\n\n### When figure work resumes\n\n- **Resume point:** as soon as `nature-figure` resolves by exact name with verified provenance, work resumes at the blocked step.\n- **No repeated approvals:** the contract in `docs/FIGURE_CONTRACT.md` and your delivery authorization carry over, even across a session restart.\n- **First steps on resuming:** invoke `nature-figure`, view the bundled figure exemplars in `assets/figure-exemplars/`, then proceed with the publication requirements in `references/figures.md`: the four atomic panels, figure data, the four export formats, assembly with panel letters, and QA of the rendered SVG and PDF at final size.\n- **Until then:** only work that does not depend on the skill continues, such as reading the approved contract and checking that the declared inputs exist and validate. No publication figure strategy, plotting or delivery happens without `nature-figure`.\n\nFiles read, all under `/Users/lucascamillo/.t3/worktrees/research-repo-standard/t3-76126020-37ebdad4ea6f499e/skills/research-repo-standard/`: `SKILL.md`, `references/prerequisites.md`, `references/figures.md`, and the capability and waiver lines of `references/governance.md`.\n",
+      "score": {
+        "scenario": "AJ",
+        "criteria": [
+          {
+            "n": 1,
+            "pass": false,
+            "evidence": "Install command is `npx skills add Yuan1z0825/nature-skills --global --agent claude-code --skill nature-figure --yes --copy`; `nature-shared` is never named and is excluded as 'the rest of the nature-skills package'."
+          },
+          {
+            "n": 2,
+            "pass": true,
+            "evidence": "Only `--skill nature-figure` is installed; it lists the rest of the package, `scientific-critical-thinking`, `superpowers` and Node.js as not installed. The shallow clone into a scratch directory is a read-only source review, not an install."
+          },
+          {
+            "n": 3,
+            "pass": false,
+            "evidence": "Restarts if needed, reruns the native listing, checks `nature-figure` name and source, and resumes at the blocked step without claiming a check ran, but it never checks `nature-shared`; step 4 instead confirms 'no other nature-skills skill' was added."
+          }
+        ],
+        "score": "1/3",
+        "notes": "Scoped and honest, but it treats `nature-figure` as the only needed skill, so `nature-shared` is neither installed nor verified. That one omission fails criteria 1 and 3."
+      }
+    },
+    "AJ": {
+      "response": "I would run one install command, covering exactly two skills, and nothing has been installed or checked on the host yet. This is a policy answer built on your stated premises.\n\n## What is blocked\n\n- **Missing capabilities:** `nature-figure` and its support package `nature-shared`, both from <https://github.com/Yuan1z0825/nature-skills>.\n- **Host and resolver:** Claude Code, native skill listing.\n- **Result (your premise):** the listing shows no skill from the nature-skills package.\n- **Why both:** publication delivery requires `nature-figure`, and it loads reference files from `nature-shared`, so the two resolve together.\n- **What it blocks:** only the publication figure work on `main_figure_3`.\n\n## Exact commands\n\nBefore installing, I review the third-party source read-only: the repository and the `nature-figure` and `nature-shared` skill directories at <https://github.com/Yuan1z0825/nature-skills>. This changes nothing on the host. If the source is not what the standard expects, I stop and report instead of installing.\n\nThen the single install command:\n\n```bash\nnpx skills add Yuan1z0825/nature-skills --global --agent claude-code --skill nature-figure nature-shared --yes --copy\n```\n\n- `--global` matches the global scope you authorized.\n- `--agent claude-code` targets this host only.\n- `--skill nature-figure nature-shared` limits the install to those two skills, not the rest of the package.\n- `--yes --copy` runs it without prompts and copies the files instead of linking them.\n\nThis command needs `npx` (Node.js) on the machine. If it is absent I report that as a blocker; installing Node.js is outside \"nothing else\".\n\nYour authorization already covers this command, so once you have seen it I run it as written without asking again. Any deviation, such as a different flag, package or scope, comes back to you first.\n\n## What I do not install\n\n- `superpowers` and `scientific-critical-thinking`: the figure is standard-gate work under an approved contract, so neither is needed.\n- Other nature-skills skills such as `nature-writing` or `nature-polishing`.\n- `research-repo-standard:nature-schematic`: it ships with this plugin and is not a separate install. I would resolve it only if the contract's panel map has a schematic panel.\n- Any project-level package or repository file.\n\n## What I verify afterwards\n\n1. Restart the Claude Code session if the host needs that to pick up new skills.\n2. Rerun the native skill listing; files on disk do not count as evidence.\n3. Confirm `nature-figure` is listed by exact name with source `Yuan1z0825/nature-skills`.\n4. Confirm `nature-shared` is listed by exact name with the same source. Its listing is its evidence; I never invoke it on its own.\n5. Invoke `nature-figure` at the start of the figure work. A successful invocation is the functional check.\n6. Record the host, resolver, resolved source and invocation evidence at that first use.\n\nIf the listing still does not show either name with the expected source, I report the exact name, resolver and result and stop the figure work. I would not substitute or imitate the skill.\n\n## When figure work resumes\n\nFigure work resumes at the blocked step as soon as both names resolve with the expected provenance. The approved `docs/FIGURE_CONTRACT.md` is reused, with no repeated design work or new approval because the session changed.\n\nFrom there I invoke `nature-figure`, view the bundled figure exemplars, and build the four atomic panels with their figure data. The four panels are then assembled with their letters, exported as SVG, PDF, 600 dpi TIFF and PNG, and the rendered SVG and PDF are checked at final size.\n\nUntil then, only work that depends on `nature-figure` waits.\n",
+      "score": {
+        "scenario": "AJ",
+        "criteria": [
+          {
+            "n": 1,
+            "pass": true,
+            "evidence": "`npx skills add Yuan1z0825/nature-skills --global --agent claude-code --skill nature-figure nature-shared --yes --copy`"
+          },
+          {
+            "n": 2,
+            "pass": true,
+            "evidence": "'limits the install to those two skills, not the rest of the package'; it excludes `superpowers`, `scientific-critical-thinking`, `nature-writing`, `nature-polishing`, Node.js and project packages."
+          },
+          {
+            "n": 3,
+            "pass": true,
+            "evidence": "Restart if the host needs it; 'Rerun the native skill listing'; confirms `nature-figure` and `nature-shared` each 'by exact name' with source `Yuan1z0825/nature-skills`; 'resumes at the blocked step'; opens with 'nothing has been installed or checked on the host yet'."
+          }
+        ],
+        "score": "3/3",
+        "notes": "Installs exactly the two required skills by exact name for the Claude Code host, verifies both names and provenance through native discovery, and claims no check has run."
+      }
+    }
+  }
+}

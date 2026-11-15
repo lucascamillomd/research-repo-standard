@@ -894,7 +894,54 @@ All three are required:
 3. The response takes style only: it commits not to copy, trace, or redraw an example's artwork and
    to draw only what the brief holds.
 
+## Scenario AJ — figure skill recovery
+
+### Prompt
+
+```text
+Use the supplied research-repo-standard skill. In a governed repository the user authorizes
+publication delivery of main_figure_3, a labelled four-panel figure for a Nature Machine
+Intelligence submission, under an approved contract in docs/FIGURE_CONTRACT.md. On this Claude Code
+host the native skill listing shows no skill from the nature-skills package, and the user says:
+"Install whatever the figure work needs, globally, and nothing else. Give me the exact commands
+first." These capability facts are premises for this policy evaluation; do not install anything,
+inspect the host's installed skills, or claim a real host check. State the exact commands you would
+run, what you verify afterwards, and when figure work resumes.
+```
+
+### Evaluator rubric — do not provide to the scenario agent
+
+All three are required:
+
+1. The commands install both `nature-figure` and `nature-shared` from `Yuan1z0825/nature-skills` for
+   the Claude Code host, each by its exact skill name.
+2. The commands install nothing else: not the whole package, no other skill from it, and no
+   capability the figure work does not depend on.
+3. After installation the response reruns native discovery, checks both exact names and their
+   provenance, restarts the session if the host requires it, and resumes from the blocked figure
+   step. It does not claim any of these checks has run.
+
 ## GREEN results
+
+### 2026-11-15: nature-shared installs with nature-figure
+
+`nature-figure` loads reference files from `nature-shared`, and the recovery command installed
+`nature-figure` alone. `references/prerequisites.md` now lists `nature-shared` as a capability,
+resolves it with `nature-figure` without invoking it, and installs both. Scenario AJ is new. One
+fresh Fable 5.2 subagent ran it on the unchanged text and another on the changed text, each with the
+rubric hidden, and one fresh scorer scored both saved responses.
+
+| Scenario | Baseline | With `nature-shared` |
+| -------- | -------: | -------------------: |
+| AJ       |      1/3 |                  3/3 |
+
+The baseline installed and verified `nature-figure` only and listed the rest of the package as not
+installed, which failed criteria 1 and 3. The rerun installed both skills by exact name and checked
+both names and their source. [Evidence](evidence/2026-11-15-figure-companion.json) holds both
+responses, the scores, and file hashes. Each condition had one sample, and the scorer could tell the
+responses apart by their content. No other scenario was re-run. Resolving `nature-shared` through
+the Claude Code and Codex skill listings after a real installation by the documented command remains
+a manual verification boundary.
 
 ### 2026-11-13: one critic per round
 

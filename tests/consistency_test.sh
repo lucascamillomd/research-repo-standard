@@ -321,6 +321,8 @@ require schematic-contract references/figures.md 'schematic panel.*plots no data
   'generative model.*only after the user authorizes' 'eligibility separately from'
 owned generated-image-owner references/figures.md 'generative model.*only after the user authorizes'
 require schematic-capability references/prerequisites.md 'research-repo-standard:nature-schematic'
+require figure-companion references/prerequisites.md '`nature-shared`' 'nature-figure nature-shared' \
+  'nature-figure.{0,60} loads|loads.{0,60}nature-shared' 'never invoke'
 require schematic-skill "$SCHEMATIC"/SKILL.md 'name: nature-schematic' 'description:' \
   'no image-generation model' 'drawn in code' 'before drawing, write `brief\.md`' \
   'place in the source' 'three options' 'three pickers' 'five rounds' 'a critic gets' 'a judge gets' \

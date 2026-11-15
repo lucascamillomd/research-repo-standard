@@ -180,6 +180,10 @@ class ConsistencyMutations(unittest.TestCase):
         self.remove_phrase("skills/nature-schematic/SKILL.md", r",\s+never\s+their\s+artwork")
         self.assert_rejected_by("schematic-skill")
 
+    def test_figure_companion_install_removal(self):
+        self.remove_phrase(SKILL + "references/prerequisites.md", r"(?<=--skill nature-figure) nature-shared")
+        self.assert_rejected_by("figure-companion")
+
     def test_unavailable_host_boundary_removal(self):
         self.remove_paragraph(SKILL + "references/prerequisites.md", "An unavailable host or resolver")
         self.assert_rejected_by("real-host-proof")
