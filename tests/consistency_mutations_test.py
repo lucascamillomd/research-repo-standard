@@ -184,6 +184,14 @@ class ConsistencyMutations(unittest.TestCase):
         self.remove_phrase(SKILL + "references/prerequisites.md", r"(?<=--skill nature-figure) nature-shared")
         self.assert_rejected_by("figure-companion")
 
+    def test_cowrite_turn_taking_removal(self):
+        self.remove_phrase("skills/cowrite-manuscript/SKILL.md", r"Never draft ahead[^.]*\.")
+        self.assert_rejected_by("cowrite-skill")
+
+    def test_cowrite_capability_removal(self):
+        self.remove_phrase(SKILL + "references/prerequisites.md", r"\| `research-repo-standard:cowrite-manuscript`[^\n]*\n")
+        self.assert_rejected_by("cowrite-capability")
+
     def test_unavailable_host_boundary_removal(self):
         self.remove_paragraph(SKILL + "references/prerequisites.md", "An unavailable host or resolver")
         self.assert_rejected_by("real-host-proof")

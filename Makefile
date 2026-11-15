@@ -5,8 +5,10 @@ PYTHON ?= python3
 PRETTIER = npx --yes prettier@3.9.6
 SKILL_DIR = skills/research-repo
 SCHEMATIC_DIR = skills/nature-schematic
+COWRITE_DIR = skills/cowrite-manuscript
 MARKDOWN = AGENTS.md README.md $(SKILL_DIR)/SKILL.md $(SKILL_DIR)/references/*.md \
-	$(SCHEMATIC_DIR)/SKILL.md $(SCHEMATIC_DIR)/references/*.md agents/*.md tests/*.md
+	$(SCHEMATIC_DIR)/SKILL.md $(SCHEMATIC_DIR)/references/*.md $(COWRITE_DIR)/SKILL.md agents/*.md \
+	tests/*.md
 
 help: ## Show this help
 	@grep -E '^[a-z-]+:.*##' Makefile | awk -F':.*## ' '{printf "%-8s %s\n", $$1, $$2}'

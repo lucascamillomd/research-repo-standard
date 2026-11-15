@@ -70,7 +70,8 @@ import-package names use lowercase underscores.
 ├── docs/
 │   ├── ANALYSIS_PLAN.md
 │   ├── FIGURE_CONTRACT.md
-│   └── LAB_NOTEBOOK.md
+│   ├── LAB_NOTEBOOK.md
+│   └── manuscript/                 # made by cowrite-manuscript when writing starts
 ├── logs/
 ├── results/
 │   ├── figures/

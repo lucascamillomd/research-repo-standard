@@ -25,8 +25,13 @@ The plugin also bundles `nature-schematic`, which draws schematics as editable v
 without an image-generation model. It works on its own or under the standard's figure contract. Its
 six style examples are published Nature schematics and remain their publishers' copyright.
 
-Both hosts list the skill as `research-repo-standard:research-repo` and the schematic skill as
-`research-repo-standard:nature-schematic`. `skills/research-repo/references/prerequisites.md` owns
+It also bundles `cowrite-manuscript`, which writes a LaTeX manuscript with you one paragraph at a
+time in `docs/manuscript/`. It asks for the journal and article type, keeps a to-do list, and leaves
+legends for last.
+
+Both hosts list the skill as `research-repo-standard:research-repo` the schematic skill as
+`research-repo-standard:nature-schematic`, and the manuscript skill as
+`research-repo-standard:cowrite-manuscript`. `skills/research-repo/references/prerequisites.md` owns
 provenance, authorized recovery, host profile installation, and the real host-native smoke test. The
 skill never creates or modifies target `AGENTS.md`, `CLAUDE.md`, or `CODEX.md` files.
 `references/bootstrap.md` in the same directory owns the target README checklist, including
@@ -105,6 +110,7 @@ The TOML is a copy, so plugin updates do not change it. When an update changes
 .claude-plugin/                        plugin and marketplace manifests both hosts read
 skills/research-repo/                  SKILL.md entry point and references/ procedures
 skills/nature-schematic/               schematic skill, style record, reviewer briefs, and examples
+skills/cowrite-manuscript/             manuscript co-writing skill and its build script
 agents/research-code-simplifier.md     canonical host-neutral simplifier profile
 AGENTS.md                              source-repository maintenance instructions
 Makefile                               source help, format, and test interface
