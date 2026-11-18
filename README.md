@@ -29,7 +29,7 @@ It also bundles `cowrite-manuscript`, which writes a LaTeX manuscript with you o
 time in `docs/manuscript/`. It asks for the journal and article type, keeps a to-do list, and leaves
 legends for last.
 
-Both hosts list the skill as `research-repo-standard:research-repo` the schematic skill as
+Both hosts list the skill as `research-repo-standard:research-repo`, the schematic skill as
 `research-repo-standard:nature-schematic`, and the manuscript skill as
 `research-repo-standard:cowrite-manuscript`. `skills/research-repo/references/prerequisites.md` owns
 provenance, authorized recovery, host profile installation, and the real host-native smoke test. The
@@ -146,7 +146,7 @@ Blind behavioral evaluations are separate from deterministic source checks. Foll
 fixture only, with the rubric withheld. Policy-response scores do not prove execution or live host
 resolution. Preserve the baseline and candidate identifiers and report unavailable checks honestly.
 
-For the execution cases P, Q, S, and V,
+For the execution cases P, Q, S, V, X, and Y,
 `python3 tests/behavioral_fixture.py create CASE /tmp/fixture` creates the raw artifacts and a
 sibling evaluator manifest. Give the agent only the fixture and prompt, then run the same command
 with `verify`. Verification checks actual edits and protected files; decision scoring and visual
